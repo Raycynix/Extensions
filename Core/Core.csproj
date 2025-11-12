@@ -16,7 +16,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 		<PackageTags>core;extensions;microservices;shared;raycynix</PackageTags>
+		<!--<PackageIcon>logo.png</PackageIcon>-->
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+		<ItemGroup>
+			<None Include="logo.png" Pack="true" Visible="false" />
+		</ItemGroup>
 
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors>CS1591</WarningsAsErrors>
