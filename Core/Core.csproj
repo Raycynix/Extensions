@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
 		<PackageId>Extensions.Core</PackageId>
 		<Version>1.0.0</Version>
@@ -17,14 +18,15 @@
 		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 		<PackageTags>core;extensions;microservices;shared;raycynix</PackageTags>
 		<!--<PackageIcon>logo.png</PackageIcon>-->
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-
-		<ItemGroup>
-			<None Include="logo.png" Pack="true" Visible="false" />
-		</ItemGroup>
 
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors>CS1591</WarningsAsErrors>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="logo.png" Pack="true" Visible="false" />
+	</ItemGroup>
 
 </Project>
