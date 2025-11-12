@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<LangVersion>latest</LangVersion>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Extensions.Logging</PackageId>
+		<Version>0.1.0</Version>
+		<Authors>IruNil</Authors>
+		<Company>Raycynix</Company>
+		<Product>Extensions.Logging</Product>
+		<Description>Centralized Serilog + Elasticsearch logging module for microservices.</Description>
+		<RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
+		<!--<PackageIcon>logo.png</PackageIcon>-->
+		<PackageTags>logging;serilog;elasticsearch;microservices;extensions</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="logo.png" Pack="true" Visible="false" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Elastic.Serilog.Sinks" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+		<PackageReference Include="Serilog" Version="4.3.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+	</ItemGroup>
+
+</Project>

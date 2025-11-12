@@ -10,8 +10,7 @@ namespace Extensions.Logging
 
         public Logger(LoggerConfiguration config)
         {
-
-            var loggerConfiguration = new Serilog.LoggerConfiguration()
+            _logger = new Serilog.LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Service", config.ServiceName)
                 .Enrich.WithProperty("Version", config.ServiceVersion)
@@ -28,7 +27,7 @@ namespace Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string>? formatter)
         {
             if (formatter is null) return;
 
