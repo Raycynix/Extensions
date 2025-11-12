@@ -19,13 +19,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 		<!--<PackageIcon>logo.png</PackageIcon>-->
-		<PackageTags>logging;serilog;elasticsearch;microservices;extensions</PackageTags>
+		<PackageTags>logging;serilog;elasticsearch;microservices;extensions;raycynix</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="logo.png" Pack="true" Visible="false" />
 	</ItemGroup>
-
 
 	<ItemGroup>
 		<PackageReference Include="Elastic.Serilog.Sinks" Version="9.0.0" />
