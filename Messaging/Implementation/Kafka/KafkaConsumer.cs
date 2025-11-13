@@ -50,6 +50,11 @@ namespace Messaging.Implementation.Kafka
         /// <inheritdoc/>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
+            _subscriptions.AutoDiscoverHandlers();
+
+            var topics = _subscriptions.GetAllMessageTypes().Select(t => t.Name.ToLowerInvariant()).ToList();
+            _consumer.Subscribe(topics);
+
             return Task.Run(async () =>
             {
                 while (!cancellationToken.IsCancellationRequested)

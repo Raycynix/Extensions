@@ -56,6 +56,17 @@ namespace Messaging.Implementation.Rabbit
         /// <inheritdoc/>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
+            // Discover all message handlers dynamically
+            _subscriptions.AutoDiscoverHandlers();
+
+            // Bind all queues
+            foreach (var msgType in _subscriptions.GetAllMessageTypes())
+            {
+                var queue = msgType.Name.ToLowerInvariant();
+                await _channel.QueueDeclareAsync(queue, durable: true, exclusive: false, autoDelete: false, cancellationToken: cancellationToken);
+                await _channel.QueueBindAsync(queue, _configuration.RabbitMq.Exchange, routingKey: queue, cancellationToken: cancellationToken);
+            }
+
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (_, ea) =>
             {
@@ -65,7 +76,12 @@ namespace Messaging.Implementation.Rabbit
                 await _subscriptions.HandleAsync(typeHeader, body, _serializer, cancellationToken);
             };
 
-            await _channel.BasicConsumeAsync(queue: "#", autoAck: true, consumer: consumer, cancellationToken: cancellationToken);
+
+            // Consume all discovered queues
+            foreach (var msgType in _subscriptions.GetAllMessageTypes())
+            {
+                await _channel.BasicConsumeAsync(queue: "#", autoAck: true, consumer: consumer, cancellationToken: cancellationToken);
+            }
         }
 
         public void Dispose()

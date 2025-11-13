@@ -20,6 +20,30 @@ namespace Messaging.Implementation.Core
         }
 
         /// <summary>
+        /// Auto-discovers all IMessageHandler&lt;T&gt; implementations in loaded assemblies.
+        /// </summary>
+        public void AutoDiscoverHandlers()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.FullName));
+
+            foreach (var asm in assemblies)
+            {
+                foreach (var type in asm.GetTypes())
+                {
+                    var interfaces = type.GetInterfaces()
+                        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
+
+                    foreach (var handlerInterface in interfaces)
+                    {
+                        var messageType = handlerInterface.GetGenericArguments()[0];
+                        _handlers[messageType.FullName!] = type;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Invokes the handler for the given message type.
         /// </summary>
         public async Task HandleAsync(string typeName, string payload, IMessageSerializer serializer, CancellationToken token = default)
@@ -36,6 +60,12 @@ namespace Messaging.Implementation.Core
             var method = handlerType.GetMethod("HandleAsync")!;
             await (Task)method.Invoke(handler, [message!, token])!;
         }
+
+        /// <summary>
+        /// Returns all discovered message types for automatic subscription.
+        /// </summary>
+        public IEnumerable<Type> GetAllMessageTypes() =>
+            _handlers.Keys.Select(Type.GetType).Where(t => t is not null)!;
     }
 
     internal static class SerializerExtensions

@@ -12,12 +12,20 @@ namespace Messaging.Configurations
     /// </summary>
     public static class MessagingSetupExtensions
     {
+        /// <summary>
+        /// Adds Raycynix unified messaging support to the service collection.
+        /// Automatically registers all IMessageHandler&lt;T&gt; implementations.
+        /// </summary>
         public static IServiceCollection AddRaycynixMessaging(this IServiceCollection services, IConfiguration config)
         {
-            var options = config.GetSection("Messaging").Get<MessagingConfiguration>() ?? new MessagingConfiguration();
+            var options = config.GetSection(nameof(MessagingConfiguration)).Get<MessagingConfiguration>() ?? new MessagingConfiguration();
 
             services.AddSingleton(options);
+            services.AddSingleton<IMessageSerializer, JsonMessageSerializer>();
             services.AddSingleton<IMessageBus, MessageBus>();
+            services.AddSingleton<MessageSubscriptionManager>();
+
+            RegisterMessageHandlers(services);
 
             if (options.EnableRabbitMq)
             {
@@ -32,6 +40,30 @@ namespace Messaging.Configurations
             }
 
             return services;
+        }
+
+
+        /// <summary>
+        /// Scans all loaded assemblies and registers IMessageHandler&lt;T&gt; implementations into DI.
+        /// </summary>
+        private static void RegisterMessageHandlers(IServiceCollection services)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.FullName));
+
+            foreach (var assembly in assemblies)
+            {
+                var handlerTypes = assembly.GetTypes()
+                    .Where(t => !t.IsAbstract && !t.IsInterface)
+                    .SelectMany(t => t.GetInterfaces()
+                        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+                        .Select(i => new { Handler = t, Interface = i }));
+
+                foreach (var h in handlerTypes)
+                {
+                    services.AddTransient(h.Interface, h.Handler);
+                }
+            }
         }
     }
 }
