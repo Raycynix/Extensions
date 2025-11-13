@@ -24,6 +24,8 @@
 
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	  <WarningsAsErrors>CS1591</WarningsAsErrors>
+
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 	<ItemGroup>

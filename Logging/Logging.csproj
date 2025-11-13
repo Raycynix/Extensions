@@ -9,6 +9,7 @@
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
 		<PackageId>Extensions.Logging</PackageId>
 		<Version>0.1.0</Version>
 		<Authors>IruNil</Authors>
