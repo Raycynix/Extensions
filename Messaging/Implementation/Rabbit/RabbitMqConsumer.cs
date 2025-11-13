@@ -8,8 +8,14 @@ using RabbitMQ.Client.Events;
 namespace Messaging.Implementation.Rabbit
 {
     /// <summary>
-    /// Asynchronous RabbitMQ consumer for Raycynix Messaging.
+    /// Represents an asynchronous RabbitMQ consumer within the Raycynix Messaging framework.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="RabbitMqConsumer"/> automatically discovers and subscribes to all
+    /// <see cref="IMessageHandler{T}"/> implementations registered in the dependency container.
+    /// It binds queues to the configured exchange and dispatches received messages to the
+    /// appropriate message handlers via <see cref="MessageSubscriptionManager"/>.
+    /// </remarks>
     public class RabbitMqConsumer : IMessageConsumer, IDisposable
     {
         private readonly MessagingConfiguration _configuration;
@@ -18,6 +24,12 @@ namespace Messaging.Implementation.Rabbit
         private readonly IConnection _connection;
         private readonly IChannel _channel;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RabbitMqConsumer"/> class.
+        /// </summary>
+        /// <param name="configuration">The messaging configuration options for RabbitMQ.</param>
+        /// <param name="serializer">The message serializer used for converting message payloads.</param>
+        /// <param name="subscriptions">The message subscription manager for routing messages to handlers.</param>
         public RabbitMqConsumer(
             MessagingConfiguration configuration,
             IMessageSerializer serializer,
@@ -39,6 +51,12 @@ namespace Messaging.Implementation.Rabbit
         }
 
         /// <inheritdoc/>
+        /// <summary>
+        /// Subscribes a message type and its handler to a specific queue.
+        /// This method can be used manually, but in most cases handlers are discovered automatically.
+        /// </summary>
+        /// <typeparam name="TMessage">The message type.</typeparam>
+        /// <typeparam name="THandler">The handler type that processes this message.</typeparam>
         public void Subscribe<TMessage, THandler>()
             where THandler : IMessageHandler<TMessage>
         {
@@ -54,6 +72,11 @@ namespace Messaging.Implementation.Rabbit
         }
 
         /// <inheritdoc/>
+        /// <summary>
+        /// Starts consuming messages from RabbitMQ.
+        /// Automatically discovers message handlers and creates queue bindings for them.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token for graceful shutdown.</param>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             // Discover all message handlers dynamically
@@ -84,6 +107,12 @@ namespace Messaging.Implementation.Rabbit
             }
         }
 
+        /// <summary>
+        /// Releases all resources associated with the RabbitMQ consumer.
+        /// </summary>
+        /// <remarks>
+        /// Closes both the channel and the connection to RabbitMQ broker.
+        /// </remarks>
         public void Dispose()
         {
             _channel.Dispose();

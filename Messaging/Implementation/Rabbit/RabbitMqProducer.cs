@@ -52,7 +52,6 @@ namespace Messaging.Implementation.Rabbit
                 DeliveryMode = DeliveryModes.Persistent
             };
 
-            // Используем асинхронный метод публикации без generic-параметра, передавая null для basicProperties
             return _channel.BasicPublishAsync(
                 exchange: _configuration.RabbitMq.Exchange,
                 routingKey: topic,
@@ -63,9 +62,7 @@ namespace Messaging.Implementation.Rabbit
             ).AsTask();
         }
 
-        /// <summary>
-        /// Closes channel and connection gracefully.
-        /// </summary>
+        /// <inheritdoc/>
         public void Dispose()
         {
             _channel?.Dispose();

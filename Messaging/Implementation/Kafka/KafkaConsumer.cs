@@ -7,8 +7,14 @@ using Microsoft.Extensions.Logging;
 namespace Messaging.Implementation.Kafka
 {
     /// <summary>
-    /// Kafka consumer that routes incoming messages to registered handlers.
+    /// Represents a Kafka consumer used within the Raycynix Messaging framework.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="KafkaConsumer"/> automatically discovers all message handlers
+    /// implementing <see cref="IMessageHandler{T}"/>, subscribes to their respective
+    /// topics (based on message type names), and dispatches incoming messages
+    /// to the correct handler via <see cref="MessageSubscriptionManager"/>.
+    /// </remarks>
     public class KafkaConsumer : IMessageConsumer, IDisposable
     {
         private readonly MessagingConfiguration _configuration;
@@ -17,6 +23,13 @@ namespace Messaging.Implementation.Kafka
         private readonly IConsumer<Ignore, string> _consumer;
         private readonly ILogger<KafkaConsumer>? _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaConsumer"/> class.
+        /// </summary>
+        /// <param name="configuration">The messaging configuration options.</param>
+        /// <param name="serializer">The message serializer used for deserialization.</param>
+        /// <param name="subscriptions">The subscription manager that maps messages to handlers.</param>
+        /// <param name="logger">Optional logger instance for diagnostic information.</param>
         public KafkaConsumer(
             MessagingConfiguration configuration,
             IMessageSerializer serializer,
@@ -48,6 +61,12 @@ namespace Messaging.Implementation.Kafka
         }
 
         /// <inheritdoc/>
+        /// <summary>
+        /// Starts the Kafka consumer asynchronously.
+        /// It automatically subscribes to all discovered message types
+        /// and dispatches incoming messages to the corresponding handlers.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token for graceful shutdown.</param>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
             _subscriptions.AutoDiscoverHandlers();
@@ -62,13 +81,24 @@ namespace Messaging.Implementation.Kafka
                     try
                     {
                         var result = _consumer.Consume(cancellationToken);
-                        var typeName = result.Message.Headers
-                            .FirstOrDefault(h => h.Key == "TypeName")?
-                            .GetValueBytes() is { } bytes
-                            ? System.Text.Encoding.UTF8.GetString(bytes)
-                            : typeof(object).FullName!;
+
+                        // Determine the message type from the topic name
+                        var typeName = result.Topic switch
+                        {
+                            { Length: > 0 } => result.Topic,
+                            _ => typeof(object).FullName!
+                        };
 
                         await _subscriptions.HandleAsync(typeName, result.Message.Value, _serializer, cancellationToken);
+                    }
+                    catch (ConsumeException ex)
+                    {
+                        _logger?.LogError(ex, "Kafka consume error: {Reason}", ex.Error.Reason);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger?.LogInformation("Kafka consumer stopped by cancellation.");
+                        break;
                     }
                     catch (Exception ex)
                     {
@@ -78,6 +108,7 @@ namespace Messaging.Implementation.Kafka
             }, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _consumer.Close();

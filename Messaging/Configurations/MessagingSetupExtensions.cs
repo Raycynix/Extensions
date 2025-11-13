@@ -8,13 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Messaging.Configurations
 {
     /// <summary>
-    /// Adds Raycynix messaging support (RabbitMQ / Kafka) to the DI container.
+    /// Provides DI extensions for configuring Raycynix Messaging (RabbitMQ / Kafka)
+    /// with automatic handler registration and discovery.
     /// </summary>
     public static class MessagingSetupExtensions
     {
         /// <summary>
-        /// Adds Raycynix unified messaging support to the service collection.
-        /// Automatically registers all IMessageHandler&lt;T&gt; implementations.
+        /// Adds Raycynix unified messaging system to the service collection.
+        /// Automatically registers <see cref="IMessageHandler{T}"/> implementations.
         /// </summary>
         public static IServiceCollection AddRaycynixMessaging(this IServiceCollection services, IConfiguration config)
         {
@@ -44,7 +45,7 @@ namespace Messaging.Configurations
 
 
         /// <summary>
-        /// Scans all loaded assemblies and registers IMessageHandler&lt;T&gt; implementations into DI.
+        /// Scans assemblies for <see cref="IMessageHandler{T}"/> implementations and registers them in DI.
         /// </summary>
         private static void RegisterMessageHandlers(IServiceCollection services)
         {
