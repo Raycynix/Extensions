@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
@@ -10,11 +10,12 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<PackageId>Extensions.Logging</PackageId>
+		<IsPackable>true</IsPackable>
+		<PackageId>Raycynix.Extensions.Logging</PackageId>
 		<Version>0.1.0</Version>
 		<Authors>IruNil</Authors>
 		<Company>Raycynix</Company>
-		<Product>Extensions.Logging</Product>
+		<Product>Raycynix.Extensions.Logging</Product>
 		<Description>Centralized Serilog + Elasticsearch logging module for microservices.</Description>
 		<RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

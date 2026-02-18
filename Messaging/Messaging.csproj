@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -10,11 +10,12 @@
 
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-	  <PackageId>Extensions.Messaging</PackageId>
+	  <IsPackable>true</IsPackable>
+	  <PackageId>Raycynix.Extensions.Messaging</PackageId>
 	  <Version>0.1.0</Version>
 	  <Authors>IruNil</Authors>
 	  <Company>Raycynix</Company>
-	  <Product>Extensions.Messaging</Product>
+	  <Product>Raycynix.Extensions.Messaging</Product>
 	  <Description>Unified message bus for Raycynix microservices supporting RabbitMQ and Kafka.</Description>
 	  <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>

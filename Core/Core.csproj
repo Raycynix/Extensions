@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
@@ -10,22 +10,34 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<PackageId>Extensions.Core</PackageId>
-		<Version>0.1.0</Version>
-		<Authors>IruNil</Authors>
-		<Company>Raycynix</Company>
-		<Product>Extensions.Core</Product>
+		<Product>Raycynix.Extensions.Core</Product>
 		<Description>Core abstractions, Result model, and common helpers for microservice architecture.</Description>
+		
+		<RootNamespace>Raycynix.Extensions.Core</RootNamespace>
+		<AssemblyName>Raycynix.Extensions.Core</AssemblyName>
+		<PackageId>Raycynix.Extensions.Core</PackageId>
+
+		<Version>0.1.0</Version>
+		<Authors>Raycynix</Authors>
+		<Company>Raycynix</Company>
+		
 		<RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 		<PackageTags>core;extensions;microservices;shared;raycynix</PackageTags>
 		<!--<PackageIcon>logo.png</PackageIcon>-->
-
+		
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors>CS1591</WarningsAsErrors>
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<IsPackable>true</IsPackable>
+		
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	</PropertyGroup>
 
 	<ItemGroup>
