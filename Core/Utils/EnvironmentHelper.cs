@@ -1,4 +1,4 @@
-﻿namespace Core.Utils
+﻿namespace Raycynix.Extensions.Core.Utils
 {
     /// <summary>
     /// Provides helper methods for determining the current application environment.

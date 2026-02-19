@@ -1,4 +1,4 @@
-﻿namespace Core.Exceptions
+﻿namespace Raycynix.Extensions.Core.Exceptions
 {
     /// <summary>
     /// Represents an application-level exception that occurs due to domain logic errors.

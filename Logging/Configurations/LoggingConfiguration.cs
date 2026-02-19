@@ -1,6 +1,6 @@
 ﻿using Serilog.Events;
 
-namespace Logging.Configurations
+namespace Raycynix.Extensions.Logging.Configurations
 {
     /// <summary>
     /// Represents configuration options for the Raycynix logging module.

@@ -1,32 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
+	  <TargetFramework>net10.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
 	  <LangVersion>latest</LangVersion>
-	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+	  <Product>Raycynix.Extensions.Messaging</Product>
+	  <RootNamespace>Raycynix.Extensions.Messaging</RootNamespace>
+	  <AssemblyName>Raycynix.Extensions.Messaging</AssemblyName>
+	  <PackageId>Raycynix.Extensions.Messaging</PackageId>
+
+	  <!--<PackageIcon>logo.png</PackageIcon>-->
+
+	  <Description>Unified message bus for Raycynix microservices supporting RabbitMQ and Kafka.</Description>
+	  <Version>0.1.1</Version>
+	  <Authors>Raycynix</Authors>
+	  <Company>Raycynix</Company>
+	  <Copyright>Raycynix</Copyright>
+
+	  <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+	  <RepositoryType>GitHub</RepositoryType>
+
+	  <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
+	  <PackageLicenseUrl>https://github.com/Raycynix/Extensions/blob/release/LICENSE</PackageLicenseUrl>
+
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <PackageTags>raycynix;messaging;rabbitmq;kafkax;extensions</PackageTags>
 
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-	  <IsPackable>true</IsPackable>
-	  <PackageId>Raycynix.Extensions.Messaging</PackageId>
-	  <Version>0.1.0</Version>
-	  <Authors>IruNil</Authors>
-	  <Company>Raycynix</Company>
-	  <Product>Raycynix.Extensions.Messaging</Product>
-	  <Description>Unified message bus for Raycynix microservices supporting RabbitMQ and Kafka.</Description>
-	  <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
-	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
-	  <!--<PackageIcon>logo.png</PackageIcon>-->
-	  <PackageTags>raycynix;messaging;rabbitmq;kafka;microservices</PackageTags>
-
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	  <WarningsAsErrors>CS1591</WarningsAsErrors>
-
 	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+	  <IsPackable>true</IsPackable>
+
+	  <PublishSingleFile>true</PublishSingleFile>
+	  <SelfContained>true</SelfContained>
+	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
 	<ItemGroup>

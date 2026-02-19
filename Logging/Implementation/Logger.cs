@@ -1,12 +1,12 @@
 ﻿using Elastic.CommonSchema.Serilog;
 using Elastic.Ingest.Elasticsearch.DataStreams;
 using Elastic.Serilog.Sinks;
-using Logging.Abstractions;
-using Logging.Configurations;
+using Raycynix.Extensions.Logging.Abstractions;
+using Raycynix.Extensions.Logging.Configurations;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
-namespace Logging.Implementation
+namespace Raycynix.Extensions.Logging.Implementation
 {
     /// <summary>
     /// Represents a typed Raycynix logger implementation compatible with <see cref="ILogger{TCategoryName}"/>.

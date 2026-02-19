@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace Logging.Configurations
+namespace Raycynix.Extensions.Logging.Configurations
 {
     /// <summary>
     /// Provides extension methods for integrating Serilog logging with Raycynix microservices.

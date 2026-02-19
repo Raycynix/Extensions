@@ -4,29 +4,40 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
 		<LangVersion>latest</LangVersion>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+		<Product>Raycynix.Extensions.Logging</Product>
+		<RootNamespace>Raycynix.Extensions.Logging</RootNamespace>
+		<AssemblyName>Raycynix.Extensions.Logging</AssemblyName>
+		<PackageId>Raycynix.Extensions.Logging</PackageId>
+
+		<!--<PackageIcon>logo.png</PackageIcon>-->
+
+		<Description>Centralized Serilog + Elasticsearch logging module.</Description>
+		<Version>0.1.1</Version>
+		<Authors>Raycynix</Authors>
+		<Company>Raycynix</Company>
+		<Copyright>Raycynix</Copyright>
+
+		<RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+		<RepositoryType>GitHub</RepositoryType>
+
+		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/Raycynix/Extensions/blob/release/LICENSE</PackageLicenseUrl>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageTags>logging;serilog;elasticsearch;extensions;raycynix</PackageTags>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-		<IsPackable>true</IsPackable>
-		<PackageId>Raycynix.Extensions.Logging</PackageId>
-		<Version>0.1.0</Version>
-		<Authors>IruNil</Authors>
-		<Company>Raycynix</Company>
-		<Product>Raycynix.Extensions.Logging</Product>
-		<Description>Centralized Serilog + Elasticsearch logging module for microservices.</Description>
-		<RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
-		<!--<PackageIcon>logo.png</PackageIcon>-->
-		<PackageTags>logging;serilog;elasticsearch;microservices;extensions;raycynix</PackageTags>
-
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors>CS1591</WarningsAsErrors>
-
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<IsPackable>true</IsPackable>
+
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	</PropertyGroup>
 
 	<ItemGroup>

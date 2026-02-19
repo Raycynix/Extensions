@@ -1,4 +1,4 @@
-﻿namespace Core.Exceptions
+﻿namespace Raycynix.Extensions.Core.Exceptions
 {
     /// <summary>
     /// Represents an exception that occurs when model validation fails.

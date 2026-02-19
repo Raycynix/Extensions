@@ -1,4 +1,4 @@
-﻿namespace Core.Models
+﻿namespace Raycynix.Extensions.Core.Models
 {
 
     /// <summary>
