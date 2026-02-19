@@ -11,7 +11,7 @@
 		<AssemblyName>Raycynix.Extensions.Logging</AssemblyName>
 		<PackageId>Raycynix.Extensions.Logging</PackageId>
 
-		<!--<PackageIcon>logo.png</PackageIcon>-->
+		<PackageIcon>logo.png</PackageIcon>
 
 		<Description>Centralized Serilog + Elasticsearch logging module.</Description>
 		<Version>0.1.1</Version>
@@ -24,6 +24,7 @@
 
 		<PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>logging;serilog;elasticsearch;extensions;raycynix</PackageTags>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -39,8 +40,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="logo.png" Pack="true" Visible="false" />
-		<None Include="LICENSE" Pack="true" Visible="false"/>
+		<None Include="logo.png" Pack="true" Visible="false" PackagePath="\" />
+		<None Include="LICENSE" Pack="true" Visible="false" PackagePath="\" />
+		<None Include="README.md" Pack="true" Visible="false" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>

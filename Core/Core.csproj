@@ -11,7 +11,7 @@
         <AssemblyName>Raycynix.Extensions.Core</AssemblyName>
         <PackageId>Raycynix.Extensions.Core</PackageId>
 
-        <!--<PackageIcon>logo.png</PackageIcon>-->
+        <PackageIcon>logo.png</PackageIcon>
 
         <Description>Core abstractions, Result model, and common helpers for microservice architecture.</Description>
         <Version>0.1.1</Version>
@@ -24,6 +24,7 @@
 
         <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>core;extensions;microservices;shared;raycynix</PackageTags>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -39,8 +40,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="logo.png" Pack="true" Visible="false"/>
-        <None Include="LICENSE" Pack="true" Visible="false"/>
+        <None Include="logo.png" Pack="true" Visible="false" PackagePath="\" />
+        <None Include="LICENSE" Pack="true" Visible="false" PackagePath="\" />
+        <None Include="README.md" Pack="true" Visible="false" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
