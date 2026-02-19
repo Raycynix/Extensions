@@ -15,7 +15,6 @@ namespace Raycynix.Extensions.Logging.Implementation
     /// <remarks>
     /// Initializes a new instance of the <see cref="Logger{T}"/> class.
     /// </remarks>
-    /// <param name="configuration">The logger configuration.</param>
     public class Logger<T> : ICustomLogger<T>
     {
         private readonly Serilog.Core.Logger _logger;
