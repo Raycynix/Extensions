@@ -16,18 +16,30 @@ namespace Raycynix.Extensions.Logging.Implementation
     /// Initializes a new instance of the <see cref="Logger{T}"/> class.
     /// </remarks>
     /// <param name="configuration">The logger configuration.</param>
-    public class Logger<T>(LoggingConfiguration configuration) : ICustomLogger<T>
+    public class Logger<T> : ICustomLogger<T>
     {
-        private readonly Serilog.Core.Logger _logger = new LoggerConfiguration()
+        private readonly Serilog.Core.Logger _logger;
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Logger{T}"/> class using the specified configuration.
+        /// </summary>
+        /// <param name="configuration">The <see cref="LoggingConfiguration"/> settings, including service details and sink options.</param>
+        public Logger(LoggingConfiguration configuration)
+        {
+            var loggerConfiguration = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Service", configuration.ServiceName)
                 .Enrich.WithProperty("Version", configuration.ServiceVersion)
                 .Enrich.WithProperty("Environment", configuration.Environment)
                 .Enrich.WithProperty("Class", typeof(T).FullName)
-                .WriteTo.Console()
-                .WriteTo.Elasticsearch([new Uri(configuration.ElasticUrl)], options =>
+                .WriteTo.Console();
+
+            if (configuration.UseElastic)
+            {
+                loggerConfiguration.WriteTo.Elasticsearch([new Uri(configuration.ElasticUrl)], options =>
                 {
-                    options.MinimumLevel = options.MinimumLevel;
+                    options.MinimumLevel = configuration.MinimumLevel;
                     options.DataStream = new DataStreamName
                     (
                         "logs",
@@ -35,8 +47,11 @@ namespace Raycynix.Extensions.Logging.Implementation
                         configuration.Environment.ToLowerInvariant()
                     );
                     options.TextFormatting = new EcsTextFormatterConfiguration<LogEventEcsDocument>();
-                })
-                .CreateLogger();
+                });
+            }
+
+            _logger = loggerConfiguration.CreateLogger();
+        }
 
         /// <inheritdoc/>
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null!;
@@ -45,7 +60,8 @@ namespace Raycynix.Extensions.Logging.Implementation
         public bool IsEnabled(LogLevel logLevel) => true;
 
         /// <inheritdoc/>
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string>? formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string>? formatter)
         {
             if (formatter is null) return;
 
@@ -55,19 +71,19 @@ namespace Raycynix.Extensions.Logging.Implementation
             {
                 case LogLevel.Trace:
                 case LogLevel.Debug:
-                    _logger.Debug(message);
+                    _logger.Debug("{Message}", message);
                     break;
                 case LogLevel.Information:
-                    _logger.Information(message);
+                    _logger.Information("{Message}", message);
                     break;
                 case LogLevel.Warning:
-                    _logger.Warning(exception, message);
+                    _logger.Warning("{Exception}: {Message}", exception, message);
                     break;
                 case LogLevel.Error:
-                    _logger.Error(exception, message);
+                    _logger.Error("{Exception}: {Message}", exception, message);
                     break;
                 case LogLevel.Critical:
-                    _logger.Fatal(exception, message);
+                    _logger.Fatal("{Exception}: {Message}", exception, message);
                     break;
                 case LogLevel.None:
                 default:

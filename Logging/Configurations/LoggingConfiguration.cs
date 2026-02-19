@@ -1,4 +1,5 @@
 ﻿using Serilog.Events;
+using Raycynix.Extensions.Core.Utils;
 
 namespace Raycynix.Extensions.Logging.Configurations
 {
@@ -10,18 +11,22 @@ namespace Raycynix.Extensions.Logging.Configurations
         /// <summary>
         /// The name of the current service or application emitting logs.
         /// </summary>
-        public string ServiceName { get; set; } = "Microservice";
+        public string ServiceName { get; } = AssemblyHelper.CurrentName();
 
         /// <summary>
         /// The version of the current service or application emitting logs.
         /// </summary>
-        public string ServiceVersion { get; set; } = "0.1.0";
+        public string ServiceVersion { get; } = AssemblyHelper.CurrentVersion();
 
         /// <summary>
         /// The environment name (e.g., Development, Production).
         /// </summary>
-        public string Environment { get; set; } =
-            System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        public string Environment { get; } = EnvironmentHelper.CurrentEnvironment();
+
+        /// <value>
+        /// Indicating whether Elasticsearch logging is <b>enabled</b>
+        /// </value>
+        public bool UseElastic { get; set; } = false;
 
         /// <summary>
         /// The URI of the Elasticsearch server where logs are sent.

@@ -5,21 +5,15 @@
     /// </summary>
     public static class EnvironmentHelper
     {
-        /// <summary>
-        /// Returns <c>true</c> if the current environment is Development.
-        /// </summary>
+        /// <returns><c>true</c> if the current environment is <b>Development</b></returns>
         public static bool IsDevelopment() =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-        /// <summary>
-        /// Returns <c>true</c> if the current environment is Production.
-        /// </summary>
+        /// <returns><c>true</c> if the current environment is <b>Production</b></returns>
         public static bool IsProduction() =>
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
 
-        /// <summary>
-        /// Returns the name of the current ASP.NET Core environment, or "Unknown" if not set.
-        /// </summary>
+        /// <returns>the name of the current application environment, or <c>Unknown</c> if not set.</returns>
         public static string CurrentEnvironment()
             => Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";
     }
