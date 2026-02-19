@@ -14,7 +14,7 @@
         <PackageIcon>logo.png</PackageIcon>
 
         <Description>Core abstractions, Result model, and common helpers for microservice architecture.</Description>
-        <Version>0.1.1</Version>
+        <Version>0.1.2</Version>
         <Authors>Raycynix</Authors>
         <Company>Raycynix</Company>
         <Copyright>Raycynix</Copyright>
