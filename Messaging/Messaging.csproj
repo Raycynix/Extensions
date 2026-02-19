@@ -24,8 +24,6 @@
 
 	  <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
 	  <PackageLicenseUrl>https://github.com/Raycynix/Extensions/blob/release/LICENSE</PackageLicenseUrl>
-
-	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageTags>raycynix;messaging;rabbitmq;kafkax;extensions</PackageTags>
 
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
