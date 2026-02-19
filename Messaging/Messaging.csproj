@@ -23,7 +23,7 @@
 	  <RepositoryType>GitHub</RepositoryType>
 
 	  <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
-	  <PackageLicenseUrl>https://github.com/Raycynix/Extensions/blob/release/LICENSE</PackageLicenseUrl>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageTags>raycynix;messaging;rabbitmq;kafkax;extensions</PackageTags>
 
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -40,6 +40,7 @@
 
 	<ItemGroup>
 		<None Include="logo.png" Pack="true" Visible="false" />
+		<None Include="LICENSE" Pack="true" Visible="false"/>
 	</ItemGroup>
 
   <ItemGroup>
