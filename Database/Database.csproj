@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <Product>Raycynix.Extensions.Database</Product>
+        <RootNamespace>Raycynix.Extensions.Database</RootNamespace>
+        <AssemblyName>Raycynix.Extensions.Database</AssemblyName>
+        <PackageId>Raycynix.Extensions.Database</PackageId>
+
+        <PackageIcon>logo.png</PackageIcon>
+
+        <Description>Centralized Database context module.</Description>
+        <Version>0.1.0</Version>
+        <Authors>Raycynix</Authors>
+        <Company>Raycynix</Company>
+        <Copyright>Raycynix</Copyright>
+
+        <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+        <RepositoryType>GitHub</RepositoryType>
+
+        <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>database;ef core;entity framework;extensions;raycynix</PackageTags>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors>CS1591</WarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <IsPackable>true</IsPackable>
+
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <None Include="logo.png" Pack="true" Visible="false" PackagePath="\" />
+        <None Include="LICENSE" Pack="true" Visible="false" PackagePath="\" />
+        <None Include="README.md" Pack="true" Visible="false" PackagePath="\" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\Logging\Logging.csproj" />
+    </ItemGroup>
+
+</Project>

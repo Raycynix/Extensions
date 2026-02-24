@@ -9,13 +9,13 @@ using Serilog;
 namespace Raycynix.Extensions.Logging.Implementation
 {
     /// <summary>
-    /// Represents a typed Raycynix logger implementation compatible with <see cref="ILogger{TCategoryName}"/>.
+    /// Represents a typed Raycynix logger implementation compatible with <see cref="Microsoft.Extensions.Logging.ILogger{TCategoryName}"/>.
     /// </summary>
     /// <typeparam name="T">The logging category type.</typeparam>
     /// <remarks>
     /// Initializes a new instance of the <see cref="Logger{T}"/> class.
     /// </remarks>
-    public class Logger<T> : ICustomLogger<T>
+    public class Logger<T> : Abstractions.ILogger<T>
     {
         private readonly Serilog.Core.Logger _logger;
 
