@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CD7E63E8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging", "src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj", "{987E464F-92D0-4156-9E4B-9E27EE63931E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database", "src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj", "{408AE015-1312-4139-A191-5F34B164F08E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,6 +18,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{987E464F-92D0-4156-9E4B-9E27EE63931E} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
+		{408AE015-1312-4139-A191-5F34B164F08E} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -26,5 +29,9 @@ Global
 		{987E464F-92D0-4156-9E4B-9E27EE63931E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{987E464F-92D0-4156-9E4B-9E27EE63931E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{987E464F-92D0-4156-9E4B-9E27EE63931E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{408AE015-1312-4139-A191-5F34B164F08E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{408AE015-1312-4139-A191-5F34B164F08E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{408AE015-1312-4139-A191-5F34B164F08E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{408AE015-1312-4139-A191-5F34B164F08E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
