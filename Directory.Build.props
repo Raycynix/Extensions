@@ -1,0 +1,51 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AnalysisLevel>latest</AnalysisLevel>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Company>Raycynix</Company>
+        <Authors>Raycynix</Authors>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Product>$(MSBuildProjectName)</Product>
+        <PackageId>$(MSBuildProjectName)</PackageId>
+
+        <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Copyright>Copyright © $([System.DateTime]::Now.Year) Raycynix</Copyright>
+        <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
+        <RepositoryType>GitHub</RepositoryType>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        
+        <WarningsAsErrors>CS1591</WarningsAsErrors>
+
+        <IsPackable>true</IsPackable>
+
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)logo.png" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+</Project>
