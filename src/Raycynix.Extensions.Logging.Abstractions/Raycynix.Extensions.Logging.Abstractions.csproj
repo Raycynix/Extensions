@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>        
-        <Version>0.2.0</Version>
-        
-        <Description>The core infrastructure library for Raycynix Microservices.</Description>
-        
+    <PropertyGroup>
+        <Version>0.1.0</Version>
+
+        <Description>Centralized abstractions for logging module.</Description>
+
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
     </ItemGroup>
 
 </Project>
