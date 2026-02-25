@@ -62,4 +62,5 @@ public interface ILogger<out T> : Microsoft.Extensions.Logging.ILogger<T>
     /// <param name="metadata"></param>
     void Fatal(string message, Exception? exception = null, object? metadata = null) => Log(LogLevel.Critical, message, exception, metadata);
     
+    //TODO: Create Documentation
 }

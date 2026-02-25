@@ -5,6 +5,7 @@ namespace Raycynix.Extensions.Common.Helpers;
 /// <summary>
 /// 
 /// </summary>
+//TODO: Create Documentation
 public static class AssemblyHelper
 {
     /// <returns>the version of the current executing application, or <c>Unknown</c> if not set.</returns>

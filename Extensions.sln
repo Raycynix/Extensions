@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{9994
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Abstractions", "src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj", "{4123DB0C-4799-461E-9E09-3738777C2DD6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{85B7AC0B-BB66-438B-80B0-ADB9E512F69F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Abstractions", "src\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj", "{37E5D251-3374-443F-98AF-905B9CF627DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +25,12 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
-		{408AE015-1312-4139-A191-5F34B164F08E} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{99940817-284B-4AE2-944F-B0ABE2C0B1E3} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{987E464F-92D0-4156-9E4B-9E27EE63931E} = {99940817-284B-4AE2-944F-B0ABE2C0B1E3}
 		{4123DB0C-4799-461E-9E09-3738777C2DD6} = {99940817-284B-4AE2-944F-B0ABE2C0B1E3}
+		{85B7AC0B-BB66-438B-80B0-ADB9E512F69F} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
+		{408AE015-1312-4139-A191-5F34B164F08E} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{37E5D251-3374-443F-98AF-905B9CF627DD} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -43,5 +49,9 @@ Global
 		{4123DB0C-4799-461E-9E09-3738777C2DD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4123DB0C-4799-461E-9E09-3738777C2DD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4123DB0C-4799-461E-9E09-3738777C2DD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37E5D251-3374-443F-98AF-905B9CF627DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37E5D251-3374-443F-98AF-905B9CF627DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37E5D251-3374-443F-98AF-905B9CF627DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37E5D251-3374-443F-98AF-905B9CF627DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

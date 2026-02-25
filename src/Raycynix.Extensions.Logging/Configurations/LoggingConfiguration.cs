@@ -42,4 +42,6 @@ public class LoggingConfiguration
     /// The output log message
     /// </summary>
     public string OutputTemplate { get; init; } = "[{Timestamp:HH:mm:ss}] [{ServiceName}] [{ServiceVersion}] {Message:lj}{NewLine}{Exception}";
+    
+    //TODO: Fix documentation
 }

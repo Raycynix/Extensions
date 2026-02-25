@@ -67,9 +67,10 @@ public static class Logging
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
-    private static IServiceCollection AddRaycynixLogging(this IServiceCollection services)
+    private static void AddRaycynixLogging(this IServiceCollection services)
     {
         services.TryAddSingleton(typeof(Abstractions.ILogger<>), typeof(Implementation.Logger<>));
-        return services;
     }
+    
+    //TODO: Create Documentation
 }
