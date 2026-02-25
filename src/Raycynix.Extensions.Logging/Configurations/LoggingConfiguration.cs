@@ -41,7 +41,23 @@ public class LoggingConfiguration
     /// <summary>
     /// The output log message
     /// </summary>
-    public string OutputTemplate { get; init; } = "[{Timestamp:HH:mm:ss}] [{ServiceName}] [{ServiceVersion}] {Message:lj}{NewLine}{Exception}";
+    public string OutputTemplate { get; init; } =
+        "[{Timestamp:HH:mm:ss}] [{ServiceName}] [{ServiceVersion}] {Message:lj}{NewLine}{Exception}";
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool UsePrometheus { get; init; } = false;
     
-    //TODO: Fix documentation
+    /// <summary>
+    /// 
+    /// </summary>
+    public string MetricsEndpoint { get; init; } = "/metrics";
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool UseHealthChecks { get; init; } = true;
+
+    //TODO: Create documentation
 }

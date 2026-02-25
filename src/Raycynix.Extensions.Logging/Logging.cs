@@ -5,8 +5,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Common.Helpers;
 using Raycynix.Extensions.Logging.Configurations;
+using Raycynix.Extensions.Logging.Http;
 using Raycynix.Extensions.Logging.Internal;
 using Serilog;
 
@@ -57,20 +59,27 @@ public static class Logging
                 });
             }
 
-            //Auto adding raycynix logging to the service collection
-            hostBuilder.ConfigureServices((_, serviceCollection) => serviceCollection.AddRaycynixLogging());
+            //Auto adding raycynix logging and observation to the service collection
+            hostBuilder.ConfigureServices((_, serviceCollection) =>
+                {
+                    serviceCollection.AddRaycynixHttpClients();
+                    serviceCollection.AddRaycynixObservation();
+                    serviceCollection.AddRaycynixLogging();
+                }
+            );
         });
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="services"></param>
-    /// <returns></returns>
-    private static void AddRaycynixLogging(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.TryAddSingleton(typeof(Abstractions.ILogger<>), typeof(Implementation.Logger<>));
+        private void AddRaycynixLogging() =>
+            services.TryAddSingleton(typeof(Abstractions.ILogger<>), typeof(Implementation.Logger<>));
+
+        private void AddRaycynixObservation() => services.TryAddSingleton<IOperationContext, OperationContext>();
+
+        private void AddRaycynixHttpClients() => services.AddTransient<CorrelationHeaderHandler>();
     }
-    
+
     //TODO: Create Documentation
 }
