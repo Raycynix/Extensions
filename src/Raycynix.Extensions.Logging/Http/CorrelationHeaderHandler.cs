@@ -22,7 +22,6 @@ public class CorrelationHeaderHandler(IOperationContext operationContext) : Dele
         HttpRequestMessage request, 
         CancellationToken cancellationToken)
     {
-        // Если заголовок еще не установлен, берем его из текущего контекста операции
         if (!request.Headers.Contains(CorrelationHeader))
         {
             request.Headers.Add(CorrelationHeader, operationContext.CorrelationId);

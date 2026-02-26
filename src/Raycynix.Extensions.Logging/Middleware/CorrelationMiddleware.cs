@@ -30,7 +30,6 @@ public class CorrelationMiddleware(RequestDelegate next)
         operationContext.CorrelationId = correlationId!;
         context.Response.Headers[CorrelationHeader] = correlationId;
 
-
         var userId = context.User?.Identity?.Name;
         if (!string.IsNullOrEmpty(userId))
         {

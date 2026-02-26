@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>0.1.0</Version>
+
+        <Description>Centralized tracing module.</Description>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

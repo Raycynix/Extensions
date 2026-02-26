@@ -32,7 +32,7 @@ public static class Logging
         this IHostBuilder hostBuilder,
         Action<LoggingConfiguration>? setup = null)
     {
-        return hostBuilder.UseSerilog((context, services, loggerConfiguration) =>
+        return hostBuilder.UseSerilog((context, _, loggerConfiguration) =>
         {
             var config = context.Configuration.GetSection(nameof(LoggingConfiguration)).Get<LoggingConfiguration>() ??
                          new LoggingConfiguration();
@@ -79,6 +79,13 @@ public static class Logging
         private void AddRaycynixObservation() => services.TryAddSingleton<IOperationContext, OperationContext>();
 
         private void AddRaycynixHttpClients() => services.AddTransient<CorrelationHeaderHandler>();
+
+        private void AddRaycynixMetrics()
+        {
+            services.AddHealthChecks();
+            
+            
+        }
     }
 
     //TODO: Create Documentation

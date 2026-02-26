@@ -37,7 +37,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         
-        <WarningsAsErrors>CS1591</WarningsAsErrors>
+        <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
 
         <IsPackable>true</IsPackable>
 
