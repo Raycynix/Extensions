@@ -18,7 +18,13 @@ public class DatabaseConfiguration
 
     public int RetryCount { get; init; } = 5;
     
-    public int RetryDelaySeconds { get; init; } = 3;
+    public int RetryDelaySeconds { get; init; } = 10;
     
-    //TODO: Add ProviderOptions for every database
+    public PostgreSqlConfiguration? PostgreSqlConfiguration { get; init; }
+    
+    public MsSqlServerConfiguration? MsSqlServerConfiguration { get; init; }
+    
+    public MySqlConfiguration? MySqlConfiguration { get; init; }
+    
+    public SqlliteConfiguration? SqlliteConfiguration { get; init; }
 }

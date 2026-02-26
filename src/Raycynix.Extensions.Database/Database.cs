@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
@@ -10,7 +11,8 @@ namespace Raycynix.Extensions.Database;
 
 public static class Database
 {
-    public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration, Action<DatabaseConfiguration>? setup = null)
+    public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration,
+        Action<DatabaseConfiguration>? setup = null)
     {
         var config = new DatabaseConfiguration();
         configuration.GetSection(nameof(DatabaseConfiguration)).Bind(config);
@@ -18,28 +20,57 @@ public static class Database
         setup?.Invoke(config);
 
         var finalString = ResolveConnection(config);
-        var callerAssembly = Assembly.GetCallingAssembly();
+        var callerAssembly = Assembly.GetEntryAssembly()!;
 
         services.AddSingleton(config);
         services.AddSingleton(callerAssembly);
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
-        services.AddDbContext<DatabaseContext>(options =>
+        services.AddDbContextPool<DatabaseContext>(options =>
         {
             switch (config.Provider)
             {
                 case DatabaseProvider.PostgreSql:
-                    //TODO: Create providing to PostgreSQL using NpgSql;
+                    options.UseNpgsql(finalString, npgsqlOptions =>
+                    {
+                        npgsqlOptions.EnableRetryOnFailure(
+                            config.RetryCount,
+                            TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                            null);
+
+                        npgsqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                    });
                     break;
+                
                 case DatabaseProvider.MsSqlServer:
-                    //TODO: Create providing to MsSQL Server;
+                    options.UseSqlServer(finalString,
+                        sqlOptions =>
+                        {
+                            sqlOptions.EnableRetryOnFailure(
+                                config.RetryCount,
+                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                                null);
+
+                            sqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                        });
                     break;
+                
                 case DatabaseProvider.MySql:
-                    //TODO: Create providing to MySQL;
+                    options.UseMySQL(finalString, mySqlOptions =>
+                    {
+                        mySqlOptions.EnableRetryOnFailure(
+                            config.RetryCount,
+                            TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                            null);
+
+                        mySqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                    });
                     break;
+                
                 default:
                 case DatabaseProvider.Sqlite:
-                    //TODO: Create providing to Sqlite;
+                    options.UseSqlite(finalString,
+                        sqliteOptions => { sqliteOptions.MigrationsAssembly(callerAssembly.GetName().Name); });
                     break;
             }
         });
@@ -58,16 +89,22 @@ public static class Database
                                                $"Database={config.ConnectionConfiguration.Name};" +
                                                $"Username={config.ConnectionConfiguration.Username};" +
                                                $"Password={config.ConnectionConfiguration.Password};",
-                
+
                 DatabaseProvider.MsSqlServer => $"Server={config.ConnectionConfiguration.Host};" +
                                                 $"Database={config.ConnectionConfiguration.Name};" +
                                                 $"User Id={config.ConnectionConfiguration.Username};" +
                                                 $"Password={config.ConnectionConfiguration.Password};" +
                                                 $"TrustServerCertificate=True;",
-                
-                DatabaseProvider.Sqlite => "",
-                
-                DatabaseProvider.MySql => "",
+
+                DatabaseProvider.MySql => $"Server={config.ConnectionConfiguration.Host};" +
+                                          $"Port={config.ConnectionConfiguration.Port ?? 3306};" +
+                                          $"Database={config.ConnectionConfiguration.Name};" +
+                                          $"Uid={config.ConnectionConfiguration.Username};" +
+                                          $"Pwd={config.ConnectionConfiguration.Password};" +
+                                          $"AllowUserVariables=True;",
+
+                DatabaseProvider.Sqlite => $"Data Source={config.ConnectionConfiguration.Name}.db",
+
                 _ => throw new NotSupportedException($"Resolving for {config.Provider} not realised.")
             };
         }
