@@ -5,10 +5,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Common.Helpers;
+using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Configurations;
-using Raycynix.Extensions.Logging.Http;
+using Raycynix.Extensions.Logging.Implementation;
 using Raycynix.Extensions.Logging.Internal;
 using Serilog;
 
@@ -19,6 +19,11 @@ namespace Raycynix.Extensions.Logging;
 /// </summary>
 public static class Logging
 {
+    public static void AddRaycynixLogging(this IServiceCollection services)
+    {
+        services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
+    }
+    
     /// <summary>
     /// Configures the application to use Raycynix logging with Serilog.
     /// </summary>
@@ -58,35 +63,6 @@ public static class Logging
                     options.TextFormatting = new EcsTextFormatterConfiguration<LogEventEcsDocument>();
                 });
             }
-
-            //Auto adding raycynix logging and observation to the service collection
-            hostBuilder.ConfigureServices((_, serviceCollection) =>
-                {
-                    serviceCollection.AddRaycynixHttpClients();
-                    serviceCollection.AddRaycynixObservation();
-                    serviceCollection.AddRaycynixLogging();
-                }
-            );
         });
     }
-
-    /// <param name="services"></param>
-    extension(IServiceCollection services)
-    {
-        private void AddRaycynixLogging() =>
-            services.TryAddSingleton(typeof(Abstractions.ILogger<>), typeof(Implementation.Logger<>));
-
-        private void AddRaycynixObservation() => services.TryAddSingleton<IOperationContext, OperationContext>();
-
-        private void AddRaycynixHttpClients() => services.AddTransient<CorrelationHeaderHandler>();
-
-        private void AddRaycynixMetrics()
-        {
-            services.AddHealthChecks();
-            
-            
-        }
-    }
-
-    //TODO: Create Documentation
 }

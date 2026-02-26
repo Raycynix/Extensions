@@ -8,19 +8,8 @@ using Raycynix.Extensions.Database.Models;
 
 namespace Raycynix.Extensions.Database;
 
-/// <summary>
-/// 
-/// </summary>
-//TODO: Create Documentation
 public static class Database
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="configuration"></param>
-    /// <param name="setup"></param>
-    /// <returns></returns>
     public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration, Action<DatabaseConfiguration>? setup = null)
     {
         var config = new DatabaseConfiguration();

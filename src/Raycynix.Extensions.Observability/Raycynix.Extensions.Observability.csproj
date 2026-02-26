@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Version>0.1.0</Version>
 
-        <Description>Centralized tracing module.</Description>
+        <Description>Centralized metrics module.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -13,9 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
       <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj" />
     </ItemGroup>
 
 </Project>

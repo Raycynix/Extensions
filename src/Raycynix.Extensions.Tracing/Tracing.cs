@@ -8,12 +8,10 @@ namespace Raycynix.Extensions.Tracing;
 
 public static class Tracing
 {
-    public static IServiceCollection AddRaycynixTracing(this IServiceCollection services)
+    public static void AddRaycynixTracing(this IServiceCollection services)
     {
         var serviceName = AssemblyHelper.CurrentName();
         
         services.TryAddSingleton<ITracer>(new Tracer(serviceName));
-        
-        return services;
     }
 }

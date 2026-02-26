@@ -1,25 +1,13 @@
 using Raycynix.Extensions.Common.Context;
 
-namespace Raycynix.Extensions.Logging.Http;
+namespace Raycynix.Extensions.Observability.Http;
 
-//TODO: Create Documentation
-
-/// <summary>
-/// 
-/// </summary>
-/// <param name="operationContext"></param>
 public class CorrelationHeaderHandler(IOperationContext operationContext) : DelegatingHandler
 {
     private const string CorrelationHeader = "X-Correlation-ID";
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request, 
+        HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
         if (!request.Headers.Contains(CorrelationHeader))

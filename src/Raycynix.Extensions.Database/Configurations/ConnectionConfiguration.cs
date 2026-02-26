@@ -1,34 +1,14 @@
 namespace Raycynix.Extensions.Database.Configurations;
 
-/// <summary>
-/// 
-/// </summary>
 public class ConnectionConfiguration
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public string? Host { get; init; }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    public int? Port { get; set; }
+    public int? Port { get; init; }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? Name { get; set; }
+    public string? Name { get; init; }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? Username { get; set; }
+    public string? Username { get; init; }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? Password { get; set; }
-    
-    //TODO: Create Documentation
+    public string? Password { get; init; }
 }

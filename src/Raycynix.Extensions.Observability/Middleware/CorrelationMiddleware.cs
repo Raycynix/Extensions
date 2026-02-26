@@ -3,23 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
 using Serilog.Context;
 
-namespace Raycynix.Extensions.Logging.Middleware;
+namespace Raycynix.Extensions.Observability.Middleware;
 
-//TODO: Create Documentation
-
-/// <summary>
-/// 
-/// </summary>
-/// <param name="next"></param>
 public class CorrelationMiddleware(RequestDelegate next)
 {
     private const string CorrelationHeader = "X-Correlation-ID";
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="operationContext"></param>
     public async Task InvokeAsync(HttpContext context, IOperationContext operationContext)
     {
         if (!context.Request.Headers.TryGetValue(CorrelationHeader, out var correlationId))
