@@ -1,5 +1,7 @@
 # Raycynix.Extensions
 
+![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
+
 **Raycynix.Extensions** is a robust infrastructure framework designed to accelerate the development of .NET microservices. It standardizes essential cross-cutting concerns—such as database management, observability, and resiliency—allowing you to focus on business logic rather than boilerplate code.
 
 # 🚀 Key Features
