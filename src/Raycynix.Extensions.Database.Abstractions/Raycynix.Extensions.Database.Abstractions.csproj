@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
+        
+        <IsPackable>true</IsPackable>
 
         <Description>The abstraction project for the databases.</Description>
 
