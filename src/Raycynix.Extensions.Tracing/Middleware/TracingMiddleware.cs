@@ -4,12 +4,9 @@ using Serilog.Context;
 
 namespace Raycynix.Extensions.Tracing.Middleware;
 
-public class TracingMiddleware
+public class TracingMiddleware(RequestDelegate next)
 {
     private const string CorrelationHeader = "X-Correlation-Id";
-    private readonly RequestDelegate _next;
-
-    public TracingMiddleware(RequestDelegate next) => _next = next;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -25,7 +22,7 @@ public class TracingMiddleware
         // 3. Обогащаем логи Serilog и привязываем к контексту
         using (LogContext.PushProperty("CorrelationId", correlationId))
         {
-            await _next(context);
+            await next(context);
         }
     }
 }

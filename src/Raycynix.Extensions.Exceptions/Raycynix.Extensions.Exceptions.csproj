@@ -16,6 +16,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Raycynix.Extensions.Exceptions.Abstractions\Raycynix.Extensions.Exceptions.Abstractions.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.9" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
     </ItemGroup>
 
 </Project>
