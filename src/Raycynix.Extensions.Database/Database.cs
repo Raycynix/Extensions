@@ -9,8 +9,38 @@ using Raycynix.Extensions.Database.Models;
 
 namespace Raycynix.Extensions.Database;
 
+/// <summary>
+/// Provides extension methods for configuring and adding database-related services to the dependency injection container.
+/// </summary>
+/// <remarks>
+/// This class is designed to abstract the process of configuring and registering database dependencies,
+/// including database contexts, initializers, and configuration settings. It supports multiple database providers
+/// such as PostgreSQL, SQL Server, MySQL, and SQLite. The connection string and other settings can be specified
+/// via the provided configuration.
+/// </remarks>
+/// <example>
+/// To use this class, call `AddRaycynixDatabase` during application startup and provide the necessary configuration settings.
+/// </example>
+/// <threadsafety>
+/// This class is thread-safe as it only provides static extension methods for registration purposes.
+/// </threadsafety>
 public static class Database
 {
+    /// <summary>
+    /// Adds the Raycynix database and its related services to the dependency injection container.
+    /// </summary>
+    /// <param name="services">
+    /// The <see cref="IServiceCollection"/> to which the database services will be added.
+    /// </param>
+    /// <param name="configuration">
+    /// The <see cref="IConfiguration"/> instance containing application configuration settings.
+    /// </param>
+    /// <param name="setup">
+    /// An optional action to configure additional <see cref="DatabaseConfiguration"/> settings.
+    /// </param>
+    /// <returns>
+    /// The updated <see cref="IServiceCollection"/> including the configured database services.
+    /// </returns>
     public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration,
         Action<DatabaseConfiguration>? setup = null)
     {

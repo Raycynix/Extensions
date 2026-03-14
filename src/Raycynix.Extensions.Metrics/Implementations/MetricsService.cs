@@ -3,6 +3,7 @@ using Raycynix.Extensions.Metrics.Abstractions;
 
 namespace Raycynix.Extensions.Metrics.Implementations;
 
+/// <inheritdoc />
 internal class MetricsService : IMetricsService
 {
     private readonly MetricFactory _metricFactory =
@@ -24,7 +25,6 @@ internal class MetricsService : IMetricsService
     {var histogram = _metricFactory.CreateHistogram(name, help, new HistogramConfiguration
         {
             LabelNames = labelNames,
-            // Стандартные бакеты для Latency (в секундах)
             Buckets = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
         });
         return new MetricsHistogram(histogram);

@@ -19,6 +19,12 @@ namespace Raycynix.Extensions.Logging;
 /// </summary>
 public static class Logging
 {
+    /// <summary>
+    /// Adds Raycynix logging services to the dependency injection container.
+    /// </summary>
+    /// <param name="services">
+    /// The <see cref="IServiceCollection"/> to which the logging services are added.
+    /// </param>
     public static void AddRaycynixLogging(this IServiceCollection services)
     {
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
