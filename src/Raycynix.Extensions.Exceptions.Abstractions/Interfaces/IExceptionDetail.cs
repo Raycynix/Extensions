@@ -1,7 +1,7 @@
 namespace Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 
 /// <summary>
-/// Represents an abstraction for providing detailed information about exceptions.
+/// Represents a machine-readable detail item attached to an exception.
 /// </summary>
 public interface IExceptionDetail
 {

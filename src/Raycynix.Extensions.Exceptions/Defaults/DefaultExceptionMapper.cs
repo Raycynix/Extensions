@@ -38,7 +38,12 @@ public class DefaultExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, Ra
 
         return mapping is not null
             ? mapping(ex)
-            : new InternalServerException("An unhandled error occurred.", ex);
+            : new InternalServerException("An unhandled error occurred.", ex, new
+            {
+                ExceptionType = ex.GetType().FullName,
+                ex.Message,
+                InnerException = ex.InnerException?.Message
+            });
     }
 
     private static int GetInheritanceDepth(Type type)

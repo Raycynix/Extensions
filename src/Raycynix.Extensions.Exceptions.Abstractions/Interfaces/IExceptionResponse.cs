@@ -16,6 +16,11 @@ public interface IExceptionResponse
     string ErrorCode { get; }
 
     /// <summary>
+    /// Gets the machine-readable error category.
+    /// </summary>
+    string Category { get; }
+
+    /// <summary>
     /// Gets the unique identifier representing the trace information associated with the exception response.
     /// </summary>
     string TraceId { get; }
@@ -34,6 +39,11 @@ public interface IExceptionResponse
     /// Gets the UTC timestamp when the error response was created.
     /// </summary>
     DateTimeOffset TimestampUtc { get; }
+
+    /// <summary>
+    /// Gets the machine-readable details associated with the exception.
+    /// </summary>
+    IReadOnlyCollection<IExceptionDetail>? Details { get; }
 
     /// <summary>
     /// Gets a collection of validation errors, where the key represents the field or property name,

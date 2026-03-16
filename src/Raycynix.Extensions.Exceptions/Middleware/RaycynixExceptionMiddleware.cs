@@ -33,12 +33,15 @@ public class RaycynixExceptionMiddleware(
     IExceptionDataMasker masker,
     ILogger<RaycynixExceptionMiddleware> logger)
 {
+    private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
+
     /// <summary>
     /// Processes an incoming HTTP request asynchronously, handling exceptions, mapping them
     /// to a custom exception type, masking secure details, and returning a standardized response
     /// in the event of an error.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> of the current HTTP request.</param>
+    /// <param name="operationContext">The current operation context.</param>
     /// <returns>A task that represents the asynchronous execution of the middleware logic.</returns>
     public async Task InvokeAsync(HttpContext httpContext, IOperationContext operationContext)
     {
@@ -59,9 +62,10 @@ public class RaycynixExceptionMiddleware(
             var path = httpContext.Request.Path.Value;
 
             logger.LogError(ex,
-                "Error {Code}: {Msg}. TraceId: {TraceId}. CorrelationId: {CorrelationId}. Path: {Path}. Details: {@Details}",
+                "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. CorrelationId: {CorrelationId}. Path: {Path}. Details: {@Details}",
                 raycynixException.ErrorCode,
                 raycynixException.Message,
+                raycynixException.Category,
                 traceId,
                 correlationId,
                 path,
@@ -76,19 +80,26 @@ public class RaycynixExceptionMiddleware(
                 throw;
             }
 
+            var validationErrors = raycynixException is ValidationException validationException
+                ? validationException.ValidationErrors
+                : null;
+
             var response = new DefaultExceptionResponse(
                 Message: raycynixException.Message,
                 ErrorCode: raycynixException.ErrorCode,
+                Category: raycynixException.Category.ToString().ToLowerInvariant(),
                 TraceId: traceId,
                 CorrelationId: correlationId,
                 Path: path,
-                TimestampUtc: DateTimeOffset.UtcNow);
+                TimestampUtc: DateTimeOffset.UtcNow,
+                Details: raycynixException.Details,
+                ValidationErrors: validationErrors);
 
             httpContext.Response.Clear();
             httpContext.Response.StatusCode = raycynixException.StatusCode;
             httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-            var json = JsonSerializer.Serialize(response);
+            var json = JsonSerializer.Serialize(response, _serializerOptions);
             await httpContext.Response.WriteAsync(json);
         }
     }

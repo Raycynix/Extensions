@@ -1,4 +1,5 @@
 using Raycynix.Extensions.Exceptions.Abstractions;
+using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 
 namespace Raycynix.Extensions.Exceptions;
 
@@ -11,10 +12,14 @@ namespace Raycynix.Extensions.Exceptions;
 /// Inherits from <see cref="RaycynixException"/>, providing additional context such as
 /// an error code ("INTERNAL_SERVER_ERROR") and a default status code (500).
 /// </remarks>
-public class
-    InternalServerException(string message, Exception? innerException = null)
+public class InternalServerException(
+    string message,
+    Exception? innerException = null,
+    object? secureDetails = null)
     : RaycynixException(
         message,
         "INTERNAL_SERVER_ERROR",
         500,
-        innerException);
+        ErrorCategory.Internal,
+        secureDetails: secureDetails,
+        innerException: innerException);

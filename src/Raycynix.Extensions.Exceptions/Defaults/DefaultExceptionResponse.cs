@@ -12,8 +12,10 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 public record DefaultExceptionResponse(
     string Message,
     string ErrorCode,
+    string Category,
     string TraceId,
     string? CorrelationId,
     string? Path,
     DateTimeOffset TimestampUtc,
+    IReadOnlyCollection<IExceptionDetail>? Details = null,
     IDictionary<string, string[]>? ValidationErrors = null) : IExceptionResponse;

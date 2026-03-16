@@ -1,4 +1,6 @@
-﻿namespace Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
+﻿using Raycynix.Extensions.Exceptions.Abstractions.Enums;
+
+namespace Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 
 /// <summary>
 /// Represents a base interface for defining application-specific exceptions in the Raycynix library.
@@ -10,7 +12,7 @@ public interface IRaycynixException
     /// Gets the error code associated with the exception.
     /// This property is used to represent a unique identifier for the error condition,
     /// aiding in categorization, troubleshooting, and logging of issues. The error code
-    /// is typically utilized in application-level exception handling to identify specific
+    /// is typically used in application-level exception handling to identify specific
     /// error scenarios.
     /// </summary>
     string ErrorCode { get; }
@@ -24,12 +26,22 @@ public interface IRaycynixException
     int StatusCode { get; }
 
     /// <summary>
+    /// Gets the machine-readable error category.
+    /// </summary>
+    ErrorCategory Category { get; }
+
+    /// <summary>
     /// Gets the message associated with the exception.
     /// This property provides a human-readable description of the exception,
     /// aiding in understanding the context or nature of the issue. It is typically
-    /// utilized to convey meaningful information about the error to developers or end users.
+    /// used to convey meaningful information about the error to developers or end users.
     /// </summary>
     string Message { get; }
+
+    /// <summary>
+    /// Gets the public exception details associated with the error.
+    /// </summary>
+    IReadOnlyCollection<IExceptionDetail> Details { get; }
 
     /// <summary>
     /// Gets or sets additional secure details associated with the exception.
