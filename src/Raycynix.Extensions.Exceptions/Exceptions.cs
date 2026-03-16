@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
+using Raycynix.Extensions.Exceptions.Middleware;
 using Raycynix.Extensions.Exceptions.Options;
 
 namespace Raycynix.Extensions.Exceptions;
@@ -24,7 +26,7 @@ public static class Exceptions
     /// <param name="configure">
     /// An optional configuration action to customize the mapping of exceptions to
     /// <see cref="RaycynixException"/> instances via <see cref="ExceptionMapperOptions"/>.
-    /// If not specified, default configuration is used.
+    /// If not specified, the default configuration is used.
     /// </param>
     /// <returns>
     /// The configured <see cref="IServiceCollection"/> to allow for method chaining.
@@ -39,5 +41,15 @@ public static class Exceptions
         services.AddSingleton<IExceptionDataMasker, DefaultExceptionDataMasker>();
 
         return services;
+    }    
+    
+    /// <summary>
+    /// Adds the Raycynix exception handling middleware to the application pipeline.
+    /// </summary>
+    /// <param name="app">The application builder.</param>
+    /// <returns>The configured application builder.</returns>
+    public static IApplicationBuilder UseRaycynixExceptions(this IApplicationBuilder app)
+    {
+        return app.UseMiddleware<RaycynixExceptionMiddleware>();
     }
 }

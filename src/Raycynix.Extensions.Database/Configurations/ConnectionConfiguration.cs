@@ -36,4 +36,16 @@ public abstract class ConnectionConfiguration
     /// Ensure that passwords are securely handled and not exposed in plain text.
     /// </remarks>
     public string? Password { get; init; }
+
+    /// <summary>
+    /// Validates that the configuration contains the minimal required values.
+    /// </summary>
+    /// <param name="providerName">The logical provider name.</param>
+    public virtual void Validate(string providerName)
+    {
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            throw new InvalidOperationException($"{providerName} connection requires a database name.");
+        }
+    }
 }

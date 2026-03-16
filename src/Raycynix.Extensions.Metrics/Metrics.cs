@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Implementations;
 
 namespace Raycynix.Extensions.Metrics;
 
@@ -20,12 +21,14 @@ public static class Metrics
     /// An optional action to configure the <see cref="IHealthChecksBuilder"/> during health checks setup.
     /// If not provided, no additional health checks configuration will be applied.
     /// </param>
-    public static void AddRaycynixMetrics(this IServiceCollection services,
+    public static IServiceCollection AddRaycynixMetrics(this IServiceCollection services,
         Action<IHealthChecksBuilder>? healthSetup = null)
     {
-        services.TryAddSingleton<IMetricsService, IMetricsService>();
+        services.TryAddSingleton<IMetricsService, MetricsService>();
 
         var healthBuilder = services.AddHealthChecks();
         healthSetup?.Invoke(healthBuilder);
+        
+        return services;
     }
 }

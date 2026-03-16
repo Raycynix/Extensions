@@ -7,5 +7,18 @@ namespace Raycynix.Extensions.Database.Configurations;
 /// </summary>
 public class MySqlConfiguration
 {
-    //TODO: Create configuration
+    /// <summary>
+    /// Gets or sets the command timeout in seconds.
+    /// </summary>
+    public int? CommandTimeoutSeconds { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether user variables are allowed.
+    /// </summary>
+    public bool AllowUserVariables { get; init; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether connection pooling is enabled.
+    /// </summary>
+    public bool Pooling { get; init; } = true;
 }

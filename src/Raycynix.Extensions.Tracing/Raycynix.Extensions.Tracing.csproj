@@ -4,7 +4,7 @@
         <Version>0.1.1</Version>
 
         <IsPackable>true</IsPackable>
-        
+
         <Description>Centralized tracing module.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,9 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
 </Project>

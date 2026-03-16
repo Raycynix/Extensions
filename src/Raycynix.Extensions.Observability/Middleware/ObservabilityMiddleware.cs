@@ -21,17 +21,7 @@ public static class ObservabilityMiddleware
     {
         app.UseMiddleware<TracingMiddleware>();
         app.UseMiddleware<CorrelationMiddleware>();
-        
         app.UseHttpMetrics();
-        
-        app.UseRouting();
-
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapMetrics();
-
-            endpoints.MapHealthChecks("/health");
-        });
 
         return app;
     }

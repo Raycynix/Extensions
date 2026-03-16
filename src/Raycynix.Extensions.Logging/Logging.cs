@@ -25,9 +25,10 @@ public static class Logging
     /// <param name="services">
     /// The <see cref="IServiceCollection"/> to which the logging services are added.
     /// </param>
-    public static void AddRaycynixLogging(this IServiceCollection services)
+    public static IServiceCollection AddRaycynixLogging(this IServiceCollection services)
     {
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
+        return services;
     }
     
     /// <summary>
@@ -52,8 +53,8 @@ public static class Logging
             loggerConfiguration
                 .MinimumLevel.Is(LogLevelMapper.ToSerilog(config.MinimumLevel))
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty("ServiceName", AssemblyHelper.CurrentName())
-                .Enrich.WithProperty("ServiceVersion", AssemblyHelper.CurrentVersion())
+                .Enrich.WithProperty("ServiceName", config.ServiceName)
+                .Enrich.WithProperty("ServiceVersion", config.ServiceVersion)
                 .Enrich.WithProperty("Environment", config.Environment)
                 .WriteTo.Console(outputTemplate: config.OutputTemplate);
 

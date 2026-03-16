@@ -37,7 +37,7 @@ public class DatabaseConfiguration
     /// This property enables the automated application of incremental changes to the database
     /// schema, ensuring it remains synchronized with the application's data model.
     /// </summary>
-    public bool UseMigrations { get; init; } = false;
+    public bool UseMigrations { get; init; }
 
     /// <summary>
     /// Indicates whether the database should be created automatically if it does not already exist.
@@ -50,7 +50,7 @@ public class DatabaseConfiguration
     /// <summary>
     /// Determines whether database seeding operations should be executed after the model configuration is applied.
     /// This property allows the injection of initial data into the database, useful for testing, prototyping,
-    /// or establishing default application state during setup.
+    /// or establishing the default application state during setup.
     /// </summary>
     public bool EnableSeed { get; init; } = true;
 
@@ -96,8 +96,44 @@ public class DatabaseConfiguration
 
     /// <summary>
     /// Represents the configuration settings specific to SQLite databases.
-    /// This class is utilized to configure and manage SQLite-related database connection settings
+    /// This class is used to configure and manage SQLite-related database connection settings
     /// in the context of the database configuration workflow.
     /// </summary>
     public SqlliteConfiguration? SqlliteConfiguration { get; init; }
+
+    /// <summary>
+    /// Validates the current configuration and throws an exception if it is invalid.
+    /// </summary>
+    public void Validate()
+    {
+        if (RetryCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(RetryCount), "Retry count cannot be negative.");
+        }
+
+        if (RetryDelaySeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(RetryDelaySeconds), "Retry delay cannot be negative.");
+        }
+
+        if (EnsureCreated && UseMigrations)
+        {
+            throw new InvalidOperationException(
+                "EnsureCreated and UseMigrations cannot both be enabled at the same time.");
+        }
+
+        var hasConnectionString = !string.IsNullOrWhiteSpace(ConnectionString);
+        var hasConnectionConfig = ConnectionConfiguration is not null;
+
+        if (!hasConnectionString && !hasConnectionConfig)
+        {
+            throw new InvalidOperationException(
+                "Either ConnectionString or ConnectionConfiguration must be provided.");
+        }
+
+        if (hasConnectionConfig)
+        {
+            ConnectionConfiguration!.Validate(Provider.ToString());
+        }
+    }
 }

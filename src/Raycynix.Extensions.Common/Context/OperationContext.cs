@@ -15,7 +15,7 @@ public interface IOperationContext
     /// such as in logging, tracing, or diagnostics, ensuring the ability to trace requests through
     /// distributed systems.
     /// </summary>
-    string CorrelationId { get; set; } //TODO: FIX SETTER
+    string CorrelationId { get; set; }
 
     /// <summary>
     /// Gets the unique identifier for the current trace, enabling end-to-end tracking of requests
@@ -29,19 +29,25 @@ public interface IOperationContext
     /// 
     /// </summary>
     string? UserId { get; set; }
+
+    /// <summary>
+    /// Sets a correlation identifier if it has not been assigned yet.
+    /// </summary>
+    /// <param name="correlationId">The correlation identifier to assign.</param>
+    void SetCorrelationIdIfMissing(string correlationId);
 }
 
 /// <inheritdoc />
 public class OperationContext : IOperationContext
 {
-    private static readonly AsyncLocal<string> _correlationId = new();
-    private static readonly AsyncLocal<string>? _userId = new();
+    private string? _correlationId;
+    private string? _userId;
 
     /// <inheritdoc/>
     public string CorrelationId
     {
-        get => _correlationId.Value ??= Guid.NewGuid().ToString();
-        set => _correlationId.Value = value;
+        get => _correlationId ??= Guid.NewGuid().ToString("N");
+        set => _correlationId = string.IsNullOrWhiteSpace(value) ? Guid.NewGuid().ToString("N") : value;
     }
 
     /// <inheritdoc />
@@ -50,7 +56,16 @@ public class OperationContext : IOperationContext
     /// <inheritdoc/>
     public string? UserId
     {
-        get => _userId?.Value;
-        set => _userId?.Value = value ??= Guid.NewGuid().ToString();
+        get => _userId;
+        set => _userId = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    /// <inheritdoc />
+    public void SetCorrelationIdIfMissing(string correlationId)
+    {
+        if (string.IsNullOrWhiteSpace(_correlationId))
+        {
+            CorrelationId = correlationId;
+        }
     }
 }

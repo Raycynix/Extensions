@@ -15,10 +15,12 @@ public static class Tracing
     /// Adds tracing services to the dependency injection container for the application.
     /// </summary>
     /// <param name="services">The service collection to which the tracing services are to be added.</param>
-    public static void AddRaycynixTracing(this IServiceCollection services)
+    public static IServiceCollection AddRaycynixTracing(this IServiceCollection services)
     {
         var serviceName = AssemblyHelper.CurrentName();
-        
+
         services.TryAddSingleton<ITracer>(new Tracer(serviceName));
+
+        return services;
     }
 }

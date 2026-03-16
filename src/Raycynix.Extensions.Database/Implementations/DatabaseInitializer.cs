@@ -19,6 +19,8 @@ public class DatabaseInitializer(
     DatabaseConfiguration config,
     ILogger<DatabaseInitializer> logger) : IDatabaseInitializer
 {
+    private readonly SemaphoreSlim _lock = new(1, 1);
+
     /// <summary>
     /// Indicates whether the database has been initialized and is ready for use.
     /// </summary>
@@ -35,30 +37,45 @@ public class DatabaseInitializer(
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        logger.Information("Starting database initializer");
-
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetService<DatabaseContext>();
-
-        if (context is null)
+        if (IsReady)
         {
-            logger.Fatal("Database context is null");
+            logger.Information("Database is already initialized");
             return;
         }
-        
-        if (config.EnsureCreated)
-        {
-            logger.Information("Applying database creation");
-            await context.Database.EnsureCreatedAsync(cancellationToken);
-        }
 
-        if (config.UseMigrations)
+        await _lock.WaitAsync(cancellationToken);
+
+        try
         {
-            logger.Information("Applying migrations");
-            await context.Database.MigrateAsync(cancellationToken);
+            if (IsReady)
+            {
+                logger.Information("Database is already initialized");
+                return;
+            }
+
+            logger.Information("Starting database initializer");
+
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+            if (config.EnsureCreated)
+            {
+                logger.Information("Applying database creation");
+                await context.Database.EnsureCreatedAsync(cancellationToken);
+            }
+
+            if (config.UseMigrations)
+            {
+                logger.Information("Applying migrations");
+                await context.Database.MigrateAsync(cancellationToken);
+            }
+
+            IsReady = true;
+            logger.Information("Database initialized");
         }
-        
-        IsReady = true;
-        logger.Information("Database initialized");
+        finally
+        {
+            _lock.Release();
+        }
     }
 }

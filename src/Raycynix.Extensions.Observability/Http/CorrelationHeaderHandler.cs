@@ -9,7 +9,7 @@ namespace Raycynix.Extensions.Observability.Http;
 /// </summary>
 public class CorrelationHeaderHandler(IOperationContext operationContext) : DelegatingHandler
 {
-    private const string CorrelationHeader = "X-Correlation-ID";
+    internal const string CorrelationHeader = "X-Correlation-ID";
 
     /// <summary>
     /// Sends an HTTP request with a correlation header included, ensuring the correlation information

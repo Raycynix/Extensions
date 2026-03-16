@@ -28,8 +28,30 @@ public class DefaultExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, Ra
     {
         if (ex is RaycynixException rayEx) return rayEx;
 
-        return mappings.TryGetValue(ex.GetType(), out var mapper)
-            ? mapper(ex)
+        var exceptionType = ex.GetType();
+
+        var mapping = mappings
+            .Where(x => x.Key.IsAssignableFrom(exceptionType))
+            .OrderByDescending(x => GetInheritanceDepth(x.Key))
+            .Select(x => x.Value)
+            .FirstOrDefault();
+
+        return mapping is not null
+            ? mapping(ex)
             : new InternalServerException("An unhandled error occurred.", ex);
+    }
+
+    private static int GetInheritanceDepth(Type type)
+    {
+        var depth = 0;
+        var current = type;
+
+        while (current.BaseType is not null)
+        {
+            depth++;
+            current = current.BaseType;
+        }
+
+        return depth;
     }
 }

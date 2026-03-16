@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
+using Raycynix.Extensions.Observability.Http;
 using Serilog.Context;
 
 namespace Raycynix.Extensions.Observability.Middleware;
@@ -11,8 +12,6 @@ namespace Raycynix.Extensions.Observability.Middleware;
 /// </summary>
 public class CorrelationMiddleware(RequestDelegate next)
 {
-    private const string CorrelationHeader = "X-Correlation-ID";
-
     /// <summary>
     /// Handles the incoming HTTP request, extracts or assigns correlation and trace identifiers,
     /// and enriches the logging context to include relevant metadata.
@@ -22,27 +21,31 @@ public class CorrelationMiddleware(RequestDelegate next)
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InvokeAsync(HttpContext context, IOperationContext operationContext)
     {
-        if (!context.Request.Headers.TryGetValue(CorrelationHeader, out var correlationId))
-        {
-            correlationId = operationContext.CorrelationId;
-        }
+        var correlationId = context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue)
+            ? headerValue.ToString()
+            : context.TraceIdentifier;
 
-        operationContext.CorrelationId = correlationId!;
-        context.Response.Headers[CorrelationHeader] = correlationId;
+        operationContext.SetCorrelationIdIfMissing(correlationId);
+        context.Response.Headers[CorrelationHeaderHandler.CorrelationHeader] = operationContext.CorrelationId;
 
         var userId = context.User?.Identity?.Name;
-        if (!string.IsNullOrEmpty(userId))
+        if (!string.IsNullOrWhiteSpace(userId))
         {
             operationContext.UserId = userId;
         }
 
-        var traceId = Activity.Current?.TraceId.ToString() ?? operationContext.TraceId;
         var activity = Activity.Current;
-        activity?.SetTag("correlation.id", correlationId);
-        activity?.SetTag("trace.id", traceId);
-        activity?.SetTag("user.id", userId);
+        var traceId = activity?.TraceId.ToString() ?? operationContext.TraceId;
 
-        using (LogContext.PushProperty("CorrelationId", correlationId))
+        activity?.SetTag("correlation.id", operationContext.CorrelationId);
+        activity?.SetTag("trace.id", traceId);
+
+        if (!string.IsNullOrWhiteSpace(operationContext.UserId))
+        {
+            activity?.SetTag("user.id", operationContext.UserId);
+        }
+
+        using (LogContext.PushProperty("CorrelationId", operationContext.CorrelationId))
         using (LogContext.PushProperty("TraceId", traceId))
         using (LogContext.PushProperty("UserId", operationContext.UserId))
         {

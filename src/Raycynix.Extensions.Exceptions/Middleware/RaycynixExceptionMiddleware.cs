@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
@@ -39,28 +40,53 @@ public class RaycynixExceptionMiddleware(
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> of the current HTTP request.</param>
     /// <returns>A task that represents the asynchronous execution of the middleware logic.</returns>
-    public async Task InvokeAsync(HttpContext httpContext)
+    public async Task InvokeAsync(HttpContext httpContext, IOperationContext operationContext)
     {
         try
         {
             await next(httpContext);
+        }
+        catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
+        {
+            logger.LogWarning("Request was canceled by the client. TraceId: {TraceId}", httpContext.TraceIdentifier);
         }
         catch (Exception ex)
         {
             var raycynixException = mapper.Map(ex);
             var safeDetails = masker.Mask(raycynixException.SecureDetails);
             var traceId = httpContext.TraceIdentifier;
+            var correlationId = operationContext.CorrelationId;
+            var path = httpContext.Request.Path.Value;
 
-            logger.LogError(ex, "Error {Code}: {Msg}. TraceId: {TraceId}. Details: {@Details}",
-                raycynixException.ErrorCode, raycynixException.Message, traceId, safeDetails);
-
-            var response = new DefaultExceptionResponse(
+            logger.LogError(ex,
+                "Error {Code}: {Msg}. TraceId: {TraceId}. CorrelationId: {CorrelationId}. Path: {Path}. Details: {@Details}",
                 raycynixException.ErrorCode,
                 raycynixException.Message,
-                TraceId: traceId);
+                traceId,
+                correlationId,
+                path,
+                safeDetails);
 
+            if (httpContext.Response.HasStarted)
+            {
+                logger.LogWarning(
+                    "The response has already started, the error response middleware will not be executed. TraceId: {TraceId}",
+                    traceId);
+
+                throw;
+            }
+
+            var response = new DefaultExceptionResponse(
+                Message: raycynixException.Message,
+                ErrorCode: raycynixException.ErrorCode,
+                TraceId: traceId,
+                CorrelationId: correlationId,
+                Path: path,
+                TimestampUtc: DateTimeOffset.UtcNow);
+
+            httpContext.Response.Clear();
             httpContext.Response.StatusCode = raycynixException.StatusCode;
-            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.ContentType = "application/json; charset=utf-8";
 
             var json = JsonSerializer.Serialize(response);
             await httpContext.Response.WriteAsync(json);

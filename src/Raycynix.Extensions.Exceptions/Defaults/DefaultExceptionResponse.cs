@@ -13,4 +13,7 @@ public record DefaultExceptionResponse(
     string Message,
     string ErrorCode,
     string TraceId,
+    string? CorrelationId,
+    string? Path,
+    DateTimeOffset TimestampUtc,
     IDictionary<string, string[]>? ValidationErrors = null) : IExceptionResponse;

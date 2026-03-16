@@ -22,11 +22,13 @@ internal class MetricsService : IMetricsService
     }
 
     public IMetricHistogram CreateHistogram(string name, string help, params string[] labelNames)
-    {var histogram = _metricFactory.CreateHistogram(name, help, new HistogramConfiguration
+    {
+        var histogram = _metricFactory.CreateHistogram(name, help, new HistogramConfiguration
         {
             LabelNames = labelNames,
             Buckets = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
         });
+
         return new MetricsHistogram(histogram);
     }
 }

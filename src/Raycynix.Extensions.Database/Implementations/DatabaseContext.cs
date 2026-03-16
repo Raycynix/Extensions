@@ -27,7 +27,7 @@ public sealed class DatabaseContext : DbContext
     /// </remarks>
     /// <see cref="OnModelCreating"/> is overridden to dynamically load configurations provided by the caller's assembly.
     /// <list type="bullet">
-    /// <item>Customizes the behavior of the entity tracker to disable lazy loading and auto detection of changes.</item>
+    /// <item>Customizes the behavior of the entity tracker to disable lazy loading and auto-detection of changes.</item>
     /// <item>Query tracking behavior is set to <see cref="QueryTrackingBehavior.NoTracking"/>.</item>
     /// </list>
     public DatabaseContext(DbContextOptions options, DatabaseConfiguration config, Assembly callerAssembly, ILogger<DatabaseContext> logger) 
@@ -60,16 +60,17 @@ public sealed class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
+
         var configurators = ConfiguratorProvider.Provide(_callerAssembly);
-        
+
         foreach (var configurator in configurators)
         {
-            configurator?.Configure(builder);
+            configurator.Configure(builder);
+
             if (_config.EnableSeed)
             {
-                _logger.Information($"Seeding {configurator?.GetType().Name}");
-                configurator?.Seed(builder);
+                _logger.Information($"Seeding {configurator.GetType().Name}");
+                configurator.Seed(builder);
             }
         }
     }

@@ -12,6 +12,13 @@ public class Logger<T>(Serilog.ILogger logger) : Abstractions.ILogger<T>
     public void Log(LogLevel logLevel, string message, Exception? exception = null, object? metadata = null)
     {
         var level = LogLevelMapper.ToSerilog(logLevel);
+
+        if (exception is not null)
+        {
+            _logger.Write(level, exception, "{Message} {@Metadata}", message, metadata);
+            return;
+        }
+        
         _logger.Write(level, "{Message} {@Metadata}", message, metadata);
     }
 
@@ -29,5 +36,6 @@ public class Logger<T>(Serilog.ILogger logger) : Abstractions.ILogger<T>
     public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(LogLevelMapper.ToSerilog(logLevel));
 
     /// <inheritdoc />
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull =>
+        Serilog.Context.LogContext.PushProperty("Scope", state, destructureObjects: true);
 }

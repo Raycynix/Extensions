@@ -5,14 +5,10 @@ using Serilog.Context;
 namespace Raycynix.Extensions.Tracing.Middleware;
 
 /// <summary>
-/// Middleware that handles tracing and correlation for HTTP requests by ensuring each request
-/// contains a unique correlation identifier. It propagates this identifier in the response
-/// headers and enriches log entries for better traceability.
+/// Middleware that enriches logs with trace information from the current activity.
 /// </summary>
 public class TracingMiddleware(RequestDelegate next)
 {
-    private const string CorrelationHeader = "X-Correlation-Id";
-
     /// <summary>
     /// Processes an incoming HTTP request by ensuring a correlation ID is present in the headers.
     /// If a correlation ID is not provided, a new one is generated. The correlation ID is added
@@ -22,14 +18,12 @@ public class TracingMiddleware(RequestDelegate next)
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation of the middleware.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
-        if (!context.Request.Headers.TryGetValue(CorrelationHeader, out var correlationId))
-        {
-            correlationId = Activity.Current?.RootId ?? Guid.NewGuid().ToString();
-        }
+        var activity = Activity.Current;
+        var traceId = activity?.TraceId.ToString() ?? context.TraceIdentifier;
+        var spanId = activity?.SpanId.ToString();
 
-        context.Response.Headers[CorrelationHeader] = correlationId;
-
-        using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("TraceId", traceId))
+        using (LogContext.PushProperty("SpanId", spanId))
         {
             await next(context);
         }
