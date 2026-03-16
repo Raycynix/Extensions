@@ -9,7 +9,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// This record is used to encapsulate details about an exception in a standardized format,
 /// including a message, error code, trace ID, and optional validation error information.
 /// </remarks>
-public record DefaultExceptionResponse(
+public record ExceptionResponse(
     string Message,
     string ErrorCode,
     string Category,

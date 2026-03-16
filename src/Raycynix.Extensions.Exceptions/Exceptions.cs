@@ -37,12 +37,15 @@ public static class Exceptions
         var options = new ExceptionMapperOptions();
         configure?.Invoke(options);
 
-        services.AddSingleton<IExceptionMapper>(new DefaultExceptionMapper(options.Mappings));
-        services.AddSingleton<IExceptionDataMasker, DefaultExceptionDataMasker>();
+        services.AddSingleton<IExceptionMapper>(new ExceptionMapper(options.Mappings));
+        services.AddSingleton<IExceptionDataMasker, ExceptionDataMasker>();
+        services.AddSingleton<ITransientExceptionClassifier, TransientExceptionClassifier>();
+        services.AddSingleton<IRetryExecutor, RetryExecutor>();
+        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
         return services;
-    }    
-    
+    }
+
     /// <summary>
     /// Adds the Raycynix exception handling middleware to the application pipeline.
     /// </summary>

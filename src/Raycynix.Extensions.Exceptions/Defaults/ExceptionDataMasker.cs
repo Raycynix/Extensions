@@ -12,7 +12,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// based on predefined masking rules.
 /// </summary>
 /// <remarks>
-/// The <c>DefaultExceptionDataMasker</c> masks sensitive keys or properties with the value "***MASKED***".
+/// The <c>ExceptionDataMasker</c> masks sensitive keys or properties with the value "***MASKED***".
 /// It recursively processes objects, collections, and dictionaries, ensuring that all nested
 /// data structures are appropriately masked.
 /// </remarks>
@@ -24,7 +24,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// - Object properties are inspected, and sensitive properties are masked accordingly.
 /// </example>
 /// <seealso cref="IExceptionDataMasker"/>
-public class DefaultExceptionDataMasker : IExceptionDataMasker
+public class ExceptionDataMasker : IExceptionDataMasker
 {
     private const string MaskedValue = "***MASKED***";
     

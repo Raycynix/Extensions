@@ -84,7 +84,7 @@ public class RaycynixExceptionMiddleware(
                 ? validationException.ValidationErrors
                 : null;
 
-            var response = new DefaultExceptionResponse(
+            var response = new ExceptionResponse(
                 Message: raycynixException.Message,
                 ErrorCode: raycynixException.ErrorCode,
                 Category: raycynixException.Category.ToString().ToLowerInvariant(),

@@ -12,7 +12,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// set of mappings. If an exception type is not mapped explicitly, it falls back to
 /// creating an <see cref="InternalServerException"/> to handle generic, unhandled errors.
 /// </remarks>
-public class DefaultExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> mappings)
+public class ExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> mappings)
     : IExceptionMapper
 {
     /// <summary>
