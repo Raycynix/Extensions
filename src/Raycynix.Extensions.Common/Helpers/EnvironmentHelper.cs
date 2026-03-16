@@ -7,13 +7,15 @@ public static class EnvironmentHelper
 {
     /// <returns><c>true</c> if the current environment is <b>Development</b></returns>
     public static bool IsDevelopment() =>
-        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        string.Equals(CurrentEnvironment(), "Development", StringComparison.OrdinalIgnoreCase);
 
     /// <returns><c>true</c> if the current environment is <b>Production</b></returns>
     public static bool IsProduction() =>
-        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
+        string.Equals(CurrentEnvironment(), "Production", StringComparison.OrdinalIgnoreCase);
 
     /// <returns>the name of the current application environment, or <c>Unknown</c> if not set.</returns>
     public static string CurrentEnvironment()
-        => Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";
+        => Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+           ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+           ?? "Unknown";
 }

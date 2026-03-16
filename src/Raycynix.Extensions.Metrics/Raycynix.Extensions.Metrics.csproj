@@ -4,7 +4,7 @@
         <Version>0.1.1</Version>
 
         <IsPackable>true</IsPackable>
-        
+
         <Description>Centralized metrics module.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,16 +15,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
-      <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.3" />
-      <PackageReference Include="prometheus-net" Version="8.2.1" />
-      <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-      <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="prometheus-net" Version="8.2.1"/>
+        <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1"/>
+        <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1"/>
     </ItemGroup>
 
 </Project>

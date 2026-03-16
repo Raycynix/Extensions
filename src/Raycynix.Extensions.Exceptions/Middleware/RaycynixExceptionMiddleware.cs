@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -58,17 +59,27 @@ public class RaycynixExceptionMiddleware(
             var raycynixException = mapper.Map(ex);
             var safeDetails = masker.Mask(raycynixException.SecureDetails);
             var traceId = httpContext.TraceIdentifier;
+            var spanId = Activity.Current?.SpanId.ToString();
             var correlationId = operationContext.CorrelationId;
             var path = httpContext.Request.Path.Value;
+            var method = httpContext.Request.Method;
+            var endpoint = httpContext.GetEndpoint()?.DisplayName;
+            var queryString = httpContext.Request.QueryString.HasValue
+                ? httpContext.Request.QueryString.Value
+                : null;
 
             logger.LogError(ex,
-                "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. CorrelationId: {CorrelationId}. Path: {Path}. Details: {@Details}",
+                "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. SpanId: {SpanId}. CorrelationId: {CorrelationId}. Method: {Method}. Path: {Path}. Endpoint: {Endpoint}. Query: {Query}. Details: {@Details}",
                 raycynixException.ErrorCode,
                 raycynixException.Message,
                 raycynixException.Category,
                 traceId,
+                spanId,
                 correlationId,
+                method,
                 path,
+                endpoint,
+                queryString,
                 safeDetails);
 
             if (httpContext.Response.HasStarted)
@@ -89,8 +100,12 @@ public class RaycynixExceptionMiddleware(
                 ErrorCode: raycynixException.ErrorCode,
                 Category: raycynixException.Category.ToString().ToLowerInvariant(),
                 TraceId: traceId,
+                SpanId: spanId,
                 CorrelationId: correlationId,
                 Path: path,
+                Method: method,
+                Endpoint: endpoint,
+                QueryString: queryString,
                 TimestampUtc: DateTimeOffset.UtcNow,
                 Details: raycynixException.Details,
                 ValidationErrors: validationErrors);

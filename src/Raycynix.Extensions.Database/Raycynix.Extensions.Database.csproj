@@ -5,7 +5,7 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized Serilog + Elasticsearch logging module.</Description>
+        <Description>Centralized database module for EF Core configuration and initialization.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

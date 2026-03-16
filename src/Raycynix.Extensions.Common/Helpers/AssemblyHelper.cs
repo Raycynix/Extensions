@@ -8,8 +8,10 @@ namespace Raycynix.Extensions.Common.Helpers;
 public static class AssemblyHelper
 {
     /// <returns>the version of the current executing application, or <c>Unknown</c> if not set.</returns>
-    public static string CurrentVersion() => Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "Unknown Version";
+    public static string CurrentVersion() => ResolveAssembly().GetName().Version?.ToString() ?? "Unknown Version";
     
     /// <returns>the name of the current executing application, or <c>Unknown Version</c> if not set.</returns>
-    public static string CurrentName() =>  Assembly.GetEntryAssembly()?.GetName().Name ?? "Unknown Service";
+    public static string CurrentName() =>  ResolveAssembly().GetName().Name ?? "Unknown Service";
+    
+    private static Assembly ResolveAssembly() => Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 }

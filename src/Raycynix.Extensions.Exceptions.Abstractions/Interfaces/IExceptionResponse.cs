@@ -26,6 +26,11 @@ public interface IExceptionResponse
     string TraceId { get; }
 
     /// <summary>
+    /// Gets the span identifier associated with the failed operation.
+    /// </summary>
+    string? SpanId { get; }
+
+    /// <summary>
     /// Gets the correlation identifier associated with the failed operation.
     /// </summary>
     string? CorrelationId { get; }
@@ -34,6 +39,21 @@ public interface IExceptionResponse
     /// Gets the request path associated with the failed operation.
     /// </summary>
     string? Path { get; }
+
+    /// <summary>
+    /// Gets the HTTP method associated with the failed operation.
+    /// </summary>
+    string? Method { get; }
+
+    /// <summary>
+    /// Gets the route or endpoint display name associated with the failed operation.
+    /// </summary>
+    string? Endpoint { get; }
+
+    /// <summary>
+    /// Gets the query string associated with the failed operation.
+    /// </summary>
+    string? QueryString { get; }
 
     /// <summary>
     /// Gets the UTC timestamp when the error response was created.

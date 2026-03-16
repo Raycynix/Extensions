@@ -17,8 +17,8 @@ public class TransientExceptionClassifier : ITransientExceptionClassifier
         return exception switch
         {
             TimeoutException => true,
+            TaskCanceledException => true,
             OperationCanceledException => false,
-            // TaskCanceledException => true,
             IOException => true,
             HttpRequestException => true,
             TransientFailureException => true,
@@ -44,5 +44,14 @@ public class TransientExceptionClassifier : ITransientExceptionClassifier
         }
 
         return false;
+    }
+
+    private sealed class ReferenceEqualityComparer : IEqualityComparer<Exception>
+    {
+        public static ReferenceEqualityComparer Instance { get; } = new();
+
+        public bool Equals(Exception? x, Exception? y) => ReferenceEquals(x, y);
+
+        public int GetHashCode(Exception obj) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
     }
 }

@@ -37,7 +37,6 @@ public sealed class DatabaseContext : DbContext
         _config = config;
         _callerAssembly = callerAssembly;
         
-        //TODO: Add next to configurations
         ChangeTracker.LazyLoadingEnabled = false;
         ChangeTracker.AutoDetectChangesEnabled = false;
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;

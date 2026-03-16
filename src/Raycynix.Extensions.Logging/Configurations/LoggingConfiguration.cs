@@ -42,6 +42,5 @@ public class LoggingConfiguration
     /// The output log message
     /// </summary>
     public string OutputTemplate { get; init; } =
-        "[{Timestamp:HH:mm:ss}] [{ServiceName}] [{ServiceVersion}] {Message:lj}{NewLine}{Exception}";
-
+        "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] [Trace:{TraceId}] [Span:{SpanId}] [Corr:{CorrelationId}] {Message:lj}{NewLine}{Exception}";
 }
