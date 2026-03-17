@@ -3,7 +3,7 @@ using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 namespace Raycynix.Extensions.Exceptions.Defaults;
 
 /// <summary>
-/// Provides a default implementation for classifying transient failures.
+/// Classifies exceptions that are likely to succeed on retry.
 /// </summary>
 public class TransientExceptionClassifier : ITransientExceptionClassifier
 {

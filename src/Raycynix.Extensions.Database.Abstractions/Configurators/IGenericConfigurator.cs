@@ -1,9 +1,7 @@
 namespace Raycynix.Extensions.Database.Abstractions.Configurators;
 
 /// <summary>
-/// Defines an interface for configuring database entities of a specified type.
+/// Defines a typed configurator for an entity.
 /// </summary>
-/// <typeparam name="T">
-/// The type of the entity to be configured. Must be a reference type.
-/// </typeparam>
+/// <typeparam name="T">The entity type handled by the configurator.</typeparam>
 public interface IGenericConfigurator<T> : IConfigurator where T : class { }

@@ -1,44 +1,37 @@
 namespace Raycynix.Extensions.Database.Configurations;
 
 /// <summary>
-/// Represents a configuration for establishing a database connection.
-/// This abstract class provides properties to define fundamental connection details
-/// such as the host, port, database name, and credentials.
+/// Represents the base connection settings used to build a database connection string.
 /// </summary>
 public abstract class ConnectionConfiguration
 {
-    /// Gets or sets the host name or IP address of the database server.
+    /// <summary>
+    /// Gets the host name or IP address of the database server.
+    /// </summary>
     public string? Host { get; init; }
 
-    /// Gets or sets the port number.
+    /// <summary>
+    /// Gets the database server port.
+    /// </summary>
     public int? Port { get; init; }
 
-    /// Gets the name of the database to which the connection will be established.
-    /// This property is used when constructing the connection string for the database.
-    /// The value of this property should typically represent the identifier of the database
-    /// within the targeted database server or system.
+    /// <summary>
+    /// Gets the database name or data source name.
+    /// </summary>
     public string? Name { get; init; }
 
-    /// Gets the username used for authentication with the database connection.
-    /// This property represents the user identifier required to establish a connection
-    /// to the database, as part of the database connection configuration. It is typically
-    /// used in conjunction with the password.
-    /// The value of this property is optional and may be null, depending on the specific database
-    /// requirements and the connection configuration being utilized.
+    /// <summary>
+    /// Gets the user name used to authenticate the connection.
+    /// </summary>
     public string? Username { get; init; }
 
     /// <summary>
-    /// Gets or initializes the password used for authenticating the connection to the database.
+    /// Gets the password used to authenticate the connection.
     /// </summary>
-    /// <remarks>
-    /// This property is part of the connection configuration and is typically used in conjunction
-    /// with the <see cref="Username"/> property to authenticate with the database server.
-    /// Ensure that passwords are securely handled and not exposed in plain text.
-    /// </remarks>
     public string? Password { get; init; }
 
     /// <summary>
-    /// Validates that the configuration contains the minimal required values.
+    /// Validates that the configuration contains the minimum required values.
     /// </summary>
     /// <param name="providerName">The logical provider name.</param>
     public virtual void Validate(string providerName)

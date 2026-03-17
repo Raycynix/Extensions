@@ -4,42 +4,42 @@ using Raycynix.Extensions.Common.Helpers;
 namespace Raycynix.Extensions.Logging.Configurations;
 
 /// <summary>
-/// Represents configuration options for the Raycynix logging module.
+/// Represents configuration settings for Raycynix logging.
 /// </summary>
 public class LoggingConfiguration
 {
     /// <summary>
-    /// The name of the current service or application emitting logs.
+    /// Gets the service name written to log events.
     /// </summary>
     public string ServiceName { get; init; } = AssemblyHelper.CurrentName();
 
     /// <summary>
-    /// The version of the current service or application emitting logs.
+    /// Gets the service version written to log events.
     /// </summary>
     public string ServiceVersion { get; init; } = AssemblyHelper.CurrentVersion();
 
     /// <summary>
-    /// The environment name (e.g., Development, Production).
+    /// Gets the current environment name.
     /// </summary>
     public string Environment { get; init; } = EnvironmentHelper.CurrentEnvironment();
 
-    /// <value>
-    /// Indicating whether Elasticsearch logging is <b>enabled</b>
-    /// </value>
+    /// <summary>
+    /// Gets a value indicating whether Elasticsearch logging is enabled.
+    /// </summary>
     public bool UseElastic { get; init; } = false;
 
     /// <summary>
-    /// The URI of the Elasticsearch server where logs are sent.
+    /// Gets the Elasticsearch endpoint.
     /// </summary>
     public string ElasticUrl { get; init; } = "http://localhost:9200";
 
     /// <summary>
-    /// The minimum log event level to capture.
+    /// Gets the minimum log level.
     /// </summary>
     public LogLevel MinimumLevel { get; init; } = LogLevel.Information;
 
     /// <summary>
-    /// The output log message
+    /// Gets the console output template.
     /// </summary>
     public string OutputTemplate { get; init; } =
         "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] [Trace:{TraceId}] [Span:{SpanId}] [Corr:{CorrelationId}] {Message:lj}{NewLine}{Exception}";

@@ -3,14 +3,22 @@ using System.Reflection;
 namespace Raycynix.Extensions.Common.Helpers;
 
 /// <summary>
-/// Provides helper methods for retrieving assembly-related information such as the name and version of the current application.
+/// Provides helper methods for resolving the current application assembly metadata.
 /// </summary>
 public static class AssemblyHelper
 {
-    /// <returns>the version of the current executing application, or <c>Unknown</c> if not set.</returns>
+    /// <summary>
+    /// Returns the version of the entry assembly, or the executing assembly when
+    /// the entry assembly is unavailable.
+    /// </summary>
+    /// <returns>The assembly version, or <c>Unknown Version</c> when it is not defined.</returns>
     public static string CurrentVersion() => ResolveAssembly().GetName().Version?.ToString() ?? "Unknown Version";
     
-    /// <returns>the name of the current executing application, or <c>Unknown Version</c> if not set.</returns>
+    /// <summary>
+    /// Returns the name of the entry assembly, or the executing assembly when
+    /// the entry assembly is unavailable.
+    /// </summary>
+    /// <returns>The assembly name, or <c>Unknown Service</c> when it is not defined.</returns>
     public static string CurrentName() =>  ResolveAssembly().GetName().Name ?? "Unknown Service";
     
     private static Assembly ResolveAssembly() => Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();

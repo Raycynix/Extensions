@@ -1,28 +1,19 @@
 namespace Raycynix.Extensions.Database.Abstractions;
 
 /// <summary>
-/// Defines the contract for initializing a database.
+/// Defines the contract for preparing the database during application startup.
 /// </summary>
 public interface IDatabaseInitializer
 {
     /// <summary>
-    /// Asynchronously initializes the database by creating and/or migrating it based on the configuration.
+    /// Initializes the database according to the configured strategy.
     /// </summary>
-    /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete. Defaults to <see cref="CancellationToken.None"/>.
-    /// </param>
-    /// <returns>
-    /// A task that represents the asynchronous operation. Upon completion, indicates whether the database initialization is complete.
-    /// </returns>
+    /// <param name="cancellationToken">The cancellation token for the initialization operation.</param>
+    /// <returns>A task that completes when initialization finishes.</returns>
     Task InitializeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Indicates whether the database initialization process has been successfully completed.
+    /// Gets a value indicating whether the database is ready for use.
     /// </summary>
-    /// <remarks>
-    /// This property returns true if the database has been initialized and is ready for use; otherwise, it returns false.
-    /// The value is typically updated as part of the completion of the initialization process in
-    /// an implementation of <see cref="IDatabaseInitializer.InitializeAsync"/>.
-    /// </remarks>
     bool IsReady { get; }
 }

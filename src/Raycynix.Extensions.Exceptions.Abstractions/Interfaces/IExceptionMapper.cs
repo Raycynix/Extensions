@@ -1,14 +1,14 @@
 namespace Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 
 /// <summary>
-/// Defines a contract for mapping generic exceptions to instances of <see cref="RaycynixException"/>.
-/// Provides an abstraction to enable configurable and consistent exception handling
-/// across the application by converting various exceptions into a standard format.
+/// Defines a contract for converting exceptions to <see cref="RaycynixException"/> instances.
 /// </summary>
 public interface IExceptionMapper
 {
-    /// Maps a given exception to a corresponding RaycynixException based on predefined mappings.
+    /// <summary>
+    /// Maps an exception to a Raycynix exception.
+    /// </summary>
     /// <param name="exception">The exception to be mapped.</param>
-    /// <returns>A RaycynixException instance that represents the mapped exception.</returns>
+    /// <returns>The mapped exception.</returns>
     RaycynixException Map(Exception exception);
 }

@@ -1,7 +1,7 @@
 namespace Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 
 /// <summary>
-/// Defines a contract for representing the structure of an exception response.
+/// Defines the structure of an HTTP error response.
 /// </summary>
 public interface IExceptionResponse
 {

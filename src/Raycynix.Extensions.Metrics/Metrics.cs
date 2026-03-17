@@ -6,21 +6,15 @@ using Raycynix.Extensions.Metrics.Implementations;
 namespace Raycynix.Extensions.Metrics;
 
 /// <summary>
-/// Provides extension methods for setting up metrics services within a dependency injection container.
+/// Provides service registration extensions for the metrics package.
 /// </summary>
 public static class Metrics
 {
     /// <summary>
-    /// Adds Raycynix Metrics services to the dependency injection container.
-    /// Optionally, allows for further configuration of health checks during the setup.
+    /// Registers the metrics service and health checks.
     /// </summary>
-    /// <param name="services">
-    /// The <see cref="IServiceCollection"/> instance to which the metrics services will be added.
-    /// </param>
-    /// <param name="healthSetup">
-    /// An optional action to configure the <see cref="IHealthChecksBuilder"/> during health checks setup.
-    /// If not provided, no additional health checks configuration will be applied.
-    /// </param>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="healthSetup">An optional callback for configuring health checks.</param>
     public static IServiceCollection AddRaycynixMetrics(this IServiceCollection services,
         Action<IHealthChecksBuilder>? healthSetup = null)
     {

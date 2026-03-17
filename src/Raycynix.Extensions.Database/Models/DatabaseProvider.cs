@@ -1,7 +1,7 @@
 namespace Raycynix.Extensions.Database.Models;
 
 /// <summary>
-/// Represents the PostgreSQL database provider for configuring a database connection.
+/// Defines the supported database providers.
 /// </summary>
 public enum DatabaseProvider
 {

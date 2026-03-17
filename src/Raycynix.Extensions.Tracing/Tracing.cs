@@ -7,12 +7,12 @@ using Raycynix.Extensions.Tracing.Implementation;
 namespace Raycynix.Extensions.Tracing;
 
 /// <summary>
-/// Provides extension methods to configure and enable tracing functionality using the Raycynix Tracing library.
+/// Provides service registration extensions for the tracing package.
 /// </summary>
 public static class Tracing
 {
     /// <summary>
-    /// Adds tracing services to the dependency injection container for the application.
+    /// Registers the tracing service.
     /// </summary>
     /// <param name="services">The service collection to which the tracing services are to be added.</param>
     public static IServiceCollection AddRaycynixTracing(this IServiceCollection services)

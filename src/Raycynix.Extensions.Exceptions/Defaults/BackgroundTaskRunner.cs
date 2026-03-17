@@ -5,7 +5,7 @@ using Raycynix.Extensions.Exceptions.Abstractions.Options;
 namespace Raycynix.Extensions.Exceptions.Defaults;
 
 /// <summary>
-/// Provides a safe wrapper for executing background operations with unified error handling.
+/// Executes background operations with retry handling and consistent error translation.
 /// </summary>
 public class BackgroundTaskRunner(
     IRetryExecutor retryExecutor,

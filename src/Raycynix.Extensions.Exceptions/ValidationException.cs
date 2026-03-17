@@ -15,7 +15,7 @@ public class ValidationException : RaycynixException
     public IDictionary<string, string[]> ValidationErrors { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationException"/> class.
+    /// Initializes a new instance of <see cref="ValidationException"/>.
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="validationErrors">The validation errors grouped by field name.</param>

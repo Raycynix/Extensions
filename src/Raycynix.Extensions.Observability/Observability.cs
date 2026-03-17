@@ -9,18 +9,15 @@ using Raycynix.Extensions.Tracing;
 namespace Raycynix.Extensions.Observability;
 
 /// <summary>
-/// Provides methods for configuring and adding observability features to an application,
-/// including metrics, tracing, and logging capabilities.
+/// Provides service registration extensions for the observability package.
 /// </summary>
 public static class Observability
 {
     /// <summary>
-    /// Adds Raycynix observability features to the service collection, including capabilities
-    /// for metrics, tracing, and logging. Also sets up operation context and HTTP handlers
-    /// for correlation support.
+    /// Registers metrics, tracing, logging, operation context, and correlation propagation.
     /// </summary>
-    /// <param name="services">The IServiceCollection to which the observability features will be added.</param>
-    /// <returns>The updated IServiceCollection with Raycynix observability services registered.</returns>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixObservability(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();

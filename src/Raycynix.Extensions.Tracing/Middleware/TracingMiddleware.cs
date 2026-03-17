@@ -5,17 +5,17 @@ using Serilog.Context;
 namespace Raycynix.Extensions.Tracing.Middleware;
 
 /// <summary>
-/// Middleware that enriches logs with trace information from the current activity.
+/// Middleware that enriches the Serilog logging context with trace identifiers
+/// resolved from the current diagnostic activity.
 /// </summary>
 public class TracingMiddleware(RequestDelegate next)
 {
     /// <summary>
-    /// Processes an incoming HTTP request by ensuring a correlation ID is present in the headers.
-    /// If a correlation ID is not provided, a new one is generated. The correlation ID is added
-    /// to the response headers and attached to the logging context.
+    /// Adds <c>TraceId</c> and <c>SpanId</c> values to the logging context for the
+    /// current request and then passes execution to the next middleware component.
     /// </summary>
-    /// <param name="context">The HTTP context representing the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous operation of the middleware.</returns>
+    /// <param name="context">The HTTP context for the current request.</param>
+    /// <returns>A task that completes when the remaining pipeline has finished processing.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
         var activity = Activity.Current;

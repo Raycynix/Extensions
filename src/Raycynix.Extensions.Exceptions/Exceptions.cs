@@ -9,28 +9,16 @@ using Raycynix.Extensions.Exceptions.Options;
 namespace Raycynix.Extensions.Exceptions;
 
 /// <summary>
-/// Provides extension methods to add and configure Raycynix exception handling services.
-/// The <c>Exceptions</c> class offers functionality to enable exception mapping and data masking
-/// by registering related components into the dependency injection container.
+/// Provides service registration and middleware extensions for the exception handling package.
 /// </summary>
 public static class Exceptions
 {
     /// <summary>
-    /// Adds Raycynix exception handling services to the dependency injection container, allowing for
-    /// configurable exception mapping and optional data masking.
+    /// Registers exception mapping, masking, retry, and background execution services.
     /// </summary>
-    /// <param name="services">
-    /// The <see cref="IServiceCollection"/> to which the Raycynix exception handling services
-    /// will be added.
-    /// </param>
-    /// <param name="configure">
-    /// An optional configuration action to customize the mapping of exceptions to
-    /// <see cref="RaycynixException"/> instances via <see cref="ExceptionMapperOptions"/>.
-    /// If not specified, the default configuration is used.
-    /// </param>
-    /// <returns>
-    /// The configured <see cref="IServiceCollection"/> to allow for method chaining.
-    /// </returns>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configure">An optional callback for custom exception mappings.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixExceptions(this IServiceCollection services,
         Action<ExceptionMapperOptions>? configure = null)
     {
@@ -47,7 +35,7 @@ public static class Exceptions
     }
 
     /// <summary>
-    /// Adds the Raycynix exception handling middleware to the application pipeline.
+    /// Adds the Raycynix exception handling middleware to the request pipeline.
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The configured application builder.</returns>

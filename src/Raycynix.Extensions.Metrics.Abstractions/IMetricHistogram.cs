@@ -1,21 +1,21 @@
 namespace Raycynix.Extensions.Metrics.Abstractions;
 
 /// <summary>
-/// Provides methods for recording observations and measuring durations in a histogram metric.
+/// Represents a histogram metric.
 /// </summary>
 public interface IMetricHistogram
 {
     /// <summary>
-    /// Records an observation to the histogram with the specified value and optional label values.
+    /// Records a histogram observation.
     /// </summary>
-    /// <param name="value">The value to be recorded in the histogram.</param>
-    /// <param name="labelValues">Optional string array of label values that provide additional context for the observation.</param>
+    /// <param name="value">The value to record.</param>
+    /// <param name="labelValues">The label values for the metric instance.</param>
     void Observe(double value, params string[] labelValues);
 
     /// <summary>
-    /// Measures the duration of an operation and records the observation to the histogram.
+    /// Starts timing an operation and records the duration when disposed.
     /// </summary>
-    /// <param name="labelValues">Optional string array of label values that provide additional context for the measurement.</param>
-    /// <returns>An object that tracks the duration of the operation and records the time upon disposal.</returns>
+    /// <param name="labelValues">The label values for the metric instance.</param>
+    /// <returns>A timer handle that records elapsed time on disposal.</returns>
     IDisposable MeasureDuration(params string[] labelValues);
 }

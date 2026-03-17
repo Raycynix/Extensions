@@ -8,12 +8,8 @@ using Raycynix.Extensions.Logging.Abstractions;
 namespace Raycynix.Extensions.Database.Implementations;
 
 /// <summary>
-/// Handles the initialization of the database, including optional creation and applying migrations based on the provided configuration.
+/// Initializes the database by creating it and/or applying migrations, depending on the configuration.
 /// </summary>
-/// <remarks>
-/// This class is responsible for preparing the database during application startup by ensuring the database is created
-/// and migrations are applied, if necessary. It also provides a flag to indicate whether the database is ready for use.
-/// </remarks>
 public class DatabaseInitializer(
     IServiceProvider serviceProvider,
     DatabaseConfiguration config,
@@ -22,16 +18,12 @@ public class DatabaseInitializer(
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     /// <summary>
-    /// Indicates whether the database has been initialized and is ready for use.
+    /// Gets a value indicating whether initialization has already completed.
     /// </summary>
-    /// <remarks>
-    /// This property will be set to true after the database initialization process has successfully completed.
-    /// It remains false until the initialization process is finalized within the implementation of the database initializer.
-    /// </remarks>
     public bool IsReady { get; private set; }
 
     /// <summary>
-    /// Initializes the database by creating it if required, applying migrations, and marking it as ready.
+    /// Runs the configured database initialization steps once.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>

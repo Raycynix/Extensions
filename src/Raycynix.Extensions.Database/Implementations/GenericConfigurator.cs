@@ -12,30 +12,20 @@ namespace Raycynix.Extensions.Database.Implementations;
 public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T : class
 {
     /// <summary>
-    /// 
+    /// Gets the entity type handled by the current configurator.
     /// </summary>
     public Type Type => typeof(T);
 
     /// <summary>
-    /// Specifies a dependency between this property and one or more other properties.
-    /// Changes made to the properties listed in this dependency may trigger actions
-    /// or recalculations related to the current property.
+    /// Gets the entity types whose configurators must be applied before the current one.
     /// </summary>
-    /// <remarks>
-    /// This property is commonly used in scenarios where the value or behavior of a property
-    /// is influenced by changes in other properties, such as in data binding or validation frameworks.
-    /// </remarks>
-    /// <example>
-    /// When a property depends on other properties, the dependent property
-    /// can be updated automatically if any of the specified properties change.
-    /// </example>
     public abstract Type[] DependsOn { get; }
 
     /// <summary>
-    /// Configures the entity of type <typeparamref name="T"/> within the specified <see cref="ModelBuilder"/>.
+    /// Applies the default model configuration for <typeparamref name="T"/>.
     /// </summary>
     /// <param name="modelBuilder">
-    /// The <see cref="ModelBuilder"/> instance used to configure the entity.
+    /// The <see cref="ModelBuilder"/> used to configure the entity mapping.
     /// </param>
     public virtual void Configure(ModelBuilder modelBuilder)
     {
@@ -43,11 +33,10 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
     }
 
     /// <summary>
-    /// Seeds the database with entities and data using the provided <see cref="ModelBuilder"/>.
-    /// This method can be overridden to provide custom seeding logic for the entity type.
+    /// Seeds data for <typeparamref name="T"/> during model creation.
     /// </summary>
     /// <param name="modelBuilder">
-    /// An instance of <see cref="ModelBuilder"/> used to configure and seed entities in the database.
+    /// The <see cref="ModelBuilder"/> used to register seed data.
     /// </param>
     public virtual void Seed(ModelBuilder modelBuilder)
     {

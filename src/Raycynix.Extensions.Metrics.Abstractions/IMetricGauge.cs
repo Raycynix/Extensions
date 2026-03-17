@@ -1,48 +1,28 @@
 namespace Raycynix.Extensions.Metrics.Abstractions;
 
 /// <summary>
-/// Defines the contract for a gauge metric, which represents a single numeric value that can
-/// be adjusted dynamically. Gauges are typically used to measure values that vary over time,
-/// such as resource consumption or physical quantities.
+/// Represents a gauge metric.
 /// </summary>
 public interface IMetricGauge
 {
     /// <summary>
-    /// Sets the value of the gauge metric to the specified value. If labels are provided,
-    /// the value will be set for the specific label combination.
+    /// Sets the gauge value.
     /// </summary>
-    /// <param name="value">
-    /// The numeric value to set the gauge metric to.
-    /// </param>
-    /// <param name="labelValues">
-    /// An optional array of label values corresponding to the labeled dimensions of the gauge metric.
-    /// These labels allow the metric to differentiate between different conceptual instances.
-    /// </param>
+    /// <param name="value">The value to set.</param>
+    /// <param name="labelValues">The label values for the metric instance.</param>
     void Set(double value, params string[] labelValues);
 
     /// <summary>
-    /// Increments the value of the gauge metric by the specified amount. If label values are provided,
-    /// the increment is applied to the specific label combination.
+    /// Increments the gauge value.
     /// </summary>
-    /// <param name="value">
-    /// The numeric amount by which to increment the gauge metric. Defaults to 1 if not specified.
-    /// </param>
-    /// <param name="labelValues">
-    /// An optional array of label values corresponding to the labeled dimensions of the gauge metric.
-    /// These labels allow the metric to differentiate between different conceptual instances.
-    /// </param>
+    /// <param name="value">The increment value.</param>
+    /// <param name="labelValues">The label values for the metric instance.</param>
     void Increment(double value = 1, params string[] labelValues);
 
     /// <summary>
-    /// Decrements the value of the gauge metric by the specified amount. If label values are provided,
-    /// the decrement is applied to the specific label combination.
+    /// Decrements the gauge value.
     /// </summary>
-    /// <param name="value">
-    /// The numeric amount by which to decrement the gauge metric. Defaults to 1 if not specified.
-    /// </param>
-    /// <param name="labelValues">
-    /// An optional array of label values corresponding to the labeled dimensions of the gauge metric.
-    /// These labels allow the metric to differentiate between different conceptual instances.
-    /// </param>
+    /// <param name="value">The decrement value.</param>
+    /// <param name="labelValues">The label values for the metric instance.</param>
     void Decrement(double value = 1, params string[] labelValues);
 }

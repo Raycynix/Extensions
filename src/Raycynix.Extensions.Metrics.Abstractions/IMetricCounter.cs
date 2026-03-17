@@ -1,19 +1,14 @@
 namespace Raycynix.Extensions.Metrics.Abstractions;
 
 /// <summary>
-/// Represents an abstraction for a metric counter, which is used to accumulate counts
-/// for a specific metric over time, with optional support for labeled dimensions.
+/// Represents a counter metric.
 /// </summary>
 public interface IMetricCounter
 {
     /// <summary>
-    /// Increments the metric counter by the specified value, optionally associating
-    /// it with a set of labeled dimensions.
+    /// Increments the counter by the specified value.
     /// </summary>
-    /// <param name="value">The amount by which to increment the counter. Defaults to 1.</param>
-    /// <param name="labelValues">
-    /// An optional array of label values to associate with the increment. These should
-    /// correspond to the label names defined for the metric.
-    /// </param>
+    /// <param name="value">The increment value.</param>
+    /// <param name="labelValues">The label values for the metric instance.</param>
     void Increment(double value = 1, params string[] labelValues);
 }

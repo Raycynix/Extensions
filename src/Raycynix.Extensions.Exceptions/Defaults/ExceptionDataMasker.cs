@@ -6,24 +6,8 @@ using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 namespace Raycynix.Extensions.Exceptions.Defaults;
 
 /// <summary>
-/// Provides a default implementation of the <see cref="IExceptionDataMasker"/> interface for masking
-/// exception data. This class is designed to process various data types, including primitive values,
-/// collections, dictionaries, and complex objects, ensuring sensitive information is obscured
-/// based on predefined masking rules.
+/// Masks sensitive values in exception-related data structures.
 /// </summary>
-/// <remarks>
-/// The <c>ExceptionDataMasker</c> masks sensitive keys or properties with the value "***MASKED***".
-/// It recursively processes objects, collections, and dictionaries, ensuring that all nested
-/// data structures are appropriately masked.
-/// </remarks>
-/// <example>
-/// The class handles the following scenarios:
-/// - Primitive types and <c>null</c> are returned without modification.
-/// - Dictionaries mask keys specified in the sensitive keys list.
-/// - Collections are traversed, and their elements are recursively masked.
-/// - Object properties are inspected, and sensitive properties are masked accordingly.
-/// </example>
-/// <seealso cref="IExceptionDataMasker"/>
 public class ExceptionDataMasker : IExceptionDataMasker
 {
     private const string MaskedValue = "***MASKED***";
@@ -47,15 +31,11 @@ public class ExceptionDataMasker : IExceptionDataMasker
         "PrivateKey"
     };
 
-    /// Masks sensitive data within the provided object according to predefined rules.
-    /// <param name="data">
-    /// The object containing data to be masked. It can be null, a primitive type, a string, a dictionary,
-    /// a collection, or an object with public properties.
-    /// </param>
-    /// <return>
-    /// A new object with sensitive information replaced by masked values. The type and structure of the returned
-    /// object match the input, with sensitive data replaced by <b>"***MASKED***"</b> where applicable.
-    /// </return>
+    /// <summary>
+    /// Masks sensitive values in the supplied object graph.
+    /// </summary>
+    /// <param name="data">The data to sanitize.</param>
+    /// <returns>A sanitized copy of the supplied data.</returns>
     public object? Mask(object? data)
     {
         return MaskInternal(data, new HashSet<object>(ReferenceEqualityComparer.Instance));

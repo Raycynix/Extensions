@@ -5,15 +5,15 @@ using Raycynix.Extensions.Database.Abstractions;
 namespace Raycynix.Extensions.Database;
 
 /// <summary>
-/// Provides helper methods to initialize the database during application startup.
+/// Provides extensions for running database initialization during application startup.
 /// </summary>
 public static class DatabaseInitialization
 {
     /// <summary>
-    /// Initializes the configured database before the application starts serving requests.
+    /// Resolves <see cref="IDatabaseInitializer"/> and runs database initialization.
     /// </summary>
     /// <param name="app">The web application instance.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token for the initialization operation.</param>
     /// <returns>The same <see cref="WebApplication"/> instance for chaining.</returns>
     public static async Task<WebApplication> UseRaycynixDatabaseInitializationAsync(
         this WebApplication app,

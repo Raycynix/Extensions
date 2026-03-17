@@ -15,16 +15,14 @@ using Serilog;
 namespace Raycynix.Extensions.Logging;
 
 /// <summary>
-/// Provides extension methods for integrating Serilog logging into an application.
+/// Provides service registration and host configuration extensions for Raycynix logging.
 /// </summary>
 public static class Logging
 {
     /// <summary>
-    /// Adds Raycynix logging services to the dependency injection container.
+    /// Registers the Raycynix logger abstraction.
     /// </summary>
-    /// <param name="services">
-    /// The <see cref="IServiceCollection"/> to which the logging services are added.
-    /// </param>
+    /// <param name="services">The service collection to update.</param>
     public static IServiceCollection AddRaycynixLogging(this IServiceCollection services)
     {
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
@@ -32,14 +30,10 @@ public static class Logging
     }
     
     /// <summary>
-    /// Configures the application to use Raycynix logging with Serilog.
+    /// Configures Serilog using the Raycynix logging settings.
     /// </summary>
-    /// <param name="hostBuilder">
-    /// The <see cref="IHostBuilder"/> instance used to configure the application.
-    /// </param>
-    /// <param name="setup">
-    /// An optional action to configure additional Serilog settings.
-    /// </param>
+    /// <param name="hostBuilder">The host builder to configure.</param>
+    /// <param name="setup">An optional callback for adjusting logging settings.</param>
     public static IHostBuilder UseRaycynixLogging(
         this IHostBuilder hostBuilder,
         Action<LoggingConfiguration>? setup = null)

@@ -3,35 +3,28 @@ using System.Diagnostics;
 namespace Raycynix.Extensions.Common.Context;
 
 /// <summary>
-/// Represents a context for an operation, encapsulating metadata necessary for tracking
-/// and correlating operations across system boundaries. This interface is used to provide
-/// consistent access to key information such as correlation IDs, trace IDs, and user IDs.
+/// Represents per-operation metadata used for correlation, tracing, and user identification.
 /// </summary>
 public interface IOperationContext
 {
     /// <summary>
-    /// Gets or sets the Correlation ID, which serves as a unique identifier to correlate and track
-    /// operations across system boundaries. This property is primarily used to enhance observability,
-    /// such as in logging, tracing, or diagnostics, ensuring the ability to trace requests through
-    /// distributed systems.
+    /// Gets or sets the correlation identifier for the current operation.
     /// </summary>
     string CorrelationId { get; set; }
 
     /// <summary>
-    /// Gets the unique identifier for the current trace, enabling end-to-end tracking of requests
-    /// and operations within a distributed system. This property generally reflects the trace ID
-    /// from the current activity in the application's diagnostic context. If no activity exists,
-    /// a new trace ID is generated.
+    /// Gets the current trace identifier from <see cref="Activity.Current"/>,
+    /// or generates a fallback identifier when no activity exists.
     /// </summary>
     string TraceId { get; }
 
     /// <summary>
-    /// 
+    /// Gets or sets the identifier of the current user, if available.
     /// </summary>
     string? UserId { get; set; }
 
     /// <summary>
-    /// Sets a correlation identifier if it has not been assigned yet.
+    /// Assigns the correlation identifier only when it has not been set yet.
     /// </summary>
     /// <param name="correlationId">The correlation identifier to assign.</param>
     void SetCorrelationIdIfMissing(string correlationId);

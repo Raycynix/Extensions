@@ -5,17 +5,17 @@ using Prometheus;
 namespace Raycynix.Extensions.Observability;
 
 /// <summary>
-/// Provides endpoint mapping extensions for Raycynix observability features.
+/// Provides endpoint mapping extensions for observability endpoints.
 /// </summary>
 public static class ObservabilityEndpoints
 {
     /// <summary>
-    /// Maps observability endpoints such as health checks and Prometheus metrics.
+    /// Maps health check and metrics endpoints.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="healthPath">The health checks endpoint path.</param>
     /// <param name="metricsPath">The metrics endpoint path.</param>
-    /// <returns>The endpoint route builder.</returns>
+    /// <returns>The same <see cref="IEndpointRouteBuilder"/> instance for chaining.</returns>
     public static IEndpointRouteBuilder MapRaycynixObservabilityEndpoints(
         this IEndpointRouteBuilder endpoints,
         string healthPath = "/health",

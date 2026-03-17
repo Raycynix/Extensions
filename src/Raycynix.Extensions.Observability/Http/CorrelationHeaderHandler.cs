@@ -3,18 +3,14 @@ using Raycynix.Extensions.Common.Context;
 namespace Raycynix.Extensions.Observability.Http;
 
 /// <summary>
-/// A delegating handler for adding a correlation ID to outgoing HTTP requests.
-/// This handler ensures that each HTTP request contains a correlation header, allowing
-/// for tracking and correlating requests across different services.
+/// Adds the current correlation identifier to outgoing HTTP requests.
 /// </summary>
 public class CorrelationHeaderHandler(IOperationContext operationContext) : DelegatingHandler
 {
     internal const string CorrelationHeader = "X-Correlation-ID";
 
     /// <summary>
-    /// Sends an HTTP request with a correlation header included, ensuring the correlation information
-    /// from the operation context is propagated along with the request. If the correlation header is
-    /// already present, it is not overridden.
+    /// Sends the request and adds the correlation header when it is missing.
     /// </summary>
     /// <param name="request">The HTTP request message to send.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the request operation.</param>

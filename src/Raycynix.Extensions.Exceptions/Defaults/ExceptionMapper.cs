@@ -4,26 +4,16 @@ using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 namespace Raycynix.Extensions.Exceptions.Defaults;
 
 /// <summary>
-/// Provides a default implementation of the <see cref="IExceptionMapper"/> interface
-/// to map exceptions to the custom <see cref="RaycynixException"/> type.
+/// Maps arbitrary exceptions to <see cref="RaycynixException"/> instances.
 /// </summary>
-/// <remarks>
-/// This class enables handling of custom exception mapping logic based on a predefined
-/// set of mappings. If an exception type is not mapped explicitly, it falls back to
-/// creating an <see cref="InternalServerException"/> to handle generic, unhandled errors.
-/// </remarks>
 public class ExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> mappings)
     : IExceptionMapper
 {
     /// <summary>
-    /// Maps a given exception to a <see cref="RaycynixException"/> instance based on predefined mappings.
+    /// Maps an exception to a Raycynix exception.
     /// </summary>
-    /// <param name="ex">The exception to be mapped. This can be any exception derived from <see cref="Exception"/>.</param>
-    /// <return>
-    /// A <see cref="RaycynixException"/> instance. If the input exception is already a <see cref="RaycynixException"/> instance,
-    /// it is returned as is. If a mapping is defined for the exception type, the mapped exception is returned. Otherwise,
-    /// a default <see cref="InternalServerException"/> is returned.
-    /// </return>
+    /// <param name="ex">The exception to map.</param>
+    /// <returns>The mapped <see cref="RaycynixException"/> instance.</returns>
     public RaycynixException Map(Exception ex)
     {
         if (ex is RaycynixException rayEx) return rayEx;

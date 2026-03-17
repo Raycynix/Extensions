@@ -7,18 +7,16 @@ using Serilog.Context;
 namespace Raycynix.Extensions.Observability.Middleware;
 
 /// <summary>
-/// Middleware that manages correlation and trace identifiers for HTTP requests,
-/// ensuring consistent tracking and logging across the application's request/response pipeline.
+/// Resolves correlation data for the current request and enriches logs and tracing context.
 /// </summary>
 public class CorrelationMiddleware(RequestDelegate next)
 {
     /// <summary>
-    /// Handles the incoming HTTP request, extracts or assigns correlation and trace identifiers,
-    /// and enriches the logging context to include relevant metadata.
+    /// Adds correlation, trace, and user identifiers to the current request context.
     /// </summary>
     /// <param name="context">The current HTTP context of the request.</param>
     /// <param name="operationContext">The operation context containing correlation, trace, and user identifiers.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <returns>A task that completes when the remaining pipeline has finished processing.</returns>
     public async Task InvokeAsync(HttpContext context, IOperationContext operationContext)
     {
         var correlationId = context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue)
