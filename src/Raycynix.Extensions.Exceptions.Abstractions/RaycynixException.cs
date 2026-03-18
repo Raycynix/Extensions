@@ -34,6 +34,11 @@ public abstract class RaycynixException : Exception, IRaycynixException
     public object? SecureDetails { get; }
 
     /// <summary>
+    /// Gets the execution context captured for the failure, when available.
+    /// </summary>
+    public IErrorExecutionContext? ExecutionContext { get; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="RaycynixException"/>.
     /// </summary>
     protected RaycynixException(
@@ -43,7 +48,8 @@ public abstract class RaycynixException : Exception, IRaycynixException
         ErrorCategory category,
         IReadOnlyCollection<IExceptionDetail>? details = null,
         object? secureDetails = null,
-        Exception? innerException = null)
+        Exception? innerException = null,
+        IErrorExecutionContext? executionContext = null)
         : base(message, innerException)
     {
         ErrorCode = errorCode;
@@ -51,6 +57,7 @@ public abstract class RaycynixException : Exception, IRaycynixException
         Category = category;
         Details = details ?? [];
         SecureDetails = secureDetails;
+        ExecutionContext = executionContext;
     }
 
     /// <summary>

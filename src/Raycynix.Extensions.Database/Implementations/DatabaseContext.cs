@@ -28,9 +28,11 @@ public sealed class DatabaseContext : DbContext
         _config = config;
         _callerAssembly = callerAssembly;
         
-        ChangeTracker.LazyLoadingEnabled = false;
-        ChangeTracker.AutoDetectChangesEnabled = false;
-        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
+        ChangeTracker.AutoDetectChangesEnabled = config.EnableAutoDetectChanges;
+        ChangeTracker.QueryTrackingBehavior = config.UseQueryTrackingByDefault
+            ? QueryTrackingBehavior.TrackAll
+            : QueryTrackingBehavior.NoTracking;
     }
 
     /// <summary>

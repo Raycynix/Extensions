@@ -47,7 +47,16 @@ public class CorrelationMiddleware(RequestDelegate next)
         using (LogContext.PushProperty("TraceId", traceId))
         using (LogContext.PushProperty("UserId", operationContext.UserId))
         {
-            await next(context);
+            OperationContext.Current = operationContext;
+
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                OperationContext.Current = null;
+            }
         }
     }
 }

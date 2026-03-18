@@ -1,4 +1,7 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Raycynix.Extensions.Common.Context;
+using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Abstractions.Options;
 
@@ -55,11 +58,13 @@ public class RetryExecutor(
     {
         var actualOperationName = string.IsNullOrWhiteSpace(operationName) ? "UnnamedOperation" : operationName;
         var attempt = 0;
+        var maxAttempts = options.MaxRetries + 1;
 
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
             attempt++;
+            SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: false);
 
             try
             {
@@ -70,12 +75,13 @@ public class RetryExecutor(
                                        attempt <= options.MaxRetries)
             {
                 var delay = CalculateDelay(options, attempt);
+                SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
 
                 logger.LogWarning(ex,
                     "Transient failure during {OperationName}. Attempt {Attempt}/{MaxAttempts}. Retrying in {DelayMs} ms.",
                     actualOperationName,
                     attempt,
-                    options.MaxRetries + 1,
+                    maxAttempts,
                     delay.TotalMilliseconds);
 
                 await Task.Delay(delay, cancellationToken);
@@ -83,6 +89,10 @@ public class RetryExecutor(
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested &&
                                        transientExceptionClassifier.IsTransient(ex))
             {
+                var retryAfterSeconds = Math.Max(1, (int)Math.Ceiling(options.Delay.TotalSeconds));
+                var executionContext = BuildExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
+                SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
+
                 logger.LogError(ex,
                     "Transient failure during {OperationName}. Retry limit reached after {Attempts} attempts.",
                     actualOperationName,
@@ -94,9 +104,16 @@ public class RetryExecutor(
                     {
                         OperationName = actualOperationName,
                         Attempts = attempt,
+                        MaxAttempts = maxAttempts,
+                        RetryAfterSeconds = retryAfterSeconds,
                         OriginalException = ex.Message
                     },
-                    innerException: ex);
+                    innerException: ex,
+                    operationName: actualOperationName,
+                    attemptCount: attempt,
+                    maxAttempts: maxAttempts,
+                    retryAfterSeconds: retryAfterSeconds,
+                    executionContext: executionContext);
             }
         }
     }
@@ -116,5 +133,33 @@ public class RetryExecutor(
 
         var jitter = _sharedRandom.Next(0, 250);
         return delay + TimeSpan.FromMilliseconds(jitter);
+    }
+
+    private static void SetCurrentExecutionContext(
+        string operationName,
+        int attempt,
+        int maxAttempts,
+        bool isTransient)
+    {
+        ErrorExecutionContextAccessor.Current = BuildExecutionContext(operationName, attempt, maxAttempts, isTransient);
+    }
+
+    private static ErrorExecutionContext BuildExecutionContext(
+        string operationName,
+        int attempt,
+        int maxAttempts,
+        bool isTransient)
+    {
+        var operationContext = OperationContext.Current;
+        return new ErrorExecutionContext(
+            Source: "background",
+            OperationName: operationName,
+            TraceId: Activity.Current?.TraceId.ToString(),
+            SpanId: Activity.Current?.SpanId.ToString(),
+            CorrelationId: operationContext?.CorrelationId,
+            UserId: operationContext?.UserId,
+            Attempt: attempt,
+            MaxAttempts: maxAttempts,
+            IsTransient: isTransient);
     }
 }

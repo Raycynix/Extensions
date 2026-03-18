@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Exceptions.Abstractions;
+using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
 
@@ -40,7 +41,7 @@ public class RaycynixExceptionMiddleware(
         {
             var raycynixException = mapper.Map(ex);
             var safeDetails = masker.Mask(raycynixException.SecureDetails);
-            var traceId = httpContext.TraceIdentifier;
+            var traceId = Activity.Current?.TraceId.ToString() ?? httpContext.TraceIdentifier;
             var spanId = Activity.Current?.SpanId.ToString();
             var correlationId = operationContext.CorrelationId;
             var path = httpContext.Request.Path.Value;
@@ -49,6 +50,23 @@ public class RaycynixExceptionMiddleware(
             var queryString = httpContext.Request.QueryString.HasValue
                 ? httpContext.Request.QueryString.Value
                 : null;
+            var isTransient = raycynixException.Category == ErrorCategory.Transient;
+            var retryAfterSeconds = raycynixException is TransientFailureException transientFailureException
+                ? transientFailureException.RetryAfterSeconds
+                : null;
+
+            var executionContext = raycynixException.ExecutionContext ?? new ErrorExecutionContext(
+                Source: "http",
+                OperationName: endpoint,
+                TraceId: traceId,
+                SpanId: spanId,
+                CorrelationId: correlationId,
+                UserId: operationContext.UserId,
+                Path: path,
+                Method: method,
+                Endpoint: endpoint,
+                QueryString: queryString,
+                IsTransient: isTransient);
 
             logger.LogError(ex,
                 "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. SpanId: {SpanId}. CorrelationId: {CorrelationId}. Method: {Method}. Path: {Path}. Endpoint: {Endpoint}. Query: {Query}. Details: {@Details}",
@@ -89,12 +107,19 @@ public class RaycynixExceptionMiddleware(
                 Endpoint: endpoint,
                 QueryString: queryString,
                 TimestampUtc: DateTimeOffset.UtcNow,
+                Context: executionContext,
+                IsTransient: isTransient,
+                RetryAfterSeconds: retryAfterSeconds,
                 Details: raycynixException.Details,
                 ValidationErrors: validationErrors);
 
             httpContext.Response.Clear();
             httpContext.Response.StatusCode = raycynixException.StatusCode;
             httpContext.Response.ContentType = "application/json; charset=utf-8";
+            if (retryAfterSeconds is not null)
+            {
+                httpContext.Response.Headers.RetryAfter = retryAfterSeconds.Value.ToString();
+            }
 
             var json = JsonSerializer.Serialize(response, _serializerOptions);
             await httpContext.Response.WriteAsync(json);

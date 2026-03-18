@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
 
 namespace Raycynix.Extensions.Observability.Http;
@@ -5,7 +7,7 @@ namespace Raycynix.Extensions.Observability.Http;
 /// <summary>
 /// Adds the current correlation identifier to outgoing HTTP requests.
 /// </summary>
-public class CorrelationHeaderHandler(IOperationContext operationContext) : DelegatingHandler
+public class CorrelationHeaderHandler(IHttpContextAccessor httpContextAccessor) : DelegatingHandler
 {
     internal const string CorrelationHeader = "X-Correlation-ID";
 
@@ -21,9 +23,26 @@ public class CorrelationHeaderHandler(IOperationContext operationContext) : Dele
     {
         if (!request.Headers.Contains(CorrelationHeader))
         {
-            request.Headers.Add(CorrelationHeader, operationContext.CorrelationId);
+            request.Headers.Add(CorrelationHeader, ResolveCorrelationId());
         }
 
         return await base.SendAsync(request, cancellationToken);
+    }
+
+    private string ResolveCorrelationId()
+    {
+        var context = httpContextAccessor.HttpContext;
+        if (context?.Request.Headers.TryGetValue(CorrelationHeader, out var headerValue) == true &&
+            !string.IsNullOrWhiteSpace(headerValue))
+        {
+            return headerValue.ToString();
+        }
+
+        if (OperationContext.Current is { } operationContext)
+        {
+            return operationContext.CorrelationId;
+        }
+
+        return Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
     }
 }

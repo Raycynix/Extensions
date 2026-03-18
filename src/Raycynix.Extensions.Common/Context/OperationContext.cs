@@ -28,13 +28,24 @@ public interface IOperationContext
     /// </summary>
     /// <param name="correlationId">The correlation identifier to assign.</param>
     void SetCorrelationIdIfMissing(string correlationId);
+
 }
 
 /// <inheritdoc />
 public class OperationContext : IOperationContext
 {
+    private static readonly AsyncLocal<IOperationContext?> _current = new();
     private string? _correlationId;
     private string? _userId;
+
+    /// <summary>
+    /// Gets or sets the ambient operation context for the current async flow.
+    /// </summary>
+    public static IOperationContext? Current
+    {
+        get => _current.Value;
+        set => _current.Value = value;
+    }
 
     /// <inheritdoc/>
     public string CorrelationId

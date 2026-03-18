@@ -61,6 +61,21 @@ public interface IExceptionResponse
     DateTimeOffset TimestampUtc { get; }
 
     /// <summary>
+    /// Gets the execution context captured for the error.
+    /// </summary>
+    IErrorExecutionContext? Context { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the error is transient.
+    /// </summary>
+    bool IsTransient { get; }
+
+    /// <summary>
+    /// Gets the recommended retry delay in seconds, when applicable.
+    /// </summary>
+    int? RetryAfterSeconds { get; }
+
+    /// <summary>
     /// Gets the machine-readable details associated with the exception.
     /// </summary>
     IReadOnlyCollection<IExceptionDetail>? Details { get; }

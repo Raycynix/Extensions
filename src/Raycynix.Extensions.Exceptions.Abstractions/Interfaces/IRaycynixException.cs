@@ -50,4 +50,9 @@ public interface IRaycynixException
     /// logging, debugging, and diagnostic purposes.
     /// </summary>
     object? SecureDetails { get; }
+
+    /// <summary>
+    /// Gets the execution context captured for the failure, when available.
+    /// </summary>
+    IErrorExecutionContext? ExecutionContext { get; }
 }

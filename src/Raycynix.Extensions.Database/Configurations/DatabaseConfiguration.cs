@@ -38,6 +38,21 @@ public class DatabaseConfiguration
     public bool EnableSeed { get; init; } = true;
 
     /// <summary>
+    /// Gets a value indicating whether EF Core lazy loading is enabled for the shared context.
+    /// </summary>
+    public bool EnableLazyLoading { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether EF Core automatic change detection is enabled.
+    /// </summary>
+    public bool EnableAutoDetectChanges { get; init; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether queries are tracked by default.
+    /// </summary>
+    public bool UseQueryTrackingByDefault { get; init; } = true;
+
+    /// <summary>
     /// Gets the maximum number of retry attempts for transient database failures.
     /// </summary>
     public int RetryCount { get; init; } = 5;

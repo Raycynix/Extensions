@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Logging;
 using Raycynix.Extensions.Metrics;
@@ -29,6 +30,8 @@ public static class Observability
         services.TryAddScoped<IOperationContext, OperationContext>();
 
         services.AddTransient<CorrelationHeaderHandler>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, CorrelationHttpMessageHandlerBuilderFilter>());
 
         return services;
     }
