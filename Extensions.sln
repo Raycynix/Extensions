@@ -40,6 +40,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Excepti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions", "src\Raycynix.Extensions.Exceptions\Raycynix.Extensions.Exceptions.csproj", "{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Security.Abstractions", "src\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj", "{333574E6-EFF0-47FF-88DC-61246D668627}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Security", "src\Raycynix.Extensions.Security\Raycynix.Extensions.Security.csproj", "{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +70,9 @@ Global
 		{A33E87AD-E657-42B4-9115-71BBA2FA1212} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
+		{FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
+		{333574E6-EFF0-47FF-88DC-61246D668627} = {FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}
+		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75} = {FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -114,5 +123,13 @@ Global
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{333574E6-EFF0-47FF-88DC-61246D668627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{333574E6-EFF0-47FF-88DC-61246D668627}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{333574E6-EFF0-47FF-88DC-61246D668627}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{333574E6-EFF0-47FF-88DC-61246D668627}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
