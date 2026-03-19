@@ -5,7 +5,7 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Centralized abstractions for Exceptions module.</Description>
+        <Description>Abstractions and contracts for Raycynix exception handling.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
