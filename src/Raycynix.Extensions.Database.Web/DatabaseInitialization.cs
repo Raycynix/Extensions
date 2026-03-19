@@ -14,7 +14,7 @@ public static class DatabaseInitialization
     /// <param name="app">The web application instance.</param>
     /// <param name="cancellationToken">The cancellation token for the initialization operation.</param>
     /// <returns>The same <see cref="WebApplication"/> instance for chaining.</returns>
-    public static async Task<WebApplication> UseRaycynixDatabaseInitializationAsync(
+    public static async Task<WebApplication> InitializeRaycynixDatabaseAsync(
         this WebApplication app,
         CancellationToken cancellationToken = default)
     {
