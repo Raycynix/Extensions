@@ -6,6 +6,7 @@
         <IsPackable>true</IsPackable>
 
         <Description>Abstractions and contracts for Raycynix exception handling.</Description>
+        <PackageTags>raycynix;exceptions;abstractions;contracts;error-handling;retry;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

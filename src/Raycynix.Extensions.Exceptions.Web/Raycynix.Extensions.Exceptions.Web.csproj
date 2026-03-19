@@ -6,6 +6,7 @@
         <IsPackable>true</IsPackable>
 
         <Description>ASP.NET Core middleware integration for Raycynix exception handling.</Description>
+        <PackageTags>raycynix;exceptions;aspnetcore;middleware;web;http;error-handling;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
