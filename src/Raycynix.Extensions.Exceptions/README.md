@@ -32,4 +32,4 @@ builder.Services.AddRaycynixExceptions(options =>
 });
 ```
 
-For ASP.NET Core request pipeline integration, add `Raycynix.Extensions.Exceptions.Web`.
+For ASP.NET Core request pipeline integration, add `Raycynix.Extensions.Exceptions.AspNetCore`.

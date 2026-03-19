@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Observability.Web.Http;
+using Raycynix.Extensions.Observability.AspNetCore.Http;
 using Serilog.Context;
 
-namespace Raycynix.Extensions.Observability.Web.Middleware;
+namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
 /// <summary>
 /// Resolves correlation data for the current request and enriches logs and tracing context.

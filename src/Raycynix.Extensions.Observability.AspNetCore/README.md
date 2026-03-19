@@ -1,12 +1,12 @@
-# Raycynix.Extensions.Observability.Web
+# Raycynix.Extensions.Observability.AspNetCore
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Observability.Web` adds ASP.NET Core integration for Raycynix observability.
+`Raycynix.Extensions.Observability.AspNetCore` adds ASP.NET Core integration for Raycynix observability and includes the core observability registration.
 
 ## What it contains
 
-- `AddRaycynixWebObservability(...)`
+- `AddRaycynixAspNetCoreObservability(...)`
 - `UseRaycynixObservability(this IApplicationBuilder app)`
 - `MapRaycynixObservabilityEndpoints(this IEndpointRouteBuilder endpoints)`
 - correlation middleware and `HttpClient` correlation propagation
@@ -16,8 +16,7 @@
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixObservability();
-builder.Services.AddRaycynixWebObservability();
+builder.Services.AddRaycynixAspNetCoreObservability();
 
 var app = builder.Build();
 
@@ -26,3 +25,5 @@ app.MapRaycynixObservabilityEndpoints();
 
 app.Run();
 ```
+
+`AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()`, so no extra core registration is required in ASP.NET Core applications.

@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Hosting", "src\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj", "{2741B5C2-618C-46BA-BF97-4365337C8153}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Web", "src\Raycynix.Extensions.Database.Web\Raycynix.Extensions.Database.Web.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore", "src\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{A33E87AD-E657-42B4-9115-71BBA2FA1212}"
 EndProject
@@ -20,13 +20,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Excepti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions", "src\Raycynix.Extensions.Exceptions\Raycynix.Extensions.Exceptions.csproj", "{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.Web", "src\Raycynix.Extensions.Exceptions.Web\Raycynix.Extensions.Exceptions.Web.csproj", "{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.AspNetCore", "src\Raycynix.Extensions.Exceptions.AspNetCore\Raycynix.Extensions.Exceptions.AspNetCore.csproj", "{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Observability", "Observability", "{D6E0AEAD-BA07-4832-A628-2C32212DC797}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability", "src\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj", "{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability.Web", "src\Raycynix.Extensions.Observability.Web\Raycynix.Extensions.Observability.Web.csproj", "{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability.AspNetCore", "src\Raycynix.Extensions.Observability.AspNetCore\Raycynix.Extensions.Observability.AspNetCore.csproj", "{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{99940817-284B-4AE2-944F-B0ABE2C0B1E3}"
 EndProject
@@ -40,7 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics", "src\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj", "{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics.Web", "src\Raycynix.Extensions.Metrics.Web\Raycynix.Extensions.Metrics.Web.csproj", "{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics.AspNetCore", "src\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj", "{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracing", "Tracing", "{917E4630-97F8-4178-8D1E-C87684E77099}"
 EndProject
@@ -48,7 +48,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing", "src\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj", "{103E84D0-6C48-4D92-BF49-5D233B72AFED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing.Web", "src\Raycynix.Extensions.Tracing.Web\Raycynix.Extensions.Tracing.Web.csproj", "{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing.AspNetCore", "src\Raycynix.Extensions.Tracing.AspNetCore\Raycynix.Extensions.Tracing.AspNetCore.csproj", "{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CD7E63E8-34E0-4B86-8B86-12F31B36DF23}"
 EndProject

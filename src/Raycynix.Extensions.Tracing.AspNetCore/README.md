@@ -1,8 +1,8 @@
-# Raycynix.Extensions.Tracing.Web
+# Raycynix.Extensions.Tracing.AspNetCore
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Tracing.Web` adds ASP.NET Core middleware integration for Raycynix tracing.
+`Raycynix.Extensions.Tracing.AspNetCore` adds ASP.NET Core middleware integration for Raycynix tracing.
 
 ## What it contains
 

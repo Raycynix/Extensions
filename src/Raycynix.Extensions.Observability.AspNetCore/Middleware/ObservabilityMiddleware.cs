@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Metrics.Web;
-using Raycynix.Extensions.Tracing.Web;
-using Raycynix.Extensions.Observability.Web.Middleware;
+using Raycynix.Extensions.Metrics.AspNetCore;
+using Raycynix.Extensions.Tracing.AspNetCore;
+using Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
-namespace Raycynix.Extensions.Observability.Web.Middleware;
+namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
 /// <summary>
 /// Provides middleware extensions for adding Raycynix observability components to the ASP.NET Core request pipeline.

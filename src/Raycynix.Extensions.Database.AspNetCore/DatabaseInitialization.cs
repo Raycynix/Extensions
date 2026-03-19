@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Raycynix.Extensions.Database.Hosting;
 
-namespace Raycynix.Extensions.Database.Web;
+namespace Raycynix.Extensions.Database.AspNetCore;
 
 /// <summary>
 /// Provides extensions for running database initialization during ASP.NET Core startup.

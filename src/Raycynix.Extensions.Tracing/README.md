@@ -22,4 +22,4 @@
 builder.Services.AddRaycynixTracing();
 ```
 
-For ASP.NET Core middleware integration, use `Raycynix.Extensions.Tracing.Web`.
+For ASP.NET Core middleware integration, use `Raycynix.Extensions.Tracing.AspNetCore`.

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Exceptions.Web.Middleware;
+using Raycynix.Extensions.Exceptions.AspNetCore.Middleware;
 
-namespace Raycynix.Extensions.Exceptions.Web;
+namespace Raycynix.Extensions.Exceptions.AspNetCore;
 
 /// <summary>
 /// Provides middleware extensions for the Raycynix exception handling package.

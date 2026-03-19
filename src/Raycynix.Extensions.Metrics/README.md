@@ -23,4 +23,4 @@
 builder.Services.AddRaycynixMetrics();
 ```
 
-For ASP.NET Core middleware and endpoint integration, use `Raycynix.Extensions.Metrics.Web`.
+For ASP.NET Core middleware and endpoint integration, use `Raycynix.Extensions.Metrics.AspNetCore`.

@@ -10,7 +10,7 @@ The database module is now divided by responsibility:
 
 - `Raycynix.Extensions.Database` contains the core EF Core registration and the `IDatabaseInitializer` implementation.
 - `Raycynix.Extensions.Database.Hosting` contains generic-host startup extensions for `IServiceProvider` and `IHost`.
-- `Raycynix.Extensions.Database.Web` contains the ASP.NET Core wrapper for `WebApplication`.
+- `Raycynix.Extensions.Database.AspNetCore` contains the ASP.NET Core wrapper for `WebApplication`.
 
 ## How initialization works
 
@@ -22,7 +22,7 @@ Initialization is performed by `IDatabaseInitializer`, which:
 2. Runs `EnsureCreatedAsync` when `EnsureCreated` is enabled
 3. Runs `MigrateAsync` when `UseMigrations` is enabled
 
-The hosting and web packages only decide when to call that initializer.
+The hosting and ASP.NET Core packages only decide when to call that initializer.
 
 ## Web application
 

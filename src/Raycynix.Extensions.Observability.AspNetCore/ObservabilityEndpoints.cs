@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Raycynix.Extensions.Metrics.Web;
+using Raycynix.Extensions.Metrics.AspNetCore;
 
-namespace Raycynix.Extensions.Observability.Web;
+namespace Raycynix.Extensions.Observability.AspNetCore;
 
 /// <summary>
 /// Provides endpoint mapping extensions for Raycynix observability endpoints.

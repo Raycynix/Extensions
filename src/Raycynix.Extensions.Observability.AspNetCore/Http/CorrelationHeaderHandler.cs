@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
 
-namespace Raycynix.Extensions.Observability.Web.Http;
+namespace Raycynix.Extensions.Observability.AspNetCore.Http;
 
 /// <summary>
 /// Adds the current correlation identifier to outgoing HTTP requests.

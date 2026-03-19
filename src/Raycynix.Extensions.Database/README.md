@@ -32,4 +32,4 @@ builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
 If you want to run initialization during startup, use one of these packages:
 
 - `Raycynix.Extensions.Database.Hosting`
-- `Raycynix.Extensions.Database.Web`
+- `Raycynix.Extensions.Database.AspNetCore`

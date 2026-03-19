@@ -17,8 +17,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj" />
-        <ProjectReference Include="..\Raycynix.Extensions.Tracing.Web\Raycynix.Extensions.Tracing.Web.csproj" />
-        <ProjectReference Include="..\Raycynix.Extensions.Metrics.Web\Raycynix.Extensions.Metrics.Web.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Tracing.AspNetCore\Raycynix.Extensions.Tracing.AspNetCore.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>

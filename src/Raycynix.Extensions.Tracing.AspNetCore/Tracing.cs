@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Tracing.Web.Middleware;
+using Raycynix.Extensions.Tracing.AspNetCore.Middleware;
 
-namespace Raycynix.Extensions.Tracing.Web;
+namespace Raycynix.Extensions.Tracing.AspNetCore;
 
 /// <summary>
 /// Provides middleware extensions for the Raycynix tracing package.

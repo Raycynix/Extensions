@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Serilog.Context;
 
-namespace Raycynix.Extensions.Tracing.Web.Middleware;
+namespace Raycynix.Extensions.Tracing.AspNetCore.Middleware;
 
 /// <summary>
 /// Middleware that enriches the Serilog logging context with trace identifiers

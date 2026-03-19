@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Prometheus;
 
-namespace Raycynix.Extensions.Metrics.Web;
+namespace Raycynix.Extensions.Metrics.AspNetCore;
 
 /// <summary>
 /// Provides ASP.NET Core integration extensions for the Raycynix metrics package.

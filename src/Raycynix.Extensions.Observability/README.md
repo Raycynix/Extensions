@@ -22,4 +22,5 @@
 builder.Services.AddRaycynixObservability();
 ```
 
-For ASP.NET Core integration, use `Raycynix.Extensions.Observability.Web`.
+For ASP.NET Core integration, use `Raycynix.Extensions.Observability.AspNetCore`.
+`AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()` for you.

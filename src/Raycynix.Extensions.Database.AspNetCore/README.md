@@ -1,8 +1,8 @@
-# Raycynix.Extensions.Database.Web
+# Raycynix.Extensions.Database.AspNetCore
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Database.Web` adds ASP.NET Core startup integration.
+`Raycynix.Extensions.Database.AspNetCore` adds ASP.NET Core startup integration.
 
 ## What it does
 
