@@ -10,8 +10,8 @@ namespace Raycynix.Extensions.Database.Hosting;
 public static class DatabaseInitialization
 {
     /// <summary>
-     /// Resolves <see cref="IDatabaseInitializer"/> and runs database initialization.
-     /// </summary>
+    /// Resolves <see cref="IDatabaseInitializer"/> and runs database initialization.
+    /// </summary>
     /// <param name="serviceProvider">The service provider used to resolve the initializer.</param>
     /// <param name="cancellationToken">The cancellation token for the initialization operation.</param>
     public static async Task InitializeRaycynixDatabaseAsync(
