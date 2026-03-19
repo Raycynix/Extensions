@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.2</Version>
+        <Version>0.2.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized abstractions for logging module.</Description>
+        <Description>Abstractions for Raycynix logging services.</Description>
+        <PackageTags>raycynix;logging;abstractions;contracts;structured-logging;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

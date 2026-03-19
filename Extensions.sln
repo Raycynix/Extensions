@@ -4,35 +4,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F806A6E3-AD8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Common", "src\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj", "{446D1B34-438B-4567-8C58-FFA40886C648}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CD7E63E8-34E0-4B86-8B86-12F31B36DF23}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging", "src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj", "{987E464F-92D0-4156-9E4B-9E27EE63931E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database", "src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj", "{408AE015-1312-4139-A191-5F34B164F08E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{99940817-284B-4AE2-944F-B0ABE2C0B1E3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Abstractions", "src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj", "{4123DB0C-4799-461E-9E09-3738777C2DD6}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{85B7AC0B-BB66-438B-80B0-ADB9E512F69F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Abstractions", "src\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj", "{37E5D251-3374-443F-98AF-905B9CF627DD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metrics", "Metrics", "{9CFC7EE0-B711-4287-8162-B3D1BF165A7F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database", "src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj", "{408AE015-1312-4139-A191-5F34B164F08E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics.Abstractions", "src\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj", "{014A6975-D9A4-48DC-943B-2B461FA2EE64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Hosting", "src\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj", "{2741B5C2-618C-46BA-BF97-4365337C8153}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics", "src\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj", "{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracing", "Tracing", "{917E4630-97F8-4178-8D1E-C87684E77099}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing.Abstractions", "src\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj", "{81050703-B15A-4C8F-90ED-8CDD2A45F175}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing", "src\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj", "{103E84D0-6C48-4D92-BF49-5D233B72AFED}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Observability", "Observability", "{D6E0AEAD-BA07-4832-A628-2C32212DC797}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability", "src\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj", "{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore", "src\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{A33E87AD-E657-42B4-9115-71BBA2FA1212}"
 EndProject
@@ -40,11 +20,37 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Excepti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions", "src\Raycynix.Extensions.Exceptions\Raycynix.Extensions.Exceptions.csproj", "{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.AspNetCore", "src\Raycynix.Extensions.Exceptions.AspNetCore\Raycynix.Extensions.Exceptions.AspNetCore.csproj", "{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Security.Abstractions", "src\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj", "{333574E6-EFF0-47FF-88DC-61246D668627}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Observability", "Observability", "{D6E0AEAD-BA07-4832-A628-2C32212DC797}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Security", "src\Raycynix.Extensions.Security\Raycynix.Extensions.Security.csproj", "{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability", "src\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj", "{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observability.AspNetCore", "src\Raycynix.Extensions.Observability.AspNetCore\Raycynix.Extensions.Observability.AspNetCore.csproj", "{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{99940817-284B-4AE2-944F-B0ABE2C0B1E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Abstractions", "src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj", "{4123DB0C-4799-461E-9E09-3738777C2DD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging", "src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj", "{987E464F-92D0-4156-9E4B-9E27EE63931E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metrics", "Metrics", "{9CFC7EE0-B711-4287-8162-B3D1BF165A7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics.Abstractions", "src\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj", "{014A6975-D9A4-48DC-943B-2B461FA2EE64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics", "src\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj", "{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Metrics.AspNetCore", "src\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj", "{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracing", "Tracing", "{917E4630-97F8-4178-8D1E-C87684E77099}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing.Abstractions", "src\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj", "{81050703-B15A-4C8F-90ED-8CDD2A45F175}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing", "src\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj", "{103E84D0-6C48-4D92-BF49-5D233B72AFED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Tracing.AspNetCore", "src\Raycynix.Extensions.Tracing.AspNetCore\Raycynix.Extensions.Tracing.AspNetCore.csproj", "{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CD7E63E8-34E0-4B86-8B86-12F31B36DF23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +66,7 @@ Global
 		{37E5D251-3374-443F-98AF-905B9CF627DD} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 		{014A6975-D9A4-48DC-943B-2B461FA2EE64} = {9CFC7EE0-B711-4287-8162-B3D1BF165A7F}
 		{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C} = {9CFC7EE0-B711-4287-8162-B3D1BF165A7F}
+		{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61} = {9CFC7EE0-B711-4287-8162-B3D1BF165A7F}
 		{81050703-B15A-4C8F-90ED-8CDD2A45F175} = {917E4630-97F8-4178-8D1E-C87684E77099}
 		{103E84D0-6C48-4D92-BF49-5D233B72AFED} = {917E4630-97F8-4178-8D1E-C87684E77099}
 		{D6E0AEAD-BA07-4832-A628-2C32212DC797} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
@@ -67,12 +74,14 @@ Global
 		{9CFC7EE0-B711-4287-8162-B3D1BF165A7F} = {D6E0AEAD-BA07-4832-A628-2C32212DC797}
 		{99940817-284B-4AE2-944F-B0ABE2C0B1E3} = {D6E0AEAD-BA07-4832-A628-2C32212DC797}
 		{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8} = {D6E0AEAD-BA07-4832-A628-2C32212DC797}
+		{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A} = {D6E0AEAD-BA07-4832-A628-2C32212DC797}
 		{A33E87AD-E657-42B4-9115-71BBA2FA1212} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
-		{FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
-		{333574E6-EFF0-47FF-88DC-61246D668627} = {FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}
-		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75} = {FD4774F7-0A8C-4DD3-80A8-8CC599FB6D56}
+		{2741B5C2-618C-46BA-BF97-4365337C8153} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{056853E2-57A4-4C33-B065-FECBD0073A26} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
+		{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49} = {917E4630-97F8-4178-8D1E-C87684E77099}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -103,6 +112,10 @@ Global
 		{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91BFCAA2-1F64-4D2D-A0CC-3DA6DDFE454C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7B728A9-22A4-4B2C-AE43-93F4D48E5D61}.Release|Any CPU.Build.0 = Release|Any CPU
 		{81050703-B15A-4C8F-90ED-8CDD2A45F175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{81050703-B15A-4C8F-90ED-8CDD2A45F175}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81050703-B15A-4C8F-90ED-8CDD2A45F175}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -115,6 +128,10 @@ Global
 		{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC8C34BB-99A4-47C8-A6B4-6EDEFB3C26F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C567B1B7-2C3F-4FC5-BD9C-3F0CBFCB4E2A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -123,13 +140,21 @@ Global
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{333574E6-EFF0-47FF-88DC-61246D668627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{333574E6-EFF0-47FF-88DC-61246D668627}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{333574E6-EFF0-47FF-88DC-61246D668627}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{333574E6-EFF0-47FF-88DC-61246D668627}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2897EBA-CC4A-46C6-A0E2-88A6A8EBAB75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Release|Any CPU.Build.0 = Release|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C6E9F73-0ACA-407D-AE1C-0C477DC80C49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

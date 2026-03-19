@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.2</Version>
+        <Version>0.2.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Centralized metrics module.</Description>
+        <Description>Core metrics services for Raycynix applications.</Description>
+        <PackageTags>raycynix;metrics;prometheus;observability;healthchecks;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -19,10 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.3" />
         <PackageReference Include="prometheus-net" Version="8.2.1"/>
-        <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1"/>
-        <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1"/>
     </ItemGroup>
 
 </Project>

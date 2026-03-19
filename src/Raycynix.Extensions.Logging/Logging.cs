@@ -23,6 +23,7 @@ public static class Logging
     /// Registers the Raycynix logger abstraction.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixLogging(this IServiceCollection services)
     {
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
@@ -34,6 +35,7 @@ public static class Logging
     /// </summary>
     /// <param name="hostBuilder">The host builder to configure.</param>
     /// <param name="setup">An optional callback for adjusting logging settings.</param>
+    /// <returns>The configured <see cref="IHostBuilder"/> instance.</returns>
     public static IHostBuilder UseRaycynixLogging(
         this IHostBuilder hostBuilder,
         Action<LoggingConfiguration>? setup = null)

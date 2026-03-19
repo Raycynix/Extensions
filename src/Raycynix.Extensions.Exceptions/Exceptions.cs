@@ -1,15 +1,12 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
-using Raycynix.Extensions.Exceptions.Middleware;
 using Raycynix.Extensions.Exceptions.Options;
 
 namespace Raycynix.Extensions.Exceptions;
 
 /// <summary>
-/// Provides service registration and middleware extensions for the exception handling package.
+/// Provides service registration extensions for the exception handling package.
 /// </summary>
 public static class Exceptions
 {
@@ -32,15 +29,5 @@ public static class Exceptions
         services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
         return services;
-    }
-
-    /// <summary>
-    /// Adds the Raycynix exception handling middleware to the request pipeline.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The configured application builder.</returns>
-    public static IApplicationBuilder UseRaycynixExceptions(this IApplicationBuilder app)
-    {
-        return app.UseMiddleware<RaycynixExceptionMiddleware>();
     }
 }

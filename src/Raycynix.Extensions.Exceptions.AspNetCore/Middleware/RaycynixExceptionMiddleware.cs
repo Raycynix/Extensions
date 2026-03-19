@@ -8,7 +8,7 @@ using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
 
-namespace Raycynix.Extensions.Exceptions.Middleware;
+namespace Raycynix.Extensions.Exceptions.AspNetCore.Middleware;
 
 /// <summary>
 /// Converts unhandled exceptions into structured JSON error responses.
