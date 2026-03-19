@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Web", "src\Raycynix.Extensions.Database.Web\Raycynix.Extensions.Database.Web.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.Web", "src\Raycynix.Extensions.Exceptions.Web\Raycynix.Extensions.Exceptions.Web.csproj", "{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,7 @@ Global
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
 		{2741B5C2-618C-46BA-BF97-4365337C8153} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 		{056853E2-57A4-4C33-B065-FECBD0073A26} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -128,5 +131,9 @@ Global
 		{056853E2-57A4-4C33-B065-FECBD0073A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B0923A-E40A-44C6-B8C4-61FB4A6002BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
