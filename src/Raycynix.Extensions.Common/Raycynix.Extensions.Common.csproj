@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.2</Version>
+        <Version>0.3.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>The core infrastructure library for Raycynix Microservices.</Description>
+        <Description>Shared infrastructure primitives and helpers for Raycynix applications.</Description>
+        <PackageTags>raycynix;common;shared;helpers;context;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
