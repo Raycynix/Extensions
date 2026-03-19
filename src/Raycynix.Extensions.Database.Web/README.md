@@ -21,7 +21,7 @@ builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
 
 var app = builder.Build();
 
-await app.UseRaycynixDatabaseInitializationAsync();
+await app.InitializeRaycynixDatabaseAsync();
 
 app.Run();
 ```
