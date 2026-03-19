@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized Serilog + Elasticsearch logging module.</Description>
+        <Description>Core structured logging services and host integration for Raycynix applications.</Description>
+        <PackageTags>raycynix;logging;serilog;structured-logging;elasticsearch;generic-host;dotnet</PackageTags>
         
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

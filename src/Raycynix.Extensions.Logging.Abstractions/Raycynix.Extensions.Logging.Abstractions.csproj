@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized abstractions for logging module.</Description>
+        <Description>Abstractions for Raycynix logging services.</Description>
+        <PackageTags>raycynix;logging;abstractions;contracts;structured-logging;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
