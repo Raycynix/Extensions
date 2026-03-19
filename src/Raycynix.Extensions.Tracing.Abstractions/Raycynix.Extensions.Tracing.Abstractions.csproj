@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized abstractions for tracing module.</Description>
+        <Description>Abstractions for Raycynix tracing services.</Description>
+        <PackageTags>raycynix;tracing;abstractions;contracts;diagnostics;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
