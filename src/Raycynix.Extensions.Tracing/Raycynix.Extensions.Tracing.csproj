@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.2</Version>
+        <Version>0.2.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Centralized tracing module.</Description>
+        <Description>Core tracing services for Raycynix applications.</Description>
+        <PackageTags>raycynix;tracing;diagnostics;activitysource;observability;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -18,9 +19,5 @@
         <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj"/>
         <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
         <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 </Project>

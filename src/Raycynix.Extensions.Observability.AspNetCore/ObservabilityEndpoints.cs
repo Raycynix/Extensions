@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Prometheus;
+using Raycynix.Extensions.Metrics.AspNetCore;
 
-namespace Raycynix.Extensions.Observability;
+namespace Raycynix.Extensions.Observability.AspNetCore;
 
 /// <summary>
-/// Provides endpoint mapping extensions for observability endpoints.
+/// Provides endpoint mapping extensions for Raycynix observability endpoints.
 /// </summary>
 public static class ObservabilityEndpoints
 {
@@ -22,7 +22,7 @@ public static class ObservabilityEndpoints
         string metricsPath = "/metrics")
     {
         endpoints.MapHealthChecks(healthPath);
-        endpoints.MapMetrics(metricsPath);
+        endpoints.MapRaycynixMetrics(metricsPath);
 
         return endpoints;
     }

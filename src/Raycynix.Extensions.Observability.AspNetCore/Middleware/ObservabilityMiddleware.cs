@@ -1,26 +1,25 @@
 using Microsoft.AspNetCore.Builder;
-using Prometheus;
-using Raycynix.Extensions.Tracing.Middleware;
+using Raycynix.Extensions.Metrics.AspNetCore;
+using Raycynix.Extensions.Tracing.AspNetCore;
+using Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
-namespace Raycynix.Extensions.Observability.Middleware;
+namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
 /// <summary>
-/// Provides extension methods for adding Raycynix observability middleware
-/// components to the ASP.NET Core request pipeline.
+/// Provides middleware extensions for adding Raycynix observability components to the ASP.NET Core request pipeline.
 /// </summary>
 public static class ObservabilityMiddleware
 {
     /// <summary>
-    /// Adds middleware that enriches logs with tracing data, propagates
-    /// correlation identifiers, and records HTTP request metrics.
+    /// Adds tracing, correlation, and HTTP metrics middleware to the request pipeline.
     /// </summary>
     /// <param name="app">The application builder used to configure the request pipeline.</param>
     /// <returns>The same <see cref="IApplicationBuilder"/> instance for chaining.</returns>
     public static IApplicationBuilder UseRaycynixObservability(this IApplicationBuilder app)
     {
-        app.UseMiddleware<TracingMiddleware>();
+        app.UseRaycynixTracing();
         app.UseMiddleware<CorrelationMiddleware>();
-        app.UseHttpMetrics();
+        app.UseRaycynixMetrics();
 
         return app;
     }

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    
+    <PropertyGroup>
+        <Version>0.2.0</Version>
+
+        <IsPackable>true</IsPackable>
+
+        <Description>ASP.NET Core middleware integration for Raycynix tracing.</Description>
+        <PackageTags>raycynix;tracing;aspnetcore;middleware;web;observability;dotnet</PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    
+</Project>

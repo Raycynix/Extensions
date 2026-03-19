@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.3.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized database module for EF Core configuration and initialization.</Description>
+        <Description>Core EF Core database registration and initialization services for Raycynix applications.</Description>
+        <PackageTags>raycynix;database;efcore;entityframework;postgresql;sqlserver;mysql;sqlite;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

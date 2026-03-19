@@ -11,10 +11,11 @@ namespace Raycynix.Extensions.Metrics;
 public static class Metrics
 {
     /// <summary>
-    /// Registers the metrics service and health checks.
+    /// Registers the metrics service and optional health checks.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
     /// <param name="healthSetup">An optional callback for configuring health checks.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixMetrics(this IServiceCollection services,
         Action<IHealthChecksBuilder>? healthSetup = null)
     {

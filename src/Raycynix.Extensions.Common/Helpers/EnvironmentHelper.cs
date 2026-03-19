@@ -1,7 +1,7 @@
 namespace Raycynix.Extensions.Common.Helpers;
 
 /// <summary>
-/// Provides helper methods for reading the current ASP.NET Core environment.
+/// Provides helper methods for reading the current application environment.
 /// </summary>
 public static class EnvironmentHelper
 {
