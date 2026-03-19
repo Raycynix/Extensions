@@ -6,6 +6,7 @@
         <IsPackable>true</IsPackable>
 
         <Description>ASP.NET Core startup integration for Raycynix database initialization.</Description>
+        <PackageTags>raycynix;database;aspnetcore;web;startup;initialization;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

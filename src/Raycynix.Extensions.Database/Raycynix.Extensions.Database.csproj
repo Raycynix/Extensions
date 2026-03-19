@@ -6,6 +6,7 @@
         <IsPackable>true</IsPackable>
         
         <Description>Core EF Core database registration and initialization services for Raycynix applications.</Description>
+        <PackageTags>raycynix;database;efcore;entityframework;postgresql;sqlserver;mysql;sqlite;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
