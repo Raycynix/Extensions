@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 
-namespace Raycynix.Extensions.Observability.Http;
+namespace Raycynix.Extensions.Observability.Web.Http;
 
 /// <summary>
 /// Adds correlation propagation to all <see cref="HttpClient"/> instances created by the factory.
