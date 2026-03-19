@@ -1,16 +1,15 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Database.Abstractions;
+using Raycynix.Extensions.Database.Hosting;
 
-namespace Raycynix.Extensions.Database;
+namespace Raycynix.Extensions.Database.Web;
 
 /// <summary>
-/// Provides extensions for running database initialization during application startup.
+/// Provides extensions for running database initialization during ASP.NET Core startup.
 /// </summary>
 public static class DatabaseInitialization
 {
     /// <summary>
-    /// Resolves <see cref="IDatabaseInitializer"/> and runs database initialization.
+    /// Runs database initialization using the application's service provider.
     /// </summary>
     /// <param name="app">The web application instance.</param>
     /// <param name="cancellationToken">The cancellation token for the initialization operation.</param>
@@ -19,10 +18,7 @@ public static class DatabaseInitialization
         this WebApplication app,
         CancellationToken cancellationToken = default)
     {
-        using var scope = app.Services.CreateScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
-
-        await initializer.InitializeAsync(cancellationToken);
+        await app.Services.InitializeRaycynixDatabaseAsync(cancellationToken);
 
         return app;
     }

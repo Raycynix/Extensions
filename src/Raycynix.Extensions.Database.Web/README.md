@@ -1,0 +1,35 @@
+# Raycynix.Extensions.Database.Web
+
+![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
+
+`Raycynix.Extensions.Database.Web` adds ASP.NET Core startup integration.
+
+## What it does
+
+This package exposes `UseRaycynixDatabaseInitializationAsync(this WebApplication app)` and delegates the actual work to `Raycynix.Extensions.Database.Hosting`.
+
+## Usage
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
+{
+    options.Provider = DatabaseProvider.PostgreSql;
+    options.UseMigrations = true;
+});
+
+var app = builder.Build();
+
+await app.UseRaycynixDatabaseInitializationAsync();
+
+app.Run();
+```
+
+## How it works
+
+The web extension is a thin wrapper:
+
+```csharp
+await app.Services.InitializeRaycynixDatabaseAsync(cancellationToken);
+```

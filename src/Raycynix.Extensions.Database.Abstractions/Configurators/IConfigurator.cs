@@ -9,10 +9,12 @@ public interface IConfigurator
 {
     /// <summary>
     /// Gets the entity type handled by the configurator.
+    /// </summary>
     Type Type { get; }
 
     /// <summary>
     /// Gets the entity types whose configurators must run before the current one.
+    /// </summary>
     Type[] DependsOn { get; }
 
     /// <summary>

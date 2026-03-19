@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
@@ -23,7 +22,7 @@ public class DatabaseInitializer(
     public bool IsReady { get; private set; }
 
     /// <summary>
-    /// Runs the configured database initialization steps once.
+    /// Runs the configured database initialization steps at once.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>

@@ -40,6 +40,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Excepti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions", "src\Raycynix.Extensions.Exceptions\Raycynix.Extensions.Exceptions.csproj", "{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Hosting", "src\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj", "{2741B5C2-618C-46BA-BF97-4365337C8153}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Web", "src\Raycynix.Extensions.Database.Web\Raycynix.Extensions.Database.Web.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +68,8 @@ Global
 		{A33E87AD-E657-42B4-9115-71BBA2FA1212} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 		{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9} = {A33E87AD-E657-42B4-9115-71BBA2FA1212}
+		{2741B5C2-618C-46BA-BF97-4365337C8153} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{056853E2-57A4-4C33-B065-FECBD0073A26} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{446D1B34-438B-4567-8C58-FFA40886C648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -114,5 +120,13 @@ Global
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B1413D-CFF9-490F-BDF9-5AEF45C09DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2741B5C2-618C-46BA-BF97-4365337C8153}.Release|Any CPU.Build.0 = Release|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{056853E2-57A4-4C33-B065-FECBD0073A26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
