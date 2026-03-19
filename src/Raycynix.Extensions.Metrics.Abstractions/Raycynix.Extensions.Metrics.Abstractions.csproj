@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized abstractions for metrics module.</Description>
+        <Description>Abstractions for Raycynix metrics services.</Description>
+        <PackageTags>raycynix;metrics;abstractions;contracts;prometheus;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
