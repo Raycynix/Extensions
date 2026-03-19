@@ -5,7 +5,7 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Centralized database module for EF Core configuration and initialization.</Description>
+        <Description>Core EF Core database registration and initialization services for Raycynix applications.</Description>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

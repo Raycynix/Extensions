@@ -5,7 +5,7 @@ using Raycynix.Extensions.Database.Abstractions;
 namespace Raycynix.Extensions.Database.Hosting;
 
 /// <summary>
-/// Provides extensions for running database initialization in generic-host based applications.
+/// Provides extensions for running database initialization in generic host-based applications.
 /// </summary>
 public static class DatabaseInitialization
 {
