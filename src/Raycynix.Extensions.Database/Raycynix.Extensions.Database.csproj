@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
-
+        <Version>0.3.0</Version>
+s
         <IsPackable>true</IsPackable>
         
         <Description>Core EF Core database registration and initialization services for Raycynix applications.</Description>
