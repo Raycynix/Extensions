@@ -10,7 +10,8 @@ publish/
 *.userosscache
 *.sln.docstates
 
-!.github/workflows/
+!.github/
+!.github/**
 
 ## JetBrains Rider
 .idea/
