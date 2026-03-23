@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -8,9 +9,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.PolicyProvider;
 using Raycynix.Extensions.Security.AspNetCore.Implementation;
 using Raycynix.Extensions.Security.Configurations;
-using Raycynix.Extensions.Security;
 
 namespace Raycynix.Extensions.Security.AspNetCore;
 
@@ -45,6 +47,12 @@ public static class Security
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options => ConfigureJwtBearer(options, config));
 
+        services.AddAuthorization();
+        services.Replace(ServiceDescriptor.Singleton<IAuthorizationPolicyProvider, RaycynixAuthorizationPolicyProvider>());
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, SubjectTypeAuthorizationHandler>();
+
         services.Replace(ServiceDescriptor.Scoped<ISecurityContext>(serviceProvider =>
         {
             var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
@@ -61,7 +69,10 @@ public static class Security
     /// <returns>The configured application builder.</returns>
     public static IApplicationBuilder UseRaycynixSecurity(this IApplicationBuilder app)
     {
-        return app.UseAuthentication();
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        return app;
     }
 
     private static void ConfigureJwtBearer(JwtBearerOptions options, SecurityConfiguration config)

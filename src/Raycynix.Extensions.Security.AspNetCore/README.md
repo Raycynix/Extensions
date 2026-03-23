@@ -9,6 +9,7 @@
 - `AddRaycynixAspNetCoreSecurity(...)`
 - `UseRaycynixSecurity(this IApplicationBuilder app)`
 - per-request `ClaimsPrincipal` to `ISecurityContext` mapping
+- dynamic API policies for `permission:*`, `role:*`, and `subject:*`
 
 ## Usage
 
@@ -27,6 +28,16 @@ var app = builder.Build();
 app.UseRaycynixSecurity();
 
 app.Run();
+```
+
+Use authorization policies with standard names:
+
+```csharp
+using Raycynix.Extensions.Security.AspNetCore.Authorization;
+
+[Authorize(Policy = SecurityPolicies.Permission("users.read"))]
+[Authorize(Policy = SecurityPolicies.Role("admin"))]
+[Authorize(Policy = SecurityPolicies.ServiceOnly)]
 ```
 
 The package expects JWT access tokens with:
