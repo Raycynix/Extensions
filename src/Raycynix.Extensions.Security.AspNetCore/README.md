@@ -10,6 +10,7 @@
 - `UseRaycynixSecurity(this IApplicationBuilder app)`
 - per-request `ClaimsPrincipal` to `ISecurityContext` mapping
 - dynamic API policies for `permission:*`, `role:*`, and `subject:*`
+- consistent `401 Unauthorized` and `403 Forbidden` JSON responses
 
 ## Usage
 
@@ -36,7 +37,11 @@ Use authorization policies with standard names:
 using Raycynix.Extensions.Security.AspNetCore.Authorization;
 
 [Authorize(Policy = SecurityPolicies.Permission("users.read"))]
+[Authorize(Policy = SecurityPolicies.AnyPermission("users.read", "users.write"))]
+[Authorize(Policy = SecurityPolicies.AllPermissions("users.read", "users.export"))]
 [Authorize(Policy = SecurityPolicies.Role("admin"))]
+[Authorize(Policy = SecurityPolicies.AnyRole("admin", "support"))]
+[Authorize(Policy = SecurityPolicies.AllRoles("manager", "auditor"))]
 [Authorize(Policy = SecurityPolicies.ServiceOnly)]
 ```
 
@@ -48,3 +53,5 @@ The package expects JWT access tokens with:
 - `permissions`
 
 `subject_type` is mapped to `SecuritySubjectType`, allowing both `User` and `Service` request subjects to use the same `ISecurityContext`.
+
+Authentication and authorization failures return safe JSON responses without exposing internal policy details.

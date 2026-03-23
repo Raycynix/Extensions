@@ -18,7 +18,11 @@ public static class SecurityPolicies
     public const string ServiceOnly = "subject:service";
 
     internal const string PermissionPrefix = "permission:";
+    internal const string AnyPermissionPrefix = "permission:any:";
+    internal const string AllPermissionsPrefix = "permission:all:";
     internal const string RolePrefix = "role:";
+    internal const string AnyRolePrefix = "role:any:";
+    internal const string AllRolesPrefix = "role:all:";
     internal const string SubjectPrefix = "subject:";
 
     /// <summary>
@@ -32,6 +36,26 @@ public static class SecurityPolicies
     }
 
     /// <summary>
+    /// Builds a policy name that requires at least one of the specified permissions.
+    /// </summary>
+    /// <param name="permissions">The permissions of which at least one must be granted.</param>
+    /// <returns>A policy name understood by the Raycynix policy provider.</returns>
+    public static string AnyPermission(params string[] permissions)
+    {
+        return $"{AnyPermissionPrefix}{JoinValues(permissions)}";
+    }
+
+    /// <summary>
+    /// Builds a policy name that requires all of the specified permissions.
+    /// </summary>
+    /// <param name="permissions">The permissions that must all be granted.</param>
+    /// <returns>A policy name understood by the Raycynix policy provider.</returns>
+    public static string AllPermissions(params string[] permissions)
+    {
+        return $"{AllPermissionsPrefix}{JoinValues(permissions)}";
+    }
+
+    /// <summary>
     /// Builds a role-based policy name.
     /// </summary>
     /// <param name="role">The required role.</param>
@@ -42,6 +66,26 @@ public static class SecurityPolicies
     }
 
     /// <summary>
+    /// Builds a policy name that requires at least one of the specified roles.
+    /// </summary>
+    /// <param name="roles">The roles of which at least one must be assigned.</param>
+    /// <returns>A policy name understood by the Raycynix policy provider.</returns>
+    public static string AnyRole(params string[] roles)
+    {
+        return $"{AnyRolePrefix}{JoinValues(roles)}";
+    }
+
+    /// <summary>
+    /// Builds a policy name that requires all of the specified roles.
+    /// </summary>
+    /// <param name="roles">The roles that must all be assigned.</param>
+    /// <returns>A policy name understood by the Raycynix policy provider.</returns>
+    public static string AllRoles(params string[] roles)
+    {
+        return $"{AllRolesPrefix}{JoinValues(roles)}";
+    }
+
+    /// <summary>
     /// Builds a subject-type-based policy name.
     /// </summary>
     /// <param name="subjectType">The required authenticated subject type.</param>
@@ -49,5 +93,10 @@ public static class SecurityPolicies
     public static string Subject(SecuritySubjectType subjectType)
     {
         return $"{SubjectPrefix}{subjectType.ToString().ToLowerInvariant()}";
+    }
+
+    private static string JoinValues(IEnumerable<string> values)
+    {
+        return string.Join("|", values.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()));
     }
 }

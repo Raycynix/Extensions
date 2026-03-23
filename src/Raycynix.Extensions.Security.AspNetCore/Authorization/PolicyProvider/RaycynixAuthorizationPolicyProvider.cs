@@ -34,12 +34,48 @@ public sealed class RaycynixAuthorizationPolicyProvider : DefaultAuthorizationPo
 
     private static AuthorizationPolicy? BuildPolicy(string policyName)
     {
+        if (policyName.StartsWith(SecurityPolicies.AnyPermissionPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var permissions = SplitValues(policyName[SecurityPolicies.AnyPermissionPrefix.Length..]);
+            if (permissions.Length > 0)
+            {
+                return BuildAuthenticatedPolicy(new AnyPermissionRequirement(permissions));
+            }
+        }
+
+        if (policyName.StartsWith(SecurityPolicies.AllPermissionsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var permissions = SplitValues(policyName[SecurityPolicies.AllPermissionsPrefix.Length..]);
+            if (permissions.Length > 0)
+            {
+                return BuildAuthenticatedPolicy(new AllPermissionsRequirement(permissions));
+            }
+        }
+
         if (policyName.StartsWith(SecurityPolicies.PermissionPrefix, StringComparison.OrdinalIgnoreCase))
         {
             var permission = policyName[SecurityPolicies.PermissionPrefix.Length..];
             if (!string.IsNullOrWhiteSpace(permission))
             {
                 return BuildAuthenticatedPolicy(new PermissionRequirement(permission));
+            }
+        }
+
+        if (policyName.StartsWith(SecurityPolicies.AnyRolePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var roles = SplitValues(policyName[SecurityPolicies.AnyRolePrefix.Length..]);
+            if (roles.Length > 0)
+            {
+                return BuildAuthenticatedPolicy(new AnyRoleRequirement(roles));
+            }
+        }
+
+        if (policyName.StartsWith(SecurityPolicies.AllRolesPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var roles = SplitValues(policyName[SecurityPolicies.AllRolesPrefix.Length..]);
+            if (roles.Length > 0)
+            {
+                return BuildAuthenticatedPolicy(new AllRolesRequirement(roles));
             }
         }
 
@@ -70,5 +106,10 @@ public sealed class RaycynixAuthorizationPolicyProvider : DefaultAuthorizationPo
             .RequireAuthenticatedUser()
             .AddRequirements(requirement)
             .Build();
+    }
+
+    private static string[] SplitValues(string value)
+    {
+        return value.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

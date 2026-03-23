@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.Models;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.PolicyProvider;
 using Raycynix.Extensions.Security.AspNetCore.Implementation;
 using Raycynix.Extensions.Security.Configurations;
@@ -49,8 +51,13 @@ public static class Security
 
         services.AddAuthorization();
         services.Replace(ServiceDescriptor.Singleton<IAuthorizationPolicyProvider, RaycynixAuthorizationPolicyProvider>());
+        services.Replace(ServiceDescriptor.Singleton<IAuthorizationMiddlewareResultHandler, RaycynixAuthorizationMiddlewareResultHandler>());
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AllPermissionsAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AnyRoleAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AllRolesAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, SubjectTypeAuthorizationHandler>();
 
         services.Replace(ServiceDescriptor.Scoped<ISecurityContext>(serviceProvider =>
@@ -80,6 +87,27 @@ public static class Security
         options.Authority = config.Jwt.Authority;
         options.RequireHttpsMetadata = config.Jwt.RequireHttpsMetadata;
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+
+                    var response = new AuthorizationErrorResponse(
+                        Status: StatusCodes.Status401Unauthorized,
+                        Code: "unauthorized",
+                        Message: "Authentication is required to access this resource.",
+                        TraceId: context.HttpContext.TraceIdentifier);
+
+                    await context.Response.WriteAsJsonAsync(response);
+                }
+            }
+        };
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
