@@ -18,6 +18,7 @@
 - HTTP request mapping
 - JWT validation middleware
 - authorization policies
+- secret storage and resolution
 
 ## Usage
 
@@ -33,3 +34,5 @@ builder.Services.AddRaycynixSecurity(builder.Configuration, options =>
 The package binds settings from the `SecurityConfiguration` section and allows optional overrides in code.
 
 For ASP.NET Core request binding and web-specific integration, use `Raycynix.Extensions.Security.AspNetCore`.
+
+For secret resolution, use `Raycynix.Extensions.Secrets`.
