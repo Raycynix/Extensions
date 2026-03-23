@@ -8,6 +8,8 @@
 
 - `SecurityContext`
 - `AddRaycynixSecurity(...)`
+- `SecurityConfiguration`
+- `JwtConfiguration`
 - DI registration for `ISecurityContext`
 
 ## What it does not contain
@@ -20,7 +22,14 @@
 ## Usage
 
 ```csharp
-builder.Services.AddRaycynixSecurity();
+builder.Services.AddRaycynixSecurity(builder.Configuration, options =>
+{
+    options.Jwt.Authority = "https://auth.raycynix.com";
+    options.Jwt.Issuer = "raycynix-auth";
+    options.Jwt.Audience = "raycynix-services";
+});
 ```
+
+The package binds settings from the `SecurityConfiguration` section and allows optional overrides in code.
 
 For ASP.NET Core request binding and web-specific integration, use `Raycynix.Extensions.Security.AspNetCore`.

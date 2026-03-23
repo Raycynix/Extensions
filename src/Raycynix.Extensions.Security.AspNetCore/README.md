@@ -1,0 +1,39 @@
+# Raycynix.Extensions.Security.AspNetCore
+
+![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
+
+`Raycynix.Extensions.Security.AspNetCore` adds ASP.NET Core JWT authentication integration for Raycynix security.
+
+## What it contains
+
+- `AddRaycynixAspNetCoreSecurity(...)`
+- `UseRaycynixSecurity(this IApplicationBuilder app)`
+- per-request `ClaimsPrincipal` to `ISecurityContext` mapping
+
+## Usage
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRaycynixAspNetCoreSecurity(builder.Configuration, options =>
+{
+    options.Jwt.Authority = "https://auth.raycynix.com";
+    options.Jwt.Issuer = "raycynix-auth";
+    options.Jwt.Audience = "raycynix-services";
+});
+
+var app = builder.Build();
+
+app.UseRaycynixSecurity();
+
+app.Run();
+```
+
+The package expects JWT access tokens with:
+
+- `sub`
+- `subject_type`
+- `roles`
+- `permissions`
+
+`subject_type` is mapped to `SecuritySubjectType`, allowing both `User` and `Service` request subjects to use the same `ISecurityContext`.
