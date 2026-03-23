@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>The core security library for Raycynix Microservices.</Description>
+        <Description>Core security services for Raycynix applications.</Description>
+        <PackageTags>raycynix;security;authentication;authorization;rbac;contracts;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

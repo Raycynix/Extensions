@@ -5,7 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>The core security library for Raycynix Microservices.</Description>
+        <Description>Abstractions for Raycynix security context and shared claims contracts.</Description>
+        <PackageTags>raycynix;security;abstractions;contracts;claims;rbac;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
