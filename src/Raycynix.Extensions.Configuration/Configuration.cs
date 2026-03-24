@@ -1,8 +1,10 @@
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
+using Raycynix.Extensions.Configuration.Configurations;
 using Raycynix.Extensions.Configuration.Internal;
 
 namespace Raycynix.Extensions.Configuration;
@@ -12,6 +14,43 @@ namespace Raycynix.Extensions.Configuration;
 /// </summary>
 public static class Configuration
 {
+    /// <summary>
+    /// Adds the standard Raycynix configuration sources to the provided builder.
+    /// </summary>
+    /// <param name="builder">The configuration builder to update.</param>
+    /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
+    /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
+    public static IConfigurationBuilder AddRaycynixConfigurationSources(
+        this IConfigurationBuilder builder,
+        Action<ConfigurationSourcesConfiguration>? setup = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var config = new ConfigurationSourcesConfiguration();
+        setup?.Invoke(config);
+
+        ValidateSourcesConfiguration(config);
+        RegisterSources(builder, config);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Replaces the current configuration sources with the standard Raycynix source order.
+    /// </summary>
+    /// <param name="builder">The configuration builder to update.</param>
+    /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
+    /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
+    public static IConfigurationBuilder UseRaycynixConfigurationSources(
+        this IConfigurationBuilder builder,
+        Action<ConfigurationSourcesConfiguration>? setup = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Sources.Clear();
+        return builder.AddRaycynixConfigurationSources(setup);
+    }
+
     /// <summary>
     /// Registers a typed configuration model using the standard Options pipeline with Raycynix conventions.
     /// </summary>
@@ -99,5 +138,58 @@ public static class Configuration
                 new DelegateConfigurationValidator<TOptions>(validate, failureMessage)));
 
         return services;
+    }
+
+    private static void RegisterSources(IConfigurationBuilder builder, ConfigurationSourcesConfiguration config)
+    {
+        builder.SetBasePath(config.BasePath);
+        builder.AddJsonFile(GetBaseJsonFileName(config.BaseFileName), config.BaseJsonOptional, config.ReloadOnChange);
+        builder.AddJsonFile(
+            GetEnvironmentSpecificFileName(config.BaseFileName, config.EnvironmentName),
+            optional: true,
+            reloadOnChange: config.ReloadOnChange);
+
+        if (config.IncludeUserSecrets)
+        {
+            builder.AddUserSecrets(
+                config.UserSecretsAssembly ?? Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly(),
+                config.UserSecretsOptional,
+                config.ReloadOnChange);
+        }
+
+        builder.AddEnvironmentVariables();
+
+        if (config.CommandLineArguments.Length > 0)
+        {
+            builder.AddCommandLine(config.CommandLineArguments);
+        }
+    }
+
+    private static void ValidateSourcesConfiguration(ConfigurationSourcesConfiguration config)
+    {
+        if (string.IsNullOrWhiteSpace(config.BasePath))
+        {
+            throw new ArgumentException("Configuration base path cannot be null or whitespace.", nameof(config));
+        }
+
+        if (string.IsNullOrWhiteSpace(config.EnvironmentName))
+        {
+            throw new ArgumentException("Environment name cannot be null or whitespace.", nameof(config));
+        }
+
+        if (string.IsNullOrWhiteSpace(config.BaseFileName))
+        {
+            throw new ArgumentException("Base configuration file name cannot be null or whitespace.", nameof(config));
+        }
+    }
+
+    private static string GetBaseJsonFileName(string baseFileName)
+    {
+        return $"{baseFileName}.json";
+    }
+
+    private static string GetEnvironmentSpecificFileName(string baseFileName, string environmentName)
+    {
+        return $"{baseFileName}.{environmentName}.json";
     }
 }

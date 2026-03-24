@@ -6,10 +6,13 @@
 
 ## What it contains
 
+- `AddRaycynixConfigurationSources(...)`
+- `UseRaycynixConfigurationSources(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
 - `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
 - `AddRaycynixConfigurationValidator<TOptions>(...)`
 - typed configuration binding based on the standard Options pipeline
+- standard configuration source ordering
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
 - startup validation through standard `IValidateOptions<TOptions>` integration
 
@@ -22,6 +25,13 @@
 ## Usage
 
 ```csharp
+builder.Configuration.UseRaycynixConfigurationSources(options =>
+{
+    options.BaseFileName = "appsettings";
+    options.EnvironmentName = builder.Environment.EnvironmentName;
+    options.IncludeUserSecrets = builder.Environment.IsDevelopment();
+});
+
 builder.Services.AddRaycynixConfiguration<MyOptions>(
     builder.Configuration,
     configureDefaults: options =>
@@ -37,3 +47,11 @@ By default, the package binds the section named after the options type, for exam
 You can override the section name explicitly when needed.
 
 Registered validators run through the standard Options validation pipeline and are enforced on startup through `ValidateOnStart()`.
+
+The standard source order is:
+
+1. `appsettings.json`
+2. `appsettings.{Environment}.json`
+3. user secrets when enabled
+4. environment variables
+5. command-line arguments
