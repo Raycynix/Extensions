@@ -11,6 +11,7 @@
 - `AddRaycynixConfigurationSources(...)`
 - `UseRaycynixConfigurationSources(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
+- `AddRaycynixConfigurationAccessor<TOptions>()`
 - `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
 - `AddRaycynixConfigurationValidator<TOptions>(...)`
 - `AddRaycynixConfigurationReloadPolicy<TOptions, TReloadPolicy>()`
@@ -22,6 +23,7 @@
 - standard configuration source ordering
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
 - startup validation through standard `IValidateOptions<TOptions>` integration
+- unified typed access through `IConfigurationAccessor<TOptions>`
 - reload governance through `IConfigurationReloadPolicy<TOptions>`
 - typed change notifications through `IOptionsMonitor<TOptions>`
 
@@ -111,6 +113,21 @@ By default, the package binds the section named after the options type, for exam
 You can override the section name explicitly when needed.
 
 Registered validators run through the standard Options validation pipeline and are enforced on startup through `ValidateOnStart()`.
+
+`AddRaycynixConfiguration<TOptions>(...)` also registers `IConfigurationAccessor<TOptions>` so application services can read the current typed configuration without directly depending on `IOptionsMonitor<TOptions>`.
+
+Example:
+
+```csharp
+public class MyService(IConfigurationAccessor<MyOptions> configurationAccessor)
+{
+    public void Execute()
+    {
+        var options = configurationAccessor.Current;
+        Console.WriteLine(options.TimeoutSeconds);
+    }
+}
+```
 
 Reload policies are evaluated before change handlers are notified. A policy can apply or reject a runtime change.
 

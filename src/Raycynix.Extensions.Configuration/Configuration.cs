@@ -119,6 +119,7 @@ public static class Configuration
             ServiceDescriptor.Singleton<IConfigurationDefaults<TOptions>, EmptyConfigurationDefaults<TOptions>>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
+        services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
 
         var optionsBuilder = services.AddOptions<TOptions>();
 
@@ -134,6 +135,22 @@ public static class Configuration
 
         optionsBuilder.Bind(section, configureBinder ?? (_ => { }));
         optionsBuilder.ValidateOnStart();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the unified typed configuration accessor for the specified configuration model.
+    /// </summary>
+    /// <typeparam name="TOptions">The configuration model type.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixConfigurationAccessor<TOptions>(this IServiceCollection services)
+        where TOptions : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
 
         return services;
     }

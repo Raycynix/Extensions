@@ -8,6 +8,7 @@
 
 - `ConfigurationReloadBehaviorAttribute`
 - `IApplicationEnvironment`
+- `IConfigurationAccessor<TOptions>`
 - `IConfigurationChangeHandler<TOptions>`
 - `IConfigurationDefaults<TOptions>`
 - `IConfigurationReloadPolicy<TOptions>`
@@ -19,4 +20,4 @@
 
 ## Purpose
 
-This package allows applications and libraries to provide their own default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
+This package allows applications and libraries to provide their own typed access, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
