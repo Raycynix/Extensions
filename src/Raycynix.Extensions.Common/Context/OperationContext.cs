@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Raycynix.Extensions.Common.Context;
 
 /// <summary>
-/// Represents per-operation metadata used for correlation, tracing, and user identification.
+/// Represents per-operation metadata used for correlation, tracing, and request subject identification.
 /// </summary>
 public interface IOperationContext
 {
@@ -24,6 +24,16 @@ public interface IOperationContext
     string? UserId { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier of the current request subject, if available.
+    /// </summary>
+    string? SubjectId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of the current request subject, if available.
+    /// </summary>
+    string? SubjectType { get; set; }
+
+    /// <summary>
     /// Assigns the correlation identifier only when it has not been set yet.
     /// </summary>
     /// <param name="correlationId">The correlation identifier to assign.</param>
@@ -37,6 +47,8 @@ public class OperationContext : IOperationContext
     private static readonly AsyncLocal<IOperationContext?> _current = new();
     private string? _correlationId;
     private string? _userId;
+    private string? _subjectId;
+    private string? _subjectType;
 
     /// <summary>
     /// Gets or sets the ambient operation context for the current async flow.
@@ -62,6 +74,20 @@ public class OperationContext : IOperationContext
     {
         get => _userId;
         set => _userId = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    /// <inheritdoc />
+    public string? SubjectId
+    {
+        get => _subjectId;
+        set => _subjectId = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    /// <inheritdoc />
+    public string? SubjectType
+    {
+        get => _subjectType;
+        set => _subjectType = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <inheritdoc />

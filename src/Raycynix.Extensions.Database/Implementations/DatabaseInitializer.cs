@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -15,6 +16,7 @@ public class DatabaseInitializer(
     ILogger<DatabaseInitializer> logger) : IDatabaseInitializer
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly DatabaseObservability _observability = serviceProvider.GetRequiredService<DatabaseObservability>();
 
     /// <summary>
     /// Gets a value indicating whether initialization has already completed.
@@ -45,6 +47,7 @@ public class DatabaseInitializer(
             }
 
             logger.Information("Starting database initializer");
+            using var initializationScope = _observability.BeginOperation(config.Provider, "initialization");
 
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
@@ -52,17 +55,45 @@ public class DatabaseInitializer(
             if (config.EnsureCreated)
             {
                 logger.Information("Applying database creation");
-                await context.Database.EnsureCreatedAsync(cancellationToken);
+                using var ensureCreatedScope = _observability.BeginOperation(config.Provider, "ensure_created");
+
+                try
+                {
+                    await context.Database.EnsureCreatedAsync(cancellationToken);
+                    _observability.RecordSuccess(config.Provider, "ensure_created");
+                }
+                catch
+                {
+                    _observability.RecordFailure(config.Provider, "ensure_created");
+                    throw;
+                }
             }
 
             if (config.UseMigrations)
             {
                 logger.Information("Applying migrations");
-                await context.Database.MigrateAsync(cancellationToken);
+                using var migrationsScope = _observability.BeginOperation(config.Provider, "migrate");
+
+                try
+                {
+                    await context.Database.MigrateAsync(cancellationToken);
+                    _observability.RecordSuccess(config.Provider, "migrate");
+                }
+                catch
+                {
+                    _observability.RecordFailure(config.Provider, "migrate");
+                    throw;
+                }
             }
 
             IsReady = true;
+            _observability.RecordSuccess(config.Provider, "initialization");
             logger.Information("Database initialized");
+        }
+        catch
+        {
+            _observability.RecordFailure(config.Provider, "initialization");
+            throw;
         }
         finally
         {

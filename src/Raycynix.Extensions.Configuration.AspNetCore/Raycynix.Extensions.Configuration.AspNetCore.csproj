@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>0.1.0</Version>
+
+        <IsPackable>true</IsPackable>
+
+        <Description>ASP.NET Core integrations for Raycynix configuration and feature flags.</Description>
+        <PackageTags>raycynix;configuration;aspnetcore;feature-flags;minimal-api;dotnet</PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+</Project>

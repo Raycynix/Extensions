@@ -1,6 +1,8 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -13,6 +15,7 @@ public sealed class DatabaseContext : DbContext
     private readonly ILogger<DatabaseContext> _logger;
     private readonly DatabaseConfiguration _config;
     private readonly Assembly _callerAssembly;
+    private readonly DatabaseObservability _observability;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DatabaseContext"/>.
@@ -21,12 +24,19 @@ public sealed class DatabaseContext : DbContext
     /// <param name="config">The database configuration.</param>
     /// <param name="callerAssembly">The assembly that contains entity configurators.</param>
     /// <param name="logger">The logger used during model creation and seeding.</param>
-    public DatabaseContext(DbContextOptions options, DatabaseConfiguration config, Assembly callerAssembly, ILogger<DatabaseContext> logger) 
+    /// <param name="serviceProvider">The service provider used to resolve optional observability integrations.</param>
+    public DatabaseContext(
+        DbContextOptions options,
+        DatabaseConfiguration config,
+        Assembly callerAssembly,
+        ILogger<DatabaseContext> logger,
+        IServiceProvider serviceProvider)
         : base(options)
     {
         _logger = logger;
         _config = config;
         _callerAssembly = callerAssembly;
+        _observability = serviceProvider.GetRequiredService<DatabaseObservability>();
         
         ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
         ChangeTracker.AutoDetectChangesEnabled = config.EnableAutoDetectChanges;
@@ -42,8 +52,10 @@ public sealed class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        using var modelCreatingScope = _observability.BeginOperation(_config.Provider, "model_creating");
 
         var configurators = ConfiguratorProvider.Provide(_callerAssembly);
+        _observability.AddTag("database.configurator.count", configurators.Count.ToString());
 
         foreach (var configurator in configurators)
         {
@@ -55,5 +67,7 @@ public sealed class DatabaseContext : DbContext
                 configurator.Seed(builder);
             }
         }
+
+        _observability.RecordSuccess(_config.Provider, "model_creating");
     }
 }
