@@ -1,9 +1,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Raycynix.Extensions.Configuration;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Configurations;
 using Raycynix.Extensions.Security.Implementation;
+using Raycynix.Extensions.Security.Internal;
 
 namespace Raycynix.Extensions.Security;
 
@@ -36,13 +39,12 @@ public static class Security
         IConfiguration configuration,
         Action<SecurityConfiguration>? setup = null)
     {
-        var config = new SecurityConfiguration();
-        configuration.GetSection(nameof(SecurityConfiguration)).Bind(config);
-
-        setup?.Invoke(config);
-        config.Validate();
-
-        services.AddSingleton(config);
+        services.AddRaycynixConfiguration<SecurityConfiguration>(
+            configuration,
+            configurePostBind: setup);
+        services.AddRaycynixConfigurationValidator<SecurityConfiguration, SecurityConfigurationValidator>();
+        services.AddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<SecurityConfiguration>>().Current);
         services.TryAddScoped<ISecurityContext, SecurityContext>();
 
         return services;

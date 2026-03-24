@@ -51,6 +51,9 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
             case Abstractions.Enums.ConfigurationReloadBehavior.Apply:
                 _currentValue = updatedOptions;
                 runtimeState.SetCurrent(updatedOptions);
+                logger.LogInformation(
+                    "A runtime configuration change for options type {OptionsType} was applied.",
+                    typeof(TOptions).Name);
                 _ = NotifyHandlersAsync(context);
                 return;
 

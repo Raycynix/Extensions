@@ -128,13 +128,15 @@ public static class Configuration
     /// <param name="sectionName">An optional configuration section name. Defaults to the model type name.</param>
     /// <param name="configureDefaults">An optional callback for applying default values before configuration binding.</param>
     /// <param name="configureBinder">An optional callback for binder behavior customization.</param>
+    /// <param name="configurePostBind">An optional callback for adjusting the bound options before validation and access.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixConfiguration<TOptions>(
         this IServiceCollection services,
         IConfiguration configuration,
         string? sectionName = null,
         Action<TOptions>? configureDefaults = null,
-        Action<BinderOptions>? configureBinder = null)
+        Action<BinderOptions>? configureBinder = null,
+        Action<TOptions>? configurePostBind = null)
         where TOptions : class, new()
     {
         sectionName ??= typeof(TOptions).Name;
@@ -166,6 +168,7 @@ public static class Configuration
         });
 
         optionsBuilder.Bind(section, configureBinder ?? (_ => { }));
+        optionsBuilder.PostConfigure(options => configurePostBind?.Invoke(options));
         optionsBuilder.ValidateOnStart();
 
         return services;

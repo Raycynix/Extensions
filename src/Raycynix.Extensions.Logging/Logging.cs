@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Common.Helpers;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Configurations;
 using Raycynix.Extensions.Logging.Implementation;
@@ -44,6 +43,12 @@ public static class Logging
         {
             var config = context.Configuration.GetSection(nameof(LoggingConfiguration)).Get<LoggingConfiguration>() ??
                          new LoggingConfiguration();
+
+            if (string.IsNullOrWhiteSpace(config.Environment))
+            {
+                config.Environment = context.HostingEnvironment.EnvironmentName;
+            }
+
             setup?.Invoke(config);
 
             loggerConfiguration

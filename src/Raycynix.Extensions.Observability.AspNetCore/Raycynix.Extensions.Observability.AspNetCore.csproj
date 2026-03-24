@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.2.1</Version>
 
         <IsPackable>true</IsPackable>
 
@@ -19,6 +19,7 @@
         <ProjectReference Include="..\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Tracing.AspNetCore\Raycynix.Extensions.Tracing.AspNetCore.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -4,11 +4,14 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Configuration;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Database.Models;
 using MySqlConfiguration = Raycynix.Extensions.Database.Configurations.MySqlConfiguration;
 
@@ -29,21 +32,23 @@ public static class Database
     public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration,
         Action<DatabaseConfiguration>? setup = null)
     {
-        var config = new DatabaseConfiguration();
-        configuration.GetSection(nameof(DatabaseConfiguration)).Bind(config);
-
-        setup?.Invoke(config);
-        config.Validate();
-
-        var finalString = ResolveConnection(config);
         var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
 
-        services.AddSingleton(config);
+        services.AddRaycynixConfiguration<DatabaseConfiguration>(
+            configuration,
+            configurePostBind: setup);
+        services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
+        services.AddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
         services.AddSingleton(callerAssembly);
+        services.AddSingleton<DatabaseObservability>();
         services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
 
-        services.AddDbContextPool<DatabaseContext>(options =>
+        services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
         {
+            var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+            var finalString = ResolveConnection(config);
+
             switch (config.Provider)
             {
                 case DatabaseProvider.PostgreSql:
