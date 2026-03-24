@@ -6,12 +6,15 @@
 
 ## What it contains
 
+- `AddRaycynixEnvironment()`
+- `AddRaycynixEnvironment(string)`
 - `AddRaycynixConfigurationSources(...)`
 - `UseRaycynixConfigurationSources(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
 - `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
 - `AddRaycynixConfigurationValidator<TOptions>(...)`
 - typed configuration binding based on the standard Options pipeline
+- standard environment abstraction based on `IHostEnvironment`
 - standard configuration source ordering
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
 - startup validation through standard `IValidateOptions<TOptions>` integration
@@ -31,6 +34,8 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
     options.EnvironmentName = builder.Environment.EnvironmentName;
     options.IncludeUserSecrets = builder.Environment.IsDevelopment();
 });
+
+builder.Services.AddRaycynixEnvironment();
 
 builder.Services.AddRaycynixConfiguration<MyOptions>(
     builder.Configuration,
@@ -55,3 +60,10 @@ The standard source order is:
 3. user secrets when enabled
 4. environment variables
 5. command-line arguments
+
+The standard environment names are:
+
+- `Development`
+- `Testing`
+- `Staging`
+- `Production`

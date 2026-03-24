@@ -6,6 +6,7 @@
 
 ## What it contains
 
+- `IApplicationEnvironment`
 - `IConfigurationDefaults<TOptions>`
 - `IConfigurationValidator<TOptions>`
 - `ConfigurationValidationResult`

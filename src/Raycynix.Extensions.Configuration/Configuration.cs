@@ -2,9 +2,11 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Configurations;
+using Raycynix.Extensions.Configuration.Implementations;
 using Raycynix.Extensions.Configuration.Internal;
 
 namespace Raycynix.Extensions.Configuration;
@@ -14,6 +16,46 @@ namespace Raycynix.Extensions.Configuration;
 /// </summary>
 public static class Configuration
 {
+    /// <summary>
+    /// Registers the standard Raycynix application environment abstraction.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="environmentName">The current environment name.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixEnvironment(
+        this IServiceCollection services,
+        string environmentName)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (string.IsNullOrWhiteSpace(environmentName))
+        {
+            throw new ArgumentException("Environment name cannot be null or whitespace.", nameof(environmentName));
+        }
+
+        services.TryAddSingleton<IApplicationEnvironment>(_ => new ApplicationEnvironment(environmentName));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the standard Raycynix application environment abstraction from the host environment.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixEnvironment(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton<IApplicationEnvironment>(serviceProvider =>
+        {
+            var hostEnvironment = serviceProvider.GetRequiredService<IHostEnvironment>();
+            return new ApplicationEnvironment(hostEnvironment.EnvironmentName);
+        });
+
+        return services;
+    }
+
     /// <summary>
     /// Adds the standard Raycynix configuration sources to the provided builder.
     /// </summary>

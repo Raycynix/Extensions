@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.2</Version>
+        <Version>0.1.3</Version>
 
         <IsPackable>true</IsPackable>
 
         <Description>Core typed-configuration registration, defaults, and validation helpers for Raycynix applications.</Description>
-        <PackageTags>raycynix;configuration;options;binding;defaults;validation;dotnet</PackageTags>
+        <PackageTags>raycynix;configuration;options;binding;defaults;validation;environment;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -23,6 +23,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
