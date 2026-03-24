@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
+using Raycynix.Extensions.Configuration.Abstractions.Models;
 using Raycynix.Extensions.Configuration.Configurations;
 using Raycynix.Extensions.Configuration.Implementations;
 using Raycynix.Extensions.Configuration.Internal;
@@ -178,6 +179,96 @@ public static class Configuration
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IConfigurationValidator<TOptions>>(
                 new DelegateConfigurationValidator<TOptions>(validate, failureMessage)));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a typed configuration change handler notified through the standard options monitor pipeline.
+    /// </summary>
+    /// <typeparam name="TOptions">The configuration model type.</typeparam>
+    /// <typeparam name="THandler">The change handler type.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions, THandler>(
+        this IServiceCollection services)
+        where TOptions : class, new()
+        where THandler : class, IConfigurationChangeHandler<TOptions>
+    {
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>, THandler>());
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers an inline-typed configuration change handler notified through the standard options monitor pipeline.
+    /// </summary>
+    /// <typeparam name="TOptions">The configuration model type.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="handleAsync">The delegate to execute when the configuration changes.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions>(
+        this IServiceCollection services,
+        Func<ConfigurationChangeContext<TOptions>, CancellationToken, ValueTask> handleAsync)
+        where TOptions : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(handleAsync);
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>>(
+                new DelegateConfigurationChangeHandler<TOptions>(handleAsync)));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a reload policy for a typed configuration model.
+    /// </summary>
+    /// <typeparam name="TOptions">The configuration model type.</typeparam>
+    /// <typeparam name="TReloadPolicy">The reload policy type.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions, TReloadPolicy>(
+        this IServiceCollection services)
+        where TOptions : class, new()
+        where TReloadPolicy : class, IConfigurationReloadPolicy<TOptions>
+    {
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, TReloadPolicy>());
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers an inline reload policy for a typed configuration model.
+    /// </summary>
+    /// <typeparam name="TOptions">The configuration model type.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="evaluate">The reload policy delegate.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions>(
+        this IServiceCollection services,
+        Func<ConfigurationChangeContext<TOptions>, ConfigurationReloadResult> evaluate)
+        where TOptions : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(evaluate);
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>>(
+                new DelegateConfigurationReloadPolicy<TOptions>(evaluate)));
 
         return services;
     }
