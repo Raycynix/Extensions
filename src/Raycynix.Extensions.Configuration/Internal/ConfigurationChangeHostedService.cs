@@ -8,6 +8,7 @@ namespace Raycynix.Extensions.Configuration.Internal;
 
 internal sealed class ConfigurationChangeHostedService<TOptions>(
     IOptionsMonitor<TOptions> optionsMonitor,
+    ConfigurationRuntimeState<TOptions> runtimeState,
     IEnumerable<IConfigurationReloadPolicy<TOptions>> reloadPolicies,
     IEnumerable<IConfigurationChangeHandler<TOptions>> handlers,
     ILogger<ConfigurationChangeHostedService<TOptions>> logger)
@@ -20,6 +21,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _currentValue = optionsMonitor.CurrentValue;
+        runtimeState.SetCurrent(_currentValue);
         _registration = optionsMonitor.OnChange(OnChanged);
 
         return Task.CompletedTask;
@@ -48,6 +50,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
         {
             case Abstractions.Enums.ConfigurationReloadBehavior.Apply:
                 _currentValue = updatedOptions;
+                runtimeState.SetCurrent(updatedOptions);
                 _ = NotifyHandlersAsync(context);
                 return;
 

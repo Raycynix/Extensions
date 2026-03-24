@@ -134,6 +134,8 @@ public class MyService(IConfigurationAccessor<MyOptions> configurationAccessor)
 
 Reload policies are evaluated before change handlers are notified. A policy can apply or reject a runtime change.
 
+When a runtime change is rejected, `IConfigurationAccessor<TOptions>` continues to expose the last approved configuration snapshot.
+
 Configuration change handlers are triggered through the standard `IOptionsMonitor<TOptions>` pipeline when reloadable sources produce updated option values.
 
 You can also declare simple runtime reload rules directly on properties:

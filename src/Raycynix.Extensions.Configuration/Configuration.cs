@@ -111,7 +111,7 @@ public static class Configuration
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        sectionName ??= nameof(FeatureFlagsConfiguration);
+        sectionName ??= "FeatureFlags";
 
         services.AddRaycynixConfiguration(configuration, sectionName, configureDefaults);
         services.TryAddSingleton<IFeatureFlagAccessor, FeatureFlagAccessor>();
@@ -144,7 +144,14 @@ public static class Configuration
             ServiceDescriptor.Singleton<IConfigurationDefaults<TOptions>, EmptyConfigurationDefaults<TOptions>>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
+        services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
         services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
 
         var optionsBuilder = services.AddOptions<TOptions>();
 
@@ -175,6 +182,7 @@ public static class Configuration
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
         services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
 
         return services;
@@ -238,12 +246,6 @@ public static class Configuration
         where THandler : class, IConfigurationChangeHandler<TOptions>
     {
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
-        services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>, THandler>());
 
         return services;
@@ -263,12 +265,6 @@ public static class Configuration
     {
         ArgumentNullException.ThrowIfNull(handleAsync);
 
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>>(
                 new DelegateConfigurationChangeHandler<TOptions>(handleAsync)));
