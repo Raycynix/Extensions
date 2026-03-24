@@ -7,7 +7,9 @@
 ## What it contains
 
 - `IConfigurationDefaults<TOptions>`
+- `IConfigurationValidator<TOptions>`
+- `ConfigurationValidationResult`
 
 ## Purpose
 
-This package allows applications and libraries to provide their own default-value strategies for typed configuration models without depending on the configuration implementation package.
+This package allows applications and libraries to provide their own default-value and validation strategies for typed configuration models without depending on the configuration implementation package.

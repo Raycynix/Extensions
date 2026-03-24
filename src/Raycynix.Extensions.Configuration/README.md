@@ -7,14 +7,16 @@
 ## What it contains
 
 - `AddRaycynixConfiguration<TOptions>(...)`
+- `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
+- `AddRaycynixConfigurationValidator<TOptions>(...)`
 - typed configuration binding based on the standard Options pipeline
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
+- startup validation through standard `IValidateOptions<TOptions>` integration
 
 ## What it does not contain
 
 - custom replacement for `IConfiguration`
 - custom configuration providers
-- validation-on-start policies
 - feature flag infrastructure
 
 ## Usage
@@ -26,8 +28,12 @@ builder.Services.AddRaycynixConfiguration<MyOptions>(
     {
         options.TimeoutSeconds = 30;
     });
+
+builder.Services.AddRaycynixConfigurationValidator<MyOptions, MyOptionsValidator>();
 ```
 
 By default, the package binds the section named after the options type, for example `MyOptions`.
 
 You can override the section name explicitly when needed.
+
+Registered validators run through the standard Options validation pipeline and are enforced on startup through `ValidateOnStart()`.

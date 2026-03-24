@@ -4,7 +4,7 @@ namespace Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 /// Represents a pluggable source of default values for a typed configuration model.
 /// </summary>
 /// <typeparam name="TOptions">The configuration model type.</typeparam>
-public interface IConfigurationDefaults<TOptions>
+public interface IConfigurationDefaults<in TOptions>
     where TOptions : class
 {
     /// <summary>
