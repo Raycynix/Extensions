@@ -10,6 +10,7 @@
 - `AddRaycynixEnvironment(string)`
 - `AddRaycynixConfigurationSources(...)`
 - `UseRaycynixConfigurationSources(...)`
+- `AddRaycynixFeatureFlags(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
 - `AddRaycynixConfigurationAccessor<TOptions>()`
 - `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
@@ -21,6 +22,7 @@
 - typed configuration binding based on the standard Options pipeline
 - standard environment abstraction based on `IHostEnvironment`
 - standard configuration source ordering
+- feature flag access through `IFeatureFlagAccessor`
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
 - startup validation through standard `IValidateOptions<TOptions>` integration
 - unified typed access through `IConfigurationAccessor<TOptions>`
@@ -44,6 +46,7 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
 });
 
 builder.Services.AddRaycynixEnvironment();
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
 
 builder.Services.AddRaycynixConfiguration<MyOptions>(
     builder.Configuration,
@@ -146,6 +149,41 @@ public class CacheOptions
 ```
 
 When a property marked with `Reject` changes, the runtime update is rejected automatically before handlers are called.
+
+## Feature Flags
+
+Use the standard `FeatureFlags` section to store boolean feature toggles:
+
+```json
+{
+  "FeatureFlags": {
+    "Flags": {
+      "NewDashboard": true,
+      "UseFastCache": false
+    }
+  }
+}
+```
+
+Register the feature flags accessor:
+
+```csharp
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
+```
+
+Use it in application code:
+
+```csharp
+public class DashboardService(IFeatureFlagAccessor featureFlags)
+{
+    public bool UseNewDashboard()
+    {
+        return featureFlags.IsEnabled("NewDashboard");
+    }
+}
+```
+
+Feature flags use the same configuration pipeline as the rest of the package, so they can also participate in reloadable sources.
 
 The standard source order is:
 

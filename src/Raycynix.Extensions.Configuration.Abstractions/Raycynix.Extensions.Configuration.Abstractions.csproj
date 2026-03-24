@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.4</Version>
+        <Version>0.1.5</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Abstractions for Raycynix typed configuration access, defaults, validation, reload governance, change handling, and environments.</Description>
-        <PackageTags>raycynix;configuration;abstractions;options;accessor;defaults;validation;environment;reload;dotnet</PackageTags>
+        <Description>Abstractions for Raycynix typed configuration access, feature flags, defaults, validation, reload governance, change handling, and environments.</Description>
+        <PackageTags>raycynix;configuration;abstractions;options;accessor;feature-flags;defaults;validation;environment;reload;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

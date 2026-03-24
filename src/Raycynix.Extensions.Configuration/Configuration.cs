@@ -95,6 +95,31 @@ public static class Configuration
     }
 
     /// <summary>
+    /// Registers the standard Raycynix feature flags configuration and accessor.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configuration">The application configuration source.</param>
+    /// <param name="sectionName">An optional feature flags section name. Defaults to <c>FeatureFlags</c>.</param>
+    /// <param name="configureDefaults">An optional callback for applying default feature flag values before binding.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixFeatureFlags(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? sectionName = null,
+        Action<FeatureFlagsConfiguration>? configureDefaults = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        sectionName ??= nameof(FeatureFlagsConfiguration);
+
+        services.AddRaycynixConfiguration(configuration, sectionName, configureDefaults);
+        services.TryAddSingleton<IFeatureFlagAccessor, FeatureFlagAccessor>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Registers a typed configuration model using the standard Options pipeline with Raycynix conventions.
     /// </summary>
     /// <typeparam name="TOptions">The configuration model type.</typeparam>

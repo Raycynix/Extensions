@@ -11,6 +11,7 @@
 - `IConfigurationAccessor<TOptions>`
 - `IConfigurationChangeHandler<TOptions>`
 - `IConfigurationDefaults<TOptions>`
+- `IFeatureFlagAccessor`
 - `IConfigurationReloadPolicy<TOptions>`
 - `IConfigurationValidator<TOptions>`
 - `ConfigurationChangeContext<TOptions>`
@@ -20,4 +21,4 @@
 
 ## Purpose
 
-This package allows applications and libraries to provide their own typed access, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
+This package allows applications and libraries to provide their own typed access, feature-flag access, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
