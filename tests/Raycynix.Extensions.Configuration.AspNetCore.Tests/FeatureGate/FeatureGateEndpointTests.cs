@@ -88,6 +88,27 @@ public class FeatureGateEndpointTests
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that multiple feature gates on the same endpoint are all evaluated by the middleware.
+    /// </summary>
+    [Fact]
+    public async Task MultipleFeatureGates_ShouldReturnNotFoundWhenAnyGateIsNotSatisfied()
+    {
+        await using var app = await BuildFeatureGateAppAsync(new Dictionary<string, string?>
+        {
+            ["FeatureFlags:Flags:First"] = "true",
+            ["FeatureFlags:Flags:Second"] = "false"
+        }, endpoint =>
+        {
+            endpoint.RequireFeature("First");
+            endpoint.RequireFeature("Second");
+        });
+
+        var response = await app.GetTestClient().GetAsync("/feature", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+    }
+
     private static async Task<WebApplication> BuildFeatureGateAppAsync(
         IDictionary<string, string?> flags,
         Action<RouteHandlerBuilder> configureEndpoint)
