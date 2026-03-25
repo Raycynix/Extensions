@@ -82,7 +82,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{8D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.Tests", "tests\Raycynix.Extensions.Configuration.Tests\Raycynix.Extensions.Configuration.Tests.csproj", "{F154FFCD-592C-4777-A3EC-51A334C433CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.AspNetCore.Test", "tests\Raycynix.Extensions.Configuration.AspNetCore.Test\Raycynix.Extensions.Configuration.AspNetCore.Test.csproj", "{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.AspNetCore.Tests", "tests\Raycynix.Extensions.Configuration.AspNetCore.Tests\Raycynix.Extensions.Configuration.AspNetCore.Tests.csproj", "{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
