@@ -16,8 +16,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="FluentAssertions" Version="8.9.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
             <PrivateAssets>all</PrivateAssets>
@@ -28,6 +26,16 @@
 
     <ItemGroup>
         <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>
