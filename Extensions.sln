@@ -82,6 +82,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{8D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.Tests", "tests\Raycynix.Extensions.Configuration.Tests\Raycynix.Extensions.Configuration.Tests.csproj", "{F154FFCD-592C-4777-A3EC-51A334C433CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.AspNetCore.Test", "tests\Raycynix.Extensions.Configuration.AspNetCore.Test\Raycynix.Extensions.Configuration.AspNetCore.Test.csproj", "{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -404,6 +406,18 @@ Global
 		{F154FFCD-592C-4777-A3EC-51A334C433CE}.Release|x64.Build.0 = Release|Any CPU
 		{F154FFCD-592C-4777-A3EC-51A334C433CE}.Release|x86.ActiveCfg = Release|Any CPU
 		{F154FFCD-592C-4777-A3EC-51A334C433CE}.Release|x86.Build.0 = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|x64.Build.0 = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Debug|x86.Build.0 = Debug|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|x64.ActiveCfg = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|x64.Build.0 = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|x86.ActiveCfg = Release|Any CPU
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -448,5 +462,6 @@ Global
 		{A3CF082B-55F3-4201-A633-020FAFCEDEDA} = {CD7E63E8-34E0-4B86-8B86-12F31B36DF23}
 		{8D58BB1B-AB2B-41A0-9D61-B2FD6DC7F026} = {CD7E63E8-34E0-4B86-8B86-12F31B36DF23}
 		{F154FFCD-592C-4777-A3EC-51A334C433CE} = {E14463BA-0075-47D8-93F8-64462A69E3A1}
+		{A7D3B403-AB88-4700-8D42-52A75BCBDCC3} = {E14463BA-0075-47D8-93F8-64462A69E3A1}
 	EndGlobalSection
 EndGlobal
