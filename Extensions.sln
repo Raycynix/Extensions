@@ -70,6 +70,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Configuration.AspNetCore", "src\Raycynix.Extensions.Configuration.AspNetCore\Raycynix.Extensions.Configuration.AspNetCore.csproj", "{F2A59771-F8A6-4FA7-AB0B-AD1240ACBD1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Contracts", "src\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj", "{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -380,6 +382,18 @@ Global
 		{F2A59771-F8A6-4FA7-AB0B-AD1240ACBD1E}.Release|x64.Build.0 = Release|Any CPU
 		{F2A59771-F8A6-4FA7-AB0B-AD1240ACBD1E}.Release|x86.ActiveCfg = Release|Any CPU
 		{F2A59771-F8A6-4FA7-AB0B-AD1240ACBD1E}.Release|x86.Build.0 = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|x64.Build.0 = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Debug|x86.Build.0 = Debug|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|x64.ActiveCfg = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|x64.Build.0 = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|x86.ActiveCfg = Release|Any CPU
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -418,5 +432,6 @@ Global
 		{AD7713B2-0DEA-4427-A099-0A5736C66F8B} = {B0257B51-0365-45F7-A032-6F504E3ED533}
 		{ACF2CFD3-5598-453E-95E4-D27B05C41EA7} = {B0257B51-0365-45F7-A032-6F504E3ED533}
 		{F2A59771-F8A6-4FA7-AB0B-AD1240ACBD1E} = {B0257B51-0365-45F7-A032-6F504E3ED533}
+		{69F6C440-41C9-4EE5-A861-F6F04ECC7ECD} = {F806A6E3-AD86-4810-86F5-3EE2C531717F}
 	EndGlobalSection
 EndGlobal
