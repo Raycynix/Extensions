@@ -16,6 +16,8 @@
 - `ContractMetadata`
 - `VersionedContract<TContract>`
 - `ContractHeaders`
+- `ContractIntroducedAttribute`
+- `ContractDeprecatedAttribute`
 - DTO and contract versioning conventions for cross-service APIs
 
 ## What it does not contain
@@ -37,6 +39,15 @@
 - contract models must stay serialization-friendly and avoid behavior-heavy logic
 - cross-service reusable types belong here, service-local DTOs do not
 - contract identifiers and versions should be explicit at transport boundaries when contracts are shared across services
+
+## Change Rules
+
+- do not remove or rename public contract fields inside the same major version
+- deprecate old fields before removal instead of deleting them immediately
+- introduce replacement fields as additive optional members first
+- use a new major contract version only when compatibility cannot be preserved
+- keep deprecated members readable long enough for existing consumers to migrate
+- document when a field was introduced and when it became deprecated
 
 ## Usage
 
@@ -106,3 +117,28 @@ When contract metadata must cross process boundaries explicitly, use:
 - `ContractHeaders.ContractVersion`
 
 This package only defines the common contract model and conventions. It does not enforce transport-specific version negotiation by itself.
+
+## Marking Contract Evolution
+
+Use the attributes in this package to mark contract evolution directly on shared DTOs:
+
+```csharp
+public class CatalogPriceDto
+{
+    [ContractIntroduced("1.0.0")]
+    public string ProductId { get; set; } = string.Empty;
+
+    [ContractIntroduced("1.2.0")]
+    public Money? DiscountPrice { get; set; }
+
+    [ContractDeprecated("1.3.0", RemovalVersion = "2.0.0", Reason = "Use DiscountPrice instead.")]
+    public decimal? DiscountAmount { get; set; }
+}
+```
+
+Recommended evolution flow:
+
+1. add a new optional field
+2. keep the old field for compatibility
+3. mark the old field as deprecated
+4. remove it only in the next breaking contract version
