@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Raycynix.Extensions.Contracts.Models;
 
 /// <summary>
@@ -14,5 +16,15 @@ public class PagedResult<TItem>
     /// <summary>
     /// Gets or sets the paging metadata.
     /// </summary>
+    [Required]
     public PageInfo PageInfo { get; set; } = new();
+
+    /// <summary>
+    /// Determines whether the paged result is structurally valid for transport.
+    /// </summary>
+    /// <returns><c>true</c> when the model is valid; otherwise, <c>false</c>.</returns>
+    public bool IsValid()
+    {
+        return Items is not null && PageInfo is not null && PageInfo.IsValid();
+    }
 }

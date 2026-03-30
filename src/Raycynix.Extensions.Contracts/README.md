@@ -12,6 +12,8 @@
 - `PagingRequest`
 - `PageInfo`
 - `PagedResult<TItem>`
+- `ErrorContract`
+- `ValidationError`
 - `ContractVersion`
 - `ContractMetadata`
 - `VersionedContract<TContract>`
@@ -19,6 +21,8 @@
 - `ContractIntroducedAttribute`
 - `ContractDeprecatedAttribute`
 - DTO and contract versioning conventions for cross-service APIs
+- validation-friendly annotations for common contracts
+- a shared transport error model for reusable APIs
 
 ## What it does not contain
 
@@ -39,6 +43,7 @@
 - contract models must stay serialization-friendly and avoid behavior-heavy logic
 - cross-service reusable types belong here, service-local DTOs do not
 - contract identifiers and versions should be explicit at transport boundaries when contracts are shared across services
+- public contracts should expose validation metadata that common frameworks can consume consistently
 
 ## Change Rules
 
@@ -109,6 +114,9 @@ var version = new ContractVersion
     Minor = 2,
     Patch = 0
 };
+
+var parsed = ContractVersion.Parse("1.2.0");
+var isCompatibleLine = parsed >= version;
 ```
 
 When contract metadata must cross process boundaries explicitly, use:
@@ -117,6 +125,36 @@ When contract metadata must cross process boundaries explicitly, use:
 - `ContractHeaders.ContractVersion`
 
 This package only defines the common contract model and conventions. It does not enforce transport-specific version negotiation by itself.
+
+`ContractVersion` also supports parsing, comparison, and equality to help consumers implement consistent compatibility checks in their own services.
+
+## Error Contracts
+
+Use `ErrorContract` as the shared transport shape for failures:
+
+```csharp
+var error = new ErrorContract
+{
+    Code = "validation_failed",
+    Message = "One or more validation errors occurred.",
+    TraceId = "00-7d9f6f8f53fd8a8ce6d4cfd21483ca5f-b9d0f6f6bd2f5f61-01",
+    ValidationErrors =
+    [
+        new ValidationError
+        {
+            Field = "pageSize",
+            Code = "out_of_range",
+            Message = "Page size must be greater than zero."
+        }
+    ]
+};
+```
+
+This package intentionally keeps the error contract generic so it can be reused in HTTP APIs, messaging, and internal service boundaries.
+
+## Validation Metadata
+
+The built-in contract models expose `System.ComponentModel.DataAnnotations` attributes and lightweight `IsValid()` checks so consumers can use them with ASP.NET Core, manual validation flows, or custom guards without introducing transport-specific behavior into the contracts themselves.
 
 ## Marking Contract Evolution
 
