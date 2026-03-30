@@ -29,12 +29,12 @@ public sealed class ContractMetadataMiddleware
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (context.TryGetEndpointContractMetadata(out ContractMetadata? metadata))
+        if (context.TryGetEndpointContractMetadata(out var metadata))
         {
             context.Response.OnStarting(
                 static state =>
                 {
-                    (HttpContext httpContext, ContractMetadata contractMetadata) = ((HttpContext, ContractMetadata))state;
+                    var (httpContext, contractMetadata) = ((HttpContext, ContractMetadata))state;
                     httpContext.Response.WriteContractMetadata(contractMetadata);
                     return Task.CompletedTask;
                 },

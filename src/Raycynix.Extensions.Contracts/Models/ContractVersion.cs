@@ -41,7 +41,7 @@ public class ContractVersion : IComparable<ContractVersion>, IEquatable<Contract
             throw new ArgumentException("Version value cannot be null or whitespace.", nameof(value));
         }
 
-        if (!TryParse(value, out ContractVersion? version))
+        if (!TryParse(value, out var version))
         {
             throw new FormatException(
                 string.Format(
@@ -68,7 +68,7 @@ public class ContractVersion : IComparable<ContractVersion>, IEquatable<Contract
             return false;
         }
 
-        string[] segments = value.Split('.', StringSplitOptions.TrimEntries);
+        var segments = value.Split('.', StringSplitOptions.TrimEntries);
         if (segments.Length != 3)
         {
             return false;

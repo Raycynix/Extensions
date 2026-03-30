@@ -24,7 +24,7 @@ public static class ModelStateContractExtensions
     {
         ArgumentNullException.ThrowIfNull(modelState);
 
-        ValidationError[] validationErrors = modelState
+        var validationErrors = modelState
             .SelectMany(
                 static entry => entry.Value?.Errors.Select(error => new ValidationError
                 {

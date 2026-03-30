@@ -39,68 +39,62 @@ public static class Contracts
         return app.UseMiddleware<ContractMetadataMiddleware>();
     }
 
-    /// <summary>
-    /// Attaches contract metadata to an endpoint using a semantic version string.
-    /// </summary>
-    /// <typeparam name="TBuilder">The endpoint convention builder type.</typeparam>
     /// <param name="builder">The endpoint builder.</param>
-    /// <param name="contractName">The canonical contract name.</param>
-    /// <param name="contractVersion">The contract version string.</param>
-    /// <returns>The same endpoint builder for chaining.</returns>
-    public static TBuilder WithContract<TBuilder>(this TBuilder builder, string contractName, string contractVersion)
-        where TBuilder : IEndpointConventionBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        return builder.WithContract(
-            new ContractMetadata
-            {
-                Name = contractName,
-                Version = ContractVersion.Parse(contractVersion)
-            });
-    }
-
-    /// <summary>
-    /// Attaches contract metadata to an endpoint.
-    /// </summary>
     /// <typeparam name="TBuilder">The endpoint convention builder type.</typeparam>
-    /// <param name="builder">The endpoint builder.</param>
-    /// <param name="contractName">The canonical contract name.</param>
-    /// <param name="contractVersion">The contract version.</param>
-    /// <returns>The same endpoint builder for chaining.</returns>
-    public static TBuilder WithContract<TBuilder>(
-        this TBuilder builder,
-        string contractName,
-        ContractVersion contractVersion)
-        where TBuilder : IEndpointConventionBuilder
+    extension<TBuilder>(TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(contractVersion);
+        /// <summary>
+        /// Attaches contract metadata to an endpoint using a semantic version string.
+        /// </summary>
+        /// <param name="contractName">The canonical contract name.</param>
+        /// <param name="contractVersion">The contract version string.</param>
+        /// <returns>The same endpoint builder for chaining.</returns>
+        public TBuilder WithContract(string contractName, string contractVersion)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
 
-        return builder.WithContract(
-            new ContractMetadata
-            {
-                Name = contractName,
-                Version = contractVersion
-            });
-    }
+            return builder.WithContract(
+                new ContractMetadata
+                {
+                    Name = contractName,
+                    Version = ContractVersion.Parse(contractVersion)
+                });
+        }
 
-    /// <summary>
-    /// Attaches contract metadata to an endpoint.
-    /// </summary>
-    /// <typeparam name="TBuilder">The endpoint convention builder type.</typeparam>
-    /// <param name="builder">The endpoint builder.</param>
-    /// <param name="metadata">The contract metadata.</param>
-    /// <returns>The same endpoint builder for chaining.</returns>
-    public static TBuilder WithContract<TBuilder>(this TBuilder builder, ContractMetadata metadata)
-        where TBuilder : IEndpointConventionBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(metadata);
+        /// <summary>
+        /// Attaches contract metadata to an endpoint.
+        /// </summary>
+        /// <param name="contractName">The canonical contract name.</param>
+        /// <param name="contractVersion">The contract version.</param>
+        /// <returns>The same endpoint builder for chaining.</returns>
+        public TBuilder WithContract(string contractName,
+            ContractVersion contractVersion)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(contractVersion);
 
-        builder.Add(endpointBuilder => endpointBuilder.Metadata.Add(new ContractEndpointMetadata(metadata)));
+            return builder.WithContract(
+                new ContractMetadata
+                {
+                    Name = contractName,
+                    Version = contractVersion
+                });
+        }
 
-        return builder;
+        /// <summary>
+        /// Attaches contract metadata to an endpoint.
+        /// </summary>
+        /// <param name="metadata">The contract metadata.</param>
+        /// <returns>The same endpoint builder for chaining.</returns>
+        public TBuilder WithContract(ContractMetadata metadata)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(metadata);
+
+            builder.Add(endpointBuilder => endpointBuilder.Metadata.Add(new ContractEndpointMetadata(metadata)));
+
+            return builder;
+        }
     }
 
     /// <summary>

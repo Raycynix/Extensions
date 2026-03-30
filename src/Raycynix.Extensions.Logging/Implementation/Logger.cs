@@ -18,9 +18,31 @@ public class Logger<T>(Serilog.ILogger logger) : Abstractions.ILogger<T>
             _logger.Write(level, exception, "{Message} {@Metadata}", message, metadata);
             return;
         }
-        
+
         _logger.Write(level, "{Message} {@Metadata}", message, metadata);
     }
+
+    /// <inheritdoc />
+    public void Trace(string message, object? metadata = null) => Log(LogLevel.Trace, message, null, metadata);
+
+    /// <inheritdoc />
+    public void Debug(string message, object? metadata = null) => Log(LogLevel.Debug, message, null, metadata);
+
+    /// <inheritdoc />
+    public void Information(string message, object? metadata = null) =>
+        Log(LogLevel.Information, message, null, metadata);
+
+    /// <inheritdoc />
+    public void Warning(string message, Exception? exception = null, object? metadata = null) =>
+        Log(LogLevel.Warning, message, exception, metadata);
+
+    /// <inheritdoc />
+    public void Error(string message, Exception? exception = null, object? metadata = null) =>
+        Log(LogLevel.Error, message, exception, metadata);
+
+    /// <inheritdoc />
+    public void Fatal(string message, Exception? exception = null, object? metadata = null) =>
+        Log(LogLevel.Critical, message, exception, metadata);
 
     /// <inheritdoc />
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,

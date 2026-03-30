@@ -1,0 +1,140 @@
+using FluentAssertions;
+using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Models;
+
+namespace Raycynix.Extensions.Database.Tests.Configurations;
+
+/// <summary>
+/// Covers validation and defaults for <see cref="DatabaseConfiguration"/>.
+/// </summary>
+public sealed class DatabaseConfigurationTests
+{
+    /// <summary>
+    /// Verifies that defaults match the package contract.
+    /// </summary>
+    [Fact]
+    public void Defaults_ShouldMatchExpectedValues()
+    {
+        var configuration = new DatabaseConfiguration();
+
+        configuration.Provider.Should().Be(DatabaseProvider.PostgreSql);
+        configuration.EnsureCreated.Should().BeTrue();
+        configuration.EnableSeed.Should().BeTrue();
+        configuration.EnableAutoDetectChanges.Should().BeTrue();
+        configuration.UseQueryTrackingByDefault.Should().BeTrue();
+        configuration.RetryCount.Should().Be(5);
+        configuration.RetryDelaySeconds.Should().Be(10);
+    }
+
+    /// <summary>
+    /// Verifies that validation succeeds when a raw connection string is provided.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldSucceed_WhenConnectionStringIsProvided()
+    {
+        var configuration = new DatabaseConfiguration
+        {
+            ConnectionString = "Host=localhost;Database=test;"
+        };
+
+        var act = configuration.Validate;
+
+        act.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Verifies that validation fails when no connection information is provided.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldFail_WhenConnectionInfoIsMissing()
+    {
+        var configuration = new DatabaseConfiguration();
+
+        var act = configuration.Validate;
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Either ConnectionString or ConnectionConfiguration must be provided*");
+    }
+
+    /// <summary>
+    /// Verifies that validation fails when both initialization modes are enabled.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldFail_WhenEnsureCreatedAndUseMigrationsAreEnabledTogether()
+    {
+        var configuration = new DatabaseConfiguration
+        {
+            ConnectionString = "Data Source=test.db",
+            EnsureCreated = true,
+            UseMigrations = true
+        };
+
+        var act = configuration.Validate;
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*EnsureCreated and UseMigrations cannot both be enabled*");
+    }
+
+    /// <summary>
+    /// Verifies that validation fails when retry values are negative.
+    /// </summary>
+    [Theory]
+    [InlineData(-1, 0)]
+    [InlineData(0, -1)]
+    public void Validate_ShouldFail_WhenRetryValuesAreNegative(int retryCount, int retryDelaySeconds)
+    {
+        var configuration = new DatabaseConfiguration
+        {
+            ConnectionString = "Data Source=test.db",
+            RetryCount = retryCount,
+            RetryDelaySeconds = retryDelaySeconds
+        };
+
+        var act = configuration.Validate;
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Verifies that structured connection settings are validated through the provider-specific rules.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldFail_WhenStructuredConnectionIsInvalid()
+    {
+        var configuration = new DatabaseConfiguration
+        {
+            Provider = DatabaseProvider.Sqlite,
+            ConnectionConfiguration = new TestConnectionConfiguration()
+        };
+
+        var act = configuration.Validate;
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Sqlite connection requires a database name*");
+    }
+
+    /// <summary>
+    /// Verifies that structured connection settings are accepted when valid.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldSucceed_WhenStructuredConnectionIsValid()
+    {
+        var configuration = new DatabaseConfiguration
+        {
+            Provider = DatabaseProvider.Sqlite,
+            ConnectionConfiguration = new TestConnectionConfiguration
+            {
+                Name = "test.db"
+            }
+        };
+
+        var act = configuration.Validate;
+
+        act.Should().NotThrow();
+    }
+
+    private sealed class TestConnectionConfiguration : ConnectionConfiguration;
+}

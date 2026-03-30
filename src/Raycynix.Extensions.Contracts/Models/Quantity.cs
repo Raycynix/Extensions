@@ -24,6 +24,6 @@ public class Quantity
     /// <returns><c>true</c> when the model is valid; otherwise, <c>false</c>.</returns>
     public bool IsValid()
     {
-        return UoM is not null && UoM.IsValid();
+        return UoM.IsValid();
     }
 }
