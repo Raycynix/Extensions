@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Reusable contract models and conventions for Raycynix applications.</Description>
-        <PackageTags>raycynix;contracts;dto;paging;money;quantity;api;dotnet</PackageTags>
+        <Description>Shared API contracts, versioning primitives, paging models, and transport-safe error shapes for .NET applications.</Description>
+        <PackageTags>raycynix;contracts;dto;versioning;api;errors;paging;aspnet;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

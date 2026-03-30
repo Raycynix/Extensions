@@ -2,7 +2,7 @@
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Contracts` contains reusable contract models and contract conventions for Raycynix applications.
+`Raycynix.Extensions.Contracts` contains reusable contract models and versioning conventions for shared .NET APIs.
 
 ## What it contains
 
@@ -30,6 +30,7 @@
 - reference data synchronization
 - service-specific DTOs
 - API gateway contracts
+- transport-specific ASP.NET Core middleware
 
 ## Contract Rules
 
@@ -155,6 +156,17 @@ This package intentionally keeps the error contract generic so it can be reused 
 ## Validation Metadata
 
 The built-in contract models expose `System.ComponentModel.DataAnnotations` attributes and lightweight `IsValid()` checks so consumers can use them with ASP.NET Core, manual validation flows, or custom guards without introducing transport-specific behavior into the contracts themselves.
+
+## ASP.NET Core
+
+If you want HTTP header integration, endpoint metadata, controller/minimal API helpers, or `ModelState` conversion helpers, use the companion package `Raycynix.Extensions.Contracts.AspNetCore`.
+
+In that package:
+
+- declare a contract on a Minimal API endpoint with `.WithContract(...)`
+- declare a contract on MVC actions/controllers with `[Contract(...)]`
+- enable `UseRaycynixContracts()` so the declared contract is written to HTTP headers
+- return `httpContext.VersionedContract(...)` or `this.VersionedContract(...)` when you want the response body wrapped into `VersionedContract<T>` without duplicating metadata inside the handler
 
 ## Marking Contract Evolution
 
