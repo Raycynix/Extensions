@@ -14,10 +14,15 @@
 ## Usage
 
 ```csharp
-var builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateDefaultBuilder(args)
+    .UseRaycynixLogging()
+    .ConfigureServices(services =>
+    {
+        services.AddRaycynixLogging();
+        services.AddHostedService<AppWorker>();
+    });
 
-builder.Services.AddRaycynixLogging();
-builder.Host.UseRaycynixLogging();
+await builder.RunConsoleAsync();
 ```
 
 This package is not tied to ASP.NET Core middleware and can be used in web, worker, and console applications built on the generic host.
