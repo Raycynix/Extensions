@@ -10,9 +10,9 @@ using MySql.Data.MySqlClient;
 using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
-using Raycynix.Extensions.Database.Models;
 using MySqlConfiguration = Raycynix.Extensions.Database.Configurations.MySqlConfiguration;
 
 namespace Raycynix.Extensions.Database;

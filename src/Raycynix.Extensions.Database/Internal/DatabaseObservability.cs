@@ -1,4 +1,4 @@
-using Raycynix.Extensions.Database.Models;
+using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions;
 

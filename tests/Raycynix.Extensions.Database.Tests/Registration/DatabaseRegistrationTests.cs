@@ -5,8 +5,8 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
-using Raycynix.Extensions.Database.Models;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Registration;

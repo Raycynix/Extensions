@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Models;
+namespace Raycynix.Extensions.Database.Enums;
 
 /// <summary>
 /// Defines the supported database providers.
