@@ -7,6 +7,7 @@ using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Attributes;
+using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using System.Diagnostics;
@@ -36,6 +37,7 @@ public sealed class MessagingRegistrationTests
         provider.GetService<IMessageEnvelopeFactory>().Should().NotBeNull();
         provider.GetService<IMessagePublisher>().Should().NotBeNull();
         provider.GetService<IMessageCodecResolver>().Should().NotBeNull();
+        provider.GetService<IMessageDispatcher>().Should().NotBeNull();
     }
 
     /// <summary>
@@ -123,6 +125,39 @@ public sealed class MessagingRegistrationTests
         envelope.Headers[MessageHeaderNames.SubjectPermissions].Should().Be("orders.read");
     }
 
+    /// <summary>
+    /// Verifies that the incoming dispatcher invokes all registered handlers and returns normalized dispatch metadata.
+    /// </summary>
+    [Fact]
+    public async Task DispatchAsync_ShouldInvokeRegisteredHandlersAndReturnDispatchResult()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddSingleton<DispatchCollector>();
+        services.AddRaycynixMessaging(configuration)
+            .AddMessageHandler<DispatchMessage, FirstDispatchHandler>()
+            .AddMessageHandler<DispatchMessage, SecondDispatchHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var envelopeFactory = provider.GetRequiredService<IMessageEnvelopeFactory>();
+        var dispatcher = provider.GetRequiredService<IMessageDispatcher>();
+        var collector = provider.GetRequiredService<DispatchCollector>();
+        var envelope = envelopeFactory.Create(
+            new DispatchMessage("order-1"),
+            destination: "orders.created",
+            format: MessageFormat.Json);
+
+        var result = await dispatcher.DispatchAsync(envelope, TestContext.Current.CancellationToken);
+
+        result.HandlerCount.Should().Be(2);
+        result.Context.Destination.Should().Be("orders.created");
+        result.Context.MessageType.Should().Be(typeof(DispatchMessage));
+        collector.Values.Should().ContainInOrder("first:order-1", "second:order-1");
+    }
+
     private sealed record TestGrpcMessage(byte[] Value);
 
     [MessageContract("orders.created", "2.1.0")]
@@ -130,6 +165,8 @@ public sealed class MessagingRegistrationTests
     private sealed record ContractMessage(string Value);
 
     private sealed record TraceableRequest(string OrderId);
+
+    private sealed record DispatchMessage(string OrderId);
 
     private sealed class FakeSecurityContext : ISecurityContext
     {
@@ -142,5 +179,38 @@ public sealed class MessagingRegistrationTests
         public IReadOnlyCollection<string> Roles => ["internal"];
 
         public IReadOnlyCollection<string> Permissions => ["orders.read"];
+    }
+
+    private sealed class DispatchCollector
+    {
+        public List<string> Values { get; } = [];
+    }
+
+    /// <summary>
+    /// First test handler used for dispatcher verification.
+    /// </summary>
+    private sealed class FirstDispatchHandler(DispatchCollector collector) : IMessageHandler<DispatchMessage>
+    {
+        public ValueTask HandleAsync(
+            MessageEnvelope<DispatchMessage> envelope,
+            CancellationToken cancellationToken = default)
+        {
+            collector.Values.Add($"first:{envelope.Message.OrderId}");
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Second test handler used for dispatcher verification.
+    /// </summary>
+    private sealed class SecondDispatchHandler(DispatchCollector collector) : IMessageHandler<DispatchMessage>
+    {
+        public ValueTask HandleAsync(
+            MessageEnvelope<DispatchMessage> envelope,
+            CancellationToken cancellationToken = default)
+        {
+            collector.Values.Add($"second:{envelope.Message.OrderId}");
+            return ValueTask.CompletedTask;
+        }
     }
 }

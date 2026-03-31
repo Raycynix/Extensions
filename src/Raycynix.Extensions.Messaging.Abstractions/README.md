@@ -62,6 +62,20 @@ public sealed record GetOrderRequest(string OrderId);
 public sealed record GetOrderResponse(string OrderId, string Status);
 ```
 
+Use the unified incoming dispatcher contract:
+
+```csharp
+public sealed class IncomingProcessor(IMessageDispatcher dispatcher)
+{
+    public ValueTask<MessageDispatchResult> ProcessAsync(
+        MessageEnvelope<OrderCreatedMessage> envelope,
+        CancellationToken cancellationToken)
+    {
+        return dispatcher.DispatchAsync(envelope, cancellationToken);
+    }
+}
+```
+
 Implement a custom codec:
 
 ```csharp

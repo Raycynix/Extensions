@@ -27,6 +27,19 @@ public sealed class MessagingBuilder(IServiceCollection services)
     }
 
     /// <summary>
+    /// Registers a message handler for incoming dispatch operations.
+    /// </summary>
+    /// <typeparam name="TMessage">The payload type handled by the implementation.</typeparam>
+    /// <typeparam name="THandler">The handler implementation type.</typeparam>
+    /// <returns>The same builder instance.</returns>
+    public MessagingBuilder AddMessageHandler<TMessage, THandler>()
+        where THandler : class, IMessageHandler<TMessage>
+    {
+        Services.AddScoped<IMessageHandler<TMessage>, THandler>();
+        return this;
+    }
+
+    /// <summary>
     /// Registers delegate-based gRPC/protobuf serialization for a specific message type.
     /// </summary>
     /// <typeparam name="TMessage">The payload type.</typeparam>

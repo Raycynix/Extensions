@@ -93,6 +93,29 @@ public class CatalogGateway(
 }
 ```
 
+Register and dispatch incoming handlers:
+
+```csharp
+builder.Services.AddRaycynixMessaging(builder.Configuration)
+    .AddMessageHandler<OrderCreatedMessage, OrderCreatedHandler>();
+
+public sealed class OrderConsumer(IMessageDispatcher dispatcher)
+{
+    public async Task ConsumeAsync(OrderCreatedMessage message, CancellationToken cancellationToken)
+    {
+        var envelope = new MessageEnvelope<OrderCreatedMessage>
+        {
+            Message = message,
+            Destination = "orders.created",
+            Format = MessageFormat.Json,
+            MessageId = Guid.NewGuid().ToString("N")
+        };
+
+        await dispatcher.DispatchAsync(envelope, cancellationToken);
+    }
+}
+```
+
 Contract metadata and propagation headers are added automatically:
 
 - `X-Contract-Name`
