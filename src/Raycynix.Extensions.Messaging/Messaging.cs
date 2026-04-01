@@ -42,7 +42,9 @@ public static class Messaging
         services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
         services.AddSingleton<IMessageCodecResolver, MessageCodecResolver>();
         services.AddSingleton<IMessageSerializer, MessageSerializer>();
+        services.AddSingleton<IncomingMessageTypeResolver>();
         services.AddSingleton<MessageObservability>();
+        services.AddSingleton<IIncomingMessageProcessor, IncomingMessageProcessor>();
         services.AddSingleton<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
         services.AddSingleton<IMessageCodec, NewtonsoftJsonMessageCodec>();

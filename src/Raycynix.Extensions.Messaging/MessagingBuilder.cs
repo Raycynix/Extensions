@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
+using Raycynix.Extensions.Messaging.Internal;
 using Raycynix.Extensions.Messaging.Serialization;
 
 namespace Raycynix.Extensions.Messaging;
@@ -36,6 +37,7 @@ public sealed class MessagingBuilder(IServiceCollection services)
         where THandler : class, IMessageHandler<TMessage>
     {
         Services.AddScoped<IMessageHandler<TMessage>, THandler>();
+        Services.AddSingleton(new MessageHandlerRegistration(typeof(TMessage)));
         return this;
     }
 

@@ -36,6 +36,11 @@ public sealed class RabbitMqMessagingConfiguration
     public bool UseSsl { get; set; }
 
     /// <summary>
+    /// Gets the inbound consumer configuration.
+    /// </summary>
+    public RabbitMqConsumerConfiguration Consumer { get; set; } = new();
+
+    /// <summary>
     /// Gets the exchange configuration.
     /// </summary>
     public RabbitMqExchangeConfiguration Exchange { get; set; } = new();
@@ -88,6 +93,11 @@ public sealed class RabbitMqMessagingConfiguration
         if (Retry.DelayMilliseconds < 0)
         {
             throw new InvalidOperationException("RabbitMQ retry delay cannot be negative.");
+        }
+
+        if (Consumer.PollIntervalMilliseconds < 0)
+        {
+            throw new InvalidOperationException("RabbitMQ consumer poll interval cannot be negative.");
         }
     }
 }

@@ -1,3 +1,5 @@
+using Raycynix.Extensions.Messaging.Grpc.Interfaces;
+
 namespace Raycynix.Extensions.Messaging.Grpc.Internal;
 
 internal sealed class GrpcRequestOperation<TGrpcClient, TRequest, TResponse>(

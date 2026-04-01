@@ -1,6 +1,7 @@
 using System.Reflection;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Raycynix.Extensions.Messaging.Grpc.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Grpc.Internal;
 

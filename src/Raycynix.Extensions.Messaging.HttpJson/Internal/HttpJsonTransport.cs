@@ -1,3 +1,5 @@
+using Raycynix.Extensions.Messaging.HttpJson.Interfaces;
+
 namespace Raycynix.Extensions.Messaging.HttpJson.Internal;
 
 internal sealed class HttpJsonTransport(IHttpClientFactory httpClientFactory) : IHttpJsonTransport

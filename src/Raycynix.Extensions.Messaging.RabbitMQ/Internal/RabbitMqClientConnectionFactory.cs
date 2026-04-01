@@ -1,5 +1,6 @@
 using RabbitMQ.Client;
 using Raycynix.Extensions.Messaging.RabbitMQ.Configurations;
+using Raycynix.Extensions.Messaging.RabbitMQ.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 

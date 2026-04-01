@@ -1,11 +1,11 @@
 using Confluent.Kafka;
 
-namespace Raycynix.Extensions.Messaging.Kafka.Internal;
+namespace Raycynix.Extensions.Messaging.Kafka.Interfaces;
 
 /// <summary>
 /// Minimal Kafka producer abstraction used by the Raycynix Kafka transport.
 /// </summary>
-internal interface IKafkaProducer : IDisposable
+public interface IKafkaProducer : IDisposable
 {
     /// <summary>
     /// Publishes a serialized payload to the specified topic.

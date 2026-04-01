@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.RabbitMQ.Configurations;
+using Raycynix.Extensions.Messaging.RabbitMQ.Interfaces;
 using Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 
 namespace Raycynix.Extensions.Messaging.RabbitMQ;
@@ -31,6 +32,7 @@ public static class RabbitMqMessagingBuilderExtensions
         builder.Services.TryAddSingleton(configuration);
         builder.Services.TryAddSingleton<IRabbitMqConnectionFactory, RabbitMqClientConnectionFactory>();
         builder.Services.TryAddSingleton<RabbitMqConnectionAccessor>();
+        builder.Services.AddHostedService<RabbitMqInboundConsumer>();
         builder.Services.Replace(ServiceDescriptor.Singleton<IMessagePublisher, RabbitMqMessagePublisher>());
         return builder;
     }

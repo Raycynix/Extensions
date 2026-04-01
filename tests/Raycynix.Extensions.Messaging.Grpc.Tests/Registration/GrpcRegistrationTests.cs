@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Grpc.Configurations;
+using Raycynix.Extensions.Messaging.Grpc.Interfaces;
 using Raycynix.Extensions.Messaging.Grpc.Internal;
 
 namespace Raycynix.Extensions.Messaging.Grpc.Tests.Registration;

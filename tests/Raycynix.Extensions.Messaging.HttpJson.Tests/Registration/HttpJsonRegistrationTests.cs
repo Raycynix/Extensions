@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.HttpJson.Configurations;
+using Raycynix.Extensions.Messaging.HttpJson.Interfaces;
 using Raycynix.Extensions.Messaging.HttpJson.Internal;
 
 namespace Raycynix.Extensions.Messaging.HttpJson.Tests.Registration;

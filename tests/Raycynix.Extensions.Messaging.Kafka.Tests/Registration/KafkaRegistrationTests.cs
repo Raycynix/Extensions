@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Kafka.Configurations;
+using Raycynix.Extensions.Messaging.Kafka.Interfaces;
 using Raycynix.Extensions.Messaging.Kafka.Internal;
 
 namespace Raycynix.Extensions.Messaging.Kafka.Tests.Registration;

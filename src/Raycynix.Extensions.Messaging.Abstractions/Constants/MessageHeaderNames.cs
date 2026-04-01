@@ -26,6 +26,11 @@ public static class MessageHeaderNames
     public const string TraceState = "tracestate";
 
     /// <summary>
+    /// Gets the payload format header.
+    /// </summary>
+    public const string Format = "X-Message-Format";
+
+    /// <summary>
     /// Gets the authentication marker header.
     /// </summary>
     public const string Authenticated = "X-Subject-Authenticated";

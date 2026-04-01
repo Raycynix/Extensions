@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using Raycynix.Extensions.Messaging.Kafka.Configurations;
+using Raycynix.Extensions.Messaging.Kafka.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 
