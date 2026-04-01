@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Raycynix.Extensions.Secrets.Implementation;
+using Raycynix.Extensions.Secrets.Implementations;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Secrets;

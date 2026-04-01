@@ -5,6 +5,7 @@ using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Tests.Processing;
 

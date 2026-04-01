@@ -1,7 +1,7 @@
-namespace Raycynix.Extensions.Metrics.Abstractions;
+namespace Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 /// <summary>
-/// Represents a counter metric.
+/// Represents a counter-metric.
 /// </summary>
 public interface IMetricCounter
 {

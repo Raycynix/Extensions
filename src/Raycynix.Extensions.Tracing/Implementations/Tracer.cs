@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using Raycynix.Extensions.Tracing.Abstractions;
+using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
-namespace Raycynix.Extensions.Tracing.Implementation;
+namespace Raycynix.Extensions.Tracing.Implementations;
 
 /// <inheritdoc />
 public class Tracer : ITracer

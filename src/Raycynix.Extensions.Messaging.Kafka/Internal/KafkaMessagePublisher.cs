@@ -1,7 +1,7 @@
 using Confluent.Kafka;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
-using Raycynix.Extensions.Messaging.Implementation;
+using Raycynix.Extensions.Messaging.Implementations;
 
 namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 

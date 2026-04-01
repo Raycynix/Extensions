@@ -19,7 +19,7 @@ public sealed class LoggerTests
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
-        var logger = new Extensions.Logging.Implementation.Logger<TestCategory>(serilog);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
 
         logger.Log(LogLevel.Warning, "Price recalculated", metadata: new { ProductId = "sku-1" });
 
@@ -38,7 +38,7 @@ public sealed class LoggerTests
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
-        var logger = new Raycynix.Extensions.Logging.Implementation.Logger<TestCategory>(serilog);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
         var exception = new InvalidOperationException("boom");
         
         logger.Error("Failure", exception, new { Operation = "checkout" });
@@ -56,7 +56,7 @@ public sealed class LoggerTests
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
         ILogger<TestCategory> logger =
-            new Raycynix.Extensions.Logging.Implementation.Logger<TestCategory>(serilog);
+            new Implementations.Logger<TestCategory>(serilog);
         var state = new Dictionary<string, object?> { ["ProductId"] = "sku-1" };
 
         logger.Log(LogLevel.Information, new EventId(42, "PriceRead"), state, null, static (current, _) => $"Read {current["ProductId"]}");
@@ -75,7 +75,7 @@ public sealed class LoggerTests
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
-        var logger = new Raycynix.Extensions.Logging.Implementation.Logger<TestCategory>(serilog);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
 
         using (logger.BeginScope(new { CorrelationId = "corr-1" }))
         {
@@ -97,7 +97,7 @@ public sealed class LoggerTests
             .MinimumLevel.Warning()
             .WriteTo.Sink(sink)
             .CreateLogger();
-        var logger = new Raycynix.Extensions.Logging.Implementation.Logger<TestCategory>(serilog);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
 
         logger.IsEnabled(LogLevel.Information).Should().BeFalse();
         logger.IsEnabled(LogLevel.Error).Should().BeTrue();

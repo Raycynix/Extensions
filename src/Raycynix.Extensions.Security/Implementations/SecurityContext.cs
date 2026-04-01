@@ -1,7 +1,7 @@
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
-namespace Raycynix.Extensions.Security.Implementation;
+namespace Raycynix.Extensions.Security.Implementations;
 
 /// <summary>
 /// Provides the default immutable implementation of <see cref="ISecurityContext"/>.

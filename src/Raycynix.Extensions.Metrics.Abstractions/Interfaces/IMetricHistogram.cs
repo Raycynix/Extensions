@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Metrics.Abstractions;
+namespace Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 /// <summary>
 /// Represents a histogram metric.

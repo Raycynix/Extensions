@@ -4,7 +4,7 @@ using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Configurations;
-using Raycynix.Extensions.Messaging.Implementation;
+using Raycynix.Extensions.Messaging.Implementations;
 using Raycynix.Extensions.Messaging.Internal;
 using Raycynix.Extensions.Messaging.Serialization;
 

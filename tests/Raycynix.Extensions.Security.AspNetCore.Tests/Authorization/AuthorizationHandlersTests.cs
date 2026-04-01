@@ -4,7 +4,7 @@ using System.Security.Claims;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Requirements;
-using Raycynix.Extensions.Security.Implementation;
+using Raycynix.Extensions.Security.Implementations;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Tests.Authorization;
 

@@ -1,6 +1,6 @@
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
-namespace Raycynix.Extensions.Secrets.Implementation;
+namespace Raycynix.Extensions.Secrets.Implementations;
 
 /// <summary>
 /// Resolves secrets from TeamCity-injected process variables.

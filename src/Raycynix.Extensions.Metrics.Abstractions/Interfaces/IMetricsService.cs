@@ -1,4 +1,4 @@
-﻿namespace Raycynix.Extensions.Metrics.Abstractions;
+﻿namespace Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 /// <summary>
 /// Creates counters, gauges, and histograms.
@@ -6,7 +6,7 @@
 public interface IMetricsService
 {
     /// <summary>
-    /// Creates a counter metric.
+    /// Creates a counter-metric.
     /// </summary>
     /// <param name="name">The metric name.</param>
     /// <param name="help">The metric description.</param>

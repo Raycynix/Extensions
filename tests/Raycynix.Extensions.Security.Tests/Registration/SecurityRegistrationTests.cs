@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.Implementations;
 
 namespace Raycynix.Extensions.Security.Tests.Registration;
 
@@ -28,7 +29,7 @@ public class SecurityRegistrationTests
         var context = scope.ServiceProvider.GetRequiredService<ISecurityContext>();
 
         context.Should().NotBeNull();
-        context.Should().BeOfType<Implementation.SecurityContext>();
+        context.Should().BeOfType<SecurityContext>();
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
-namespace Raycynix.Extensions.Messaging.Implementation;
+namespace Raycynix.Extensions.Messaging.Implementations;
 
 /// <summary>
 /// Records optional metrics for messaging publish and dispatch operations.

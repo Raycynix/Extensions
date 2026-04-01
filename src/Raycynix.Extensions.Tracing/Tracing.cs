@@ -2,7 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Common.Helpers;
 using Raycynix.Extensions.Tracing.Abstractions;
-using Raycynix.Extensions.Tracing.Implementation;
+using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Implementations;
 
 namespace Raycynix.Extensions.Tracing;
 

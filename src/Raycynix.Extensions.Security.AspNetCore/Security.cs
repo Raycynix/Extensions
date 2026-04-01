@@ -13,7 +13,7 @@ using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Models;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.PolicyProvider;
-using Raycynix.Extensions.Security.AspNetCore.Implementation;
+using Raycynix.Extensions.Security.AspNetCore.Implementations;
 using Raycynix.Extensions.Security.Configurations;
 
 namespace Raycynix.Extensions.Security.AspNetCore;

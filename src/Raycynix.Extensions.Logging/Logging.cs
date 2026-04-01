@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Configurations;
-using Raycynix.Extensions.Logging.Implementation;
+using Raycynix.Extensions.Logging.Implementations;
 using Raycynix.Extensions.Logging.Internal;
 using Serilog;
 

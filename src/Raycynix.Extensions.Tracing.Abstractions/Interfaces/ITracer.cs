@@ -1,4 +1,4 @@
-﻿namespace Raycynix.Extensions.Tracing.Abstractions;
+﻿namespace Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 /// <summary>
 /// Defines a small tracing abstraction built on top of diagnostic activities.

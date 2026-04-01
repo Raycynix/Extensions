@@ -3,7 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions;
+using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Observability.Tests.Registration;
 

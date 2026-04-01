@@ -3,9 +3,9 @@ using System.Security.Claims;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
-using Raycynix.Extensions.Security.Implementation;
+using Raycynix.Extensions.Security.Implementations;
 
-namespace Raycynix.Extensions.Security.AspNetCore.Implementation;
+namespace Raycynix.Extensions.Security.AspNetCore.Implementations;
 
 internal static class HttpSecurityContextFactory
 {

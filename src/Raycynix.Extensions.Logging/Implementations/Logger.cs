@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Logging.Internal;
 
-namespace Raycynix.Extensions.Logging.Implementation;
+namespace Raycynix.Extensions.Logging.Implementations;
 
 /// <inheritdoc />
 public class Logger<T>(Serilog.ILogger logger) : Abstractions.ILogger<T>
