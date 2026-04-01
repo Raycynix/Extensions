@@ -1,6 +1,7 @@
 using Confluent.Kafka;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Implementation;
 
 namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 
@@ -9,7 +10,8 @@ namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 /// </summary>
 internal sealed class KafkaMessagePublisher(
     IMessageSerializer serializer,
-    IKafkaProducer producer) : IMessagePublisher
+    IKafkaProducer producer,
+    MessageObservability observability) : IMessagePublisher
 {
     /// <inheritdoc />
     public async ValueTask PublishAsync<TMessage>(
@@ -18,15 +20,27 @@ internal sealed class KafkaMessagePublisher(
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
-        var serialized = serializer.Serialize(envelope);
-        var kafkaMessage = new Message<Null, byte[]>
-        {
-            Value = serialized.Payload,
-            Timestamp = new Timestamp(serialized.CreatedAt.UtcDateTime),
-            Headers = BuildHeaders(serialized)
-        };
+        var format = envelope.Format.ToString().ToLowerInvariant();
+        using var observation = observability.BeginPublish(format, envelope.Destination);
 
-        await producer.ProduceAsync(serialized.Destination, kafkaMessage, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var serialized = serializer.Serialize(envelope);
+            var kafkaMessage = new Message<Null, byte[]>
+            {
+                Value = serialized.Payload,
+                Timestamp = new Timestamp(serialized.CreatedAt.UtcDateTime),
+                Headers = BuildHeaders(serialized)
+            };
+
+            await producer.ProduceAsync(serialized.Destination, kafkaMessage, cancellationToken).ConfigureAwait(false);
+            observability.RecordPublishSuccess(format, envelope.Destination);
+        }
+        catch
+        {
+            observability.RecordPublishFailure(format, envelope.Destination);
+            throw;
+        }
     }
 
     private static Headers BuildHeaders(SerializedMessage serialized)

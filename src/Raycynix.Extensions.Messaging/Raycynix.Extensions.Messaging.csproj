@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.6.0</Version>
+        <Version>0.6.1</Version>
 
         <IsPackable>true</IsPackable>
 
@@ -27,6 +27,7 @@
         <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Messaging.Abstractions\Raycynix.Extensions.Messaging.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
     </ItemGroup>
 

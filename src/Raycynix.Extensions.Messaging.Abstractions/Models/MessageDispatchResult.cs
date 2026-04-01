@@ -14,4 +14,9 @@ public sealed record MessageDispatchResult
     /// Gets the number of handlers that processed the message.
     /// </summary>
     public required int HandlerCount { get; init; }
+
+    /// <summary>
+    /// Gets the number of dispatch attempts performed for the message.
+    /// </summary>
+    public required int AttemptCount { get; init; }
 }

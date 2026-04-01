@@ -33,6 +33,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Messaging.Abstractions\Raycynix.Extensions.Messaging.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

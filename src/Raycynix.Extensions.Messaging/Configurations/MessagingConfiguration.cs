@@ -18,6 +18,11 @@ public sealed class MessagingConfiguration
     public bool AutoGenerateCorrelationId { get; set; } = true;
 
     /// <summary>
+    /// Gets the dispatch retry configuration.
+    /// </summary>
+    public MessageDispatchRetryConfiguration DispatchRetry { get; set; } = new();
+
+    /// <summary>
     /// Gets the JSON message configuration.
     /// </summary>
     public JsonMessagingConfiguration Json { get; set; } = new();
@@ -36,5 +41,7 @@ public sealed class MessagingConfiguration
         {
             throw new InvalidOperationException("gRPC content type cannot be empty.");
         }
+
+        DispatchRetry.Validate();
     }
 }

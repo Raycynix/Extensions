@@ -4,6 +4,7 @@ using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Configurations;
+using Raycynix.Extensions.Messaging.Implementation;
 using Raycynix.Extensions.Messaging.Internal;
 using Raycynix.Extensions.Messaging.Serialization;
 
@@ -41,6 +42,7 @@ public static class Messaging
         services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
         services.AddSingleton<IMessageCodecResolver, MessageCodecResolver>();
         services.AddSingleton<IMessageSerializer, MessageSerializer>();
+        services.AddSingleton<MessageObservability>();
         services.AddSingleton<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
         services.AddSingleton<IMessageCodec, NewtonsoftJsonMessageCodec>();
