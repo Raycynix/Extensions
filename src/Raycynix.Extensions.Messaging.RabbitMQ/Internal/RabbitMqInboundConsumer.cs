@@ -44,11 +44,11 @@ internal sealed class RabbitMqInboundConsumer(
             {
                 var incomingMessage = CreateIncomingMessage(delivery);
                 await processor.ProcessAsync(incomingMessage, stoppingToken).ConfigureAwait(false);
-                await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: stoppingToken).ConfigureAwait(false);
+                await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             {
-                await HandleFailureAsync(channel, delivery, exception, stoppingToken).ConfigureAwait(false);
+                await HandleFailureAsync(channel, delivery, exception, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

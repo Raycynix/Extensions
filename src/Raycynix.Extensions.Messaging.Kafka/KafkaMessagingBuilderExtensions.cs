@@ -31,7 +31,7 @@ public static class KafkaMessagingBuilderExtensions
 
         builder.Services.TryAddSingleton(configuration);
         builder.Services.TryAddSingleton<IKafkaProducer, KafkaProducer>();
-        builder.Services.Replace(ServiceDescriptor.Singleton<IMessagePublisher, KafkaMessagePublisher>());
+        builder.Services.Replace(ServiceDescriptor.Singleton<ITransportMessagePublisher, KafkaMessagePublisher>());
         return builder;
     }
 }

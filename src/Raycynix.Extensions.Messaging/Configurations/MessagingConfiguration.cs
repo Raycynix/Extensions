@@ -28,6 +28,11 @@ public sealed class MessagingConfiguration
     public MessageDispatchRetryConfiguration DispatchRetry { get; set; } = new();
 
     /// <summary>
+    /// Gets the outgoing outbox configuration.
+    /// </summary>
+    public MessageOutboxConfiguration Outbox { get; set; } = new();
+
+    /// <summary>
     /// Gets the JSON message configuration.
     /// </summary>
     public JsonMessagingConfiguration Json { get; set; } = new();
@@ -48,5 +53,6 @@ public sealed class MessagingConfiguration
         }
 
         DispatchRetry.Validate();
+        Outbox.Validate();
     }
 }

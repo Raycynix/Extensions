@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -45,7 +46,10 @@ public static class Messaging
         services.AddSingleton<IncomingMessageTypeResolver>();
         services.AddSingleton<MessageObservability>();
         services.AddSingleton<IIncomingMessageInboxStore, InMemoryIncomingMessageInboxStore>();
+        services.AddSingleton<IMessageOutboxStore, InMemoryMessageOutboxStore>();
         services.AddSingleton<IIncomingMessageProcessor, IncomingMessageProcessor>();
+        services.AddSingleton<MessageOutboxRecoveryProcessor>();
+        services.AddSingleton<IHostedService, MessageOutboxRecoveryService>();
         services.AddSingleton<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
         services.AddSingleton<IMessageCodec, NewtonsoftJsonMessageCodec>();

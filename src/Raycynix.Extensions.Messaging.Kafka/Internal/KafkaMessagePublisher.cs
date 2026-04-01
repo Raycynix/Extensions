@@ -10,59 +10,55 @@ namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 /// Publishes Raycynix message envelopes to Kafka topics.
 /// </summary>
 internal sealed class KafkaMessagePublisher(
-    IMessageSerializer serializer,
     IKafkaProducer producer,
-    MessageObservability observability) : IMessagePublisher
+    MessageObservability observability) : ITransportMessagePublisher
 {
     /// <inheritdoc />
-    public async ValueTask PublishAsync<TMessage>(
-        MessageEnvelope<TMessage> envelope,
-        CancellationToken cancellationToken = default)
+    public async ValueTask PublishAsync(SerializedMessage message, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(envelope);
+        ArgumentNullException.ThrowIfNull(message);
 
-        var format = envelope.Format.ToString().ToLowerInvariant();
-        using var observation = observability.BeginPublish(format, envelope.Destination);
+        var format = message.Format.ToString().ToLowerInvariant();
+        using var observation = observability.BeginPublish(format, message.Destination);
 
         try
         {
-            var serialized = serializer.Serialize(envelope);
             var kafkaMessage = new Message<Null, byte[]>
             {
-                Value = serialized.Payload,
-                Timestamp = new Timestamp(serialized.CreatedAt.UtcDateTime),
-                Headers = BuildHeaders(serialized)
+                Value = message.Payload,
+                Timestamp = new Timestamp(message.CreatedAt.UtcDateTime),
+                Headers = BuildHeaders(message)
             };
 
-            await producer.ProduceAsync(serialized.Destination, kafkaMessage, cancellationToken).ConfigureAwait(false);
-            observability.RecordPublishSuccess(format, envelope.Destination);
+            await producer.ProduceAsync(message.Destination, kafkaMessage, cancellationToken).ConfigureAwait(false);
+            observability.RecordPublishSuccess(format, message.Destination);
         }
         catch
         {
-            observability.RecordPublishFailure(format, envelope.Destination);
+            observability.RecordPublishFailure(format, message.Destination);
             throw;
         }
     }
 
-    private static Headers BuildHeaders(SerializedMessage serialized)
+    private static Headers BuildHeaders(SerializedMessage message)
     {
         var headers = new Headers
         {
-            { "message-id", System.Text.Encoding.UTF8.GetBytes(serialized.MessageId) },
-            { "content-type", System.Text.Encoding.UTF8.GetBytes(serialized.ContentType) }
+            { "message-id", System.Text.Encoding.UTF8.GetBytes(message.MessageId) },
+            { "content-type", System.Text.Encoding.UTF8.GetBytes(message.ContentType) }
         };
 
-        if (!string.IsNullOrWhiteSpace(serialized.CorrelationId))
+        if (!string.IsNullOrWhiteSpace(message.CorrelationId))
         {
-            headers.Add("correlation-id", System.Text.Encoding.UTF8.GetBytes(serialized.CorrelationId));
+            headers.Add("correlation-id", System.Text.Encoding.UTF8.GetBytes(message.CorrelationId));
         }
 
-        if (!string.IsNullOrWhiteSpace(serialized.CausationId))
+        if (!string.IsNullOrWhiteSpace(message.CausationId))
         {
-            headers.Add("causation-id", System.Text.Encoding.UTF8.GetBytes(serialized.CausationId));
+            headers.Add("causation-id", System.Text.Encoding.UTF8.GetBytes(message.CausationId));
         }
 
-        foreach (var header in serialized.Headers)
+        foreach (var header in message.Headers)
         {
             headers.Add(header.Key, System.Text.Encoding.UTF8.GetBytes(header.Value));
         }

@@ -33,7 +33,7 @@ public static class RabbitMqMessagingBuilderExtensions
         builder.Services.TryAddSingleton<IRabbitMqConnectionFactory, RabbitMqClientConnectionFactory>();
         builder.Services.TryAddSingleton<RabbitMqConnectionAccessor>();
         builder.Services.AddHostedService<RabbitMqInboundConsumer>();
-        builder.Services.Replace(ServiceDescriptor.Singleton<IMessagePublisher, RabbitMqMessagePublisher>());
+        builder.Services.Replace(ServiceDescriptor.Singleton<ITransportMessagePublisher, RabbitMqMessagePublisher>());
         return builder;
     }
 }

@@ -16,7 +16,7 @@ namespace Raycynix.Extensions.Messaging.Kafka.Tests.Registration;
 public sealed class KafkaRegistrationTests
 {
     /// <summary>
-    /// Verifies that Kafka transport registration replaces the default publisher and registers transport options.
+    /// Verifies that Kafka transport registration registers transport options and the Kafka transport publisher.
     /// </summary>
     [Fact]
     public void AddKafka_ShouldRegisterKafkaConfigurationAndPublisher()
@@ -36,7 +36,8 @@ public sealed class KafkaRegistrationTests
         using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<KafkaMessagingConfiguration>().BootstrapServers.Should().ContainSingle();
-        provider.GetRequiredService<IMessagePublisher>().GetType().Name.Should().Be("KafkaMessagePublisher");
+        provider.GetRequiredService<IMessagePublisher>().Should().NotBeNull();
+        provider.GetRequiredService<ITransportMessagePublisher>().GetType().Name.Should().Be("KafkaMessagePublisher");
     }
 
     /// <summary>

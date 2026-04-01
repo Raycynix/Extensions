@@ -9,55 +9,51 @@ namespace Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 /// Publishes Raycynix message envelopes to RabbitMQ exchanges.
 /// </summary>
 internal sealed class RabbitMqMessagePublisher(
-    IMessageSerializer serializer,
     RabbitMqConnectionAccessor connectionAccessor,
     Configurations.RabbitMqMessagingConfiguration configuration,
-    MessageObservability observability) : IMessagePublisher
+    MessageObservability observability) : ITransportMessagePublisher
 {
     /// <inheritdoc />
-    public async ValueTask PublishAsync<TMessage>(
-        MessageEnvelope<TMessage> envelope,
-        CancellationToken cancellationToken = default)
+    public async ValueTask PublishAsync(SerializedMessage message, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(envelope);
+        ArgumentNullException.ThrowIfNull(message);
 
-        var format = envelope.Format.ToString().ToLowerInvariant();
-        using var observation = observability.BeginPublish(format, envelope.Destination);
+        var format = message.Format.ToString().ToLowerInvariant();
+        using var observation = observability.BeginPublish(format, message.Destination);
 
         try
         {
-            var serialized = serializer.Serialize(envelope);
             await using var channel = await connectionAccessor.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
             var properties = new BasicProperties
             {
-                MessageId = serialized.MessageId,
-                CorrelationId = serialized.CorrelationId,
-                ContentType = serialized.ContentType,
-                Timestamp = new AmqpTimestamp(serialized.CreatedAt.ToUnixTimeSeconds()),
-                Headers = serialized.Headers.ToDictionary(
+                MessageId = message.MessageId,
+                CorrelationId = message.CorrelationId,
+                ContentType = message.ContentType,
+                Timestamp = new AmqpTimestamp(message.CreatedAt.ToUnixTimeSeconds()),
+                Headers = message.Headers.ToDictionary(
                     pair => pair.Key, object? (pair) => System.Text.Encoding.UTF8.GetBytes(pair.Value))
             };
 
-            if (!string.IsNullOrWhiteSpace(serialized.CausationId))
+            if (!string.IsNullOrWhiteSpace(message.CausationId))
             {
-                properties.Headers["causation-id"] = System.Text.Encoding.UTF8.GetBytes(serialized.CausationId);
+                properties.Headers["causation-id"] = System.Text.Encoding.UTF8.GetBytes(message.CausationId);
             }
 
             await channel.BasicPublishAsync(
                     exchange: configuration.Exchange.Name,
-                    routingKey: serialized.Destination,
+                    routingKey: message.Destination,
                     mandatory: false,
                     basicProperties: properties,
-                    body: serialized.Payload,
+                    body: message.Payload,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            observability.RecordPublishSuccess(format, envelope.Destination);
+            observability.RecordPublishSuccess(format, message.Destination);
         }
         catch
         {
-            observability.RecordPublishFailure(format, envelope.Destination);
+            observability.RecordPublishFailure(format, message.Destination);
             throw;
         }
     }

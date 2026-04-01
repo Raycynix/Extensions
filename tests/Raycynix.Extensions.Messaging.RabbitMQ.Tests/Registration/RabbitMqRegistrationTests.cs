@@ -19,7 +19,7 @@ namespace Raycynix.Extensions.Messaging.RabbitMQ.Tests.Registration;
 public sealed class RabbitMqRegistrationTests
 {
     /// <summary>
-    /// Verifies that RabbitMQ transport registration replaces the default publisher and registers transport options.
+    /// Verifies that RabbitMQ transport registration registers transport options and the RabbitMQ transport publisher.
     /// </summary>
     [Fact]
     public async Task AddRabbitMq_ShouldRegisterRabbitMqConfigurationAndPublisher()
@@ -39,7 +39,8 @@ public sealed class RabbitMqRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<RabbitMqMessagingConfiguration>().Queue.Name.Should().Be("messages");
-        provider.GetRequiredService<IMessagePublisher>().GetType().Name.Should().Be("RabbitMqMessagePublisher");
+        provider.GetRequiredService<IMessagePublisher>().Should().NotBeNull();
+        provider.GetRequiredService<ITransportMessagePublisher>().GetType().Name.Should().Be("RabbitMqMessagePublisher");
     }
 
     /// <summary>
@@ -116,6 +117,10 @@ public sealed class RabbitMqRegistrationTests
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await processingState.Processed.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        await WaitForAsync(
+            () => fakeConnectionFactory.Connection!.AckedDeliveryTags.Contains(1),
+            TimeSpan.FromSeconds(2),
+            TestContext.Current.CancellationToken);
         await hostedService.StopAsync(TestContext.Current.CancellationToken);
 
         processingState.Values.Should().ContainSingle().Which.Should().Be("hello");
@@ -424,5 +429,22 @@ public sealed class RabbitMqRegistrationTests
             Timestamp = DateTimeOffset.UtcNow,
             Headers = actualHeaders
         };
+    }
+
+    private static async Task WaitForAsync(
+        Func<bool> condition,
+        TimeSpan timeout,
+        CancellationToken cancellationToken)
+    {
+        var startedAt = DateTimeOffset.UtcNow;
+        while (!condition())
+        {
+            if (DateTimeOffset.UtcNow - startedAt >= timeout)
+            {
+                throw new TimeoutException("The expected RabbitMQ test condition was not met in time.");
+            }
+
+            await Task.Delay(25, cancellationToken);
+        }
     }
 }
