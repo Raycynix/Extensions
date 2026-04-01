@@ -1,9 +1,11 @@
 using FluentAssertions;
+using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
+using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Grpc.Configurations;
 using Raycynix.Extensions.Messaging.Grpc.Interfaces;
 using Raycynix.Extensions.Messaging.Grpc.Internal;
@@ -75,9 +77,79 @@ public sealed class GrpcRegistrationTests
         response.CorrelationId.Should().Be("corr-2");
     }
 
+    /// <summary>
+    /// Verifies that inbound gRPC requests are dispatched to the registered request handler.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_ShouldDispatchInboundGrpcRequest()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<GetOrderRequest, GetOrderResponse, GetOrderRequestHandler>("orders.v1/get")
+            .AddGrpc(options => options.Address = "https://orders.grpc.local");
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IGrpcRequestProcessor>();
+
+        var response = await processor.ProcessAsync<GetOrderRequest, GetOrderResponse>(
+            "orders.v1/get",
+            new GetOrderRequest("order-7"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Correlation-Id"] = "corr-7"
+            },
+            TestContext.Current.CancellationToken);
+
+        response.OrderId.Should().Be("order-7");
+    }
+
+    /// <summary>
+    /// Verifies that inbound gRPC requests surface an unimplemented status when no request handler is registered.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WithoutRegisteredRequestHandler_ShouldThrowRpcException()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddGrpc(options => options.Address = "https://orders.grpc.local");
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IGrpcRequestProcessor>();
+
+        var act = () => processor.ProcessAsync<GetOrderRequest, GetOrderResponse>(
+            "orders.v1/get",
+            new GetOrderRequest("order-8"),
+            cancellationToken: TestContext.Current.CancellationToken).AsTask();
+
+        var exception = await act.Should().ThrowAsync<RpcException>();
+        exception.Which.StatusCode.Should().Be(StatusCode.Unimplemented);
+    }
+
     private sealed record GetOrderRequest(string OrderId);
 
     private sealed record GetOrderResponse(string OrderId);
+
+    private sealed class GetOrderRequestHandler : IRequestHandler<GetOrderRequest, GetOrderResponse>
+    {
+        public ValueTask<ResponseEnvelope<GetOrderResponse>> HandleAsync(
+            RequestEnvelope<GetOrderRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<GetOrderResponse>
+            {
+                Response = new GetOrderResponse(request.Request.OrderId),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
 
     private sealed class FakeOrdersGrpcClient
     {

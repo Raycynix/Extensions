@@ -31,6 +31,21 @@ public sealed class KafkaMessagingConfiguration
     public bool EnableAutoCommit { get; set; } = false;
 
     /// <summary>
+    /// Gets the Kafka inbound consumer configuration.
+    /// </summary>
+    public KafkaConsumerConfiguration Consumer { get; set; } = new();
+
+    /// <summary>
+    /// Gets the Kafka retry configuration.
+    /// </summary>
+    public KafkaRetryConfiguration Retry { get; set; } = new();
+
+    /// <summary>
+    /// Gets the Kafka dead-letter configuration.
+    /// </summary>
+    public KafkaDeadLetterConfiguration DeadLetter { get; set; } = new();
+
+    /// <summary>
     /// Gets the acknowledgment mode.
     /// </summary>
     public string Acks { get; set; } = "all";
@@ -44,5 +59,9 @@ public sealed class KafkaMessagingConfiguration
         {
             throw new InvalidOperationException("At least one Kafka bootstrap server must be configured.");
         }
+
+        Consumer.Validate();
+        Retry.Validate();
+        DeadLetter.Validate();
     }
 }

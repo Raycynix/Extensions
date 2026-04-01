@@ -31,6 +31,7 @@ public static class GrpcMessagingBuilderExtensions
 
             builder.Services.TryAddSingleton(configuration);
             builder.Services.TryAddSingleton<IGrpcClientFactory, GrpcClientFactory>();
+            builder.Services.TryAddSingleton<IGrpcRequestProcessor, GrpcRequestProcessor>();
             builder.Services.TryAddSingleton<IGrpcRequestClient, GrpcRequestClient>();
             builder.Services.Replace(ServiceDescriptor.Singleton<IDirectRequestClient, GrpcRequestClient>());
 

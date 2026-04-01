@@ -41,6 +41,7 @@ public static class Messaging
         services.AddSingleton<IMessageEnvelopeFactory, MessageEnvelopeFactory>();
         services.AddSingleton<IRequestEnvelopeFactory, RequestEnvelopeFactory>();
         services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
+        services.AddSingleton<IRequestDispatcher, RequestDispatcher>();
         services.AddSingleton<IMessageCodecResolver, MessageCodecResolver>();
         services.AddSingleton<IMessageSerializer, MessageSerializer>();
         services.AddSingleton<IncomingMessageTypeResolver>();

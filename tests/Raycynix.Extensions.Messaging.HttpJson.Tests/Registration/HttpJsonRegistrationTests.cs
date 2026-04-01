@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
+using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.HttpJson.Configurations;
 using Raycynix.Extensions.Messaging.HttpJson.Interfaces;
 using Raycynix.Extensions.Messaging.HttpJson.Internal;
@@ -84,9 +85,88 @@ public sealed class HttpJsonRegistrationTests
         response.CorrelationId.Should().Be("corr-1");
     }
 
+    /// <summary>
+    /// Verifies that inbound HTTP JSON requests are dispatched to the registered request handler.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_ShouldDispatchInboundHttpJsonRequest()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<CreateOrderRequest, CreateOrderResponse, CreateOrderRequestHandler>("/api/orders")
+            .AddHttpJson(options =>
+            {
+                options.BaseAddress = "https://orders.service.local";
+                options.TimeoutSeconds = 15;
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IHttpJsonRequestProcessor>();
+
+        var response = await processor.ProcessAsync<CreateOrderRequest, CreateOrderResponse>(
+            "/api/orders",
+            System.Text.Encoding.UTF8.GetBytes("{\"orderId\":\"order-5\"}"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Correlation-Id"] = "corr-5"
+            },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.Headers.Should().ContainKey("X-Correlation-Id");
+        System.Text.Encoding.UTF8.GetString(response.Payload).Should().Contain("order-5");
+    }
+
+    /// <summary>
+    /// Verifies that inbound HTTP JSON requests return a not found response when no request handler is registered.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WithoutRegisteredRequestHandler_ShouldReturnNotFound()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddHttpJson(options =>
+            {
+                options.BaseAddress = "https://orders.service.local";
+                options.TimeoutSeconds = 15;
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IHttpJsonRequestProcessor>();
+
+        var response = await processor.ProcessAsync<CreateOrderRequest, CreateOrderResponse>(
+            "/api/orders",
+            System.Text.Encoding.UTF8.GetBytes("{\"orderId\":\"order-6\"}"),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+    }
+
     private sealed record CreateOrderRequest(string OrderId);
 
     private sealed record CreateOrderResponse(string OrderId);
+
+    private sealed class CreateOrderRequestHandler : IRequestHandler<CreateOrderRequest, CreateOrderResponse>
+    {
+        public ValueTask<ResponseEnvelope<CreateOrderResponse>> HandleAsync(
+            RequestEnvelope<CreateOrderRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<CreateOrderResponse>
+            {
+                Response = new CreateOrderResponse(request.Request.OrderId),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
 
     private sealed class FakeHttpJsonTransport : IHttpJsonTransport
     {

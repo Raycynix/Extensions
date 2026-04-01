@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Kafka.Configurations;
 using Raycynix.Extensions.Messaging.Kafka.Interfaces;
@@ -31,6 +32,8 @@ public static class KafkaMessagingBuilderExtensions
 
         builder.Services.TryAddSingleton(configuration);
         builder.Services.TryAddSingleton<IKafkaProducer, KafkaProducer>();
+        builder.Services.TryAddSingleton<IKafkaConsumer, KafkaConsumer>();
+        builder.Services.AddHostedService<KafkaInboundConsumer>();
         builder.Services.Replace(ServiceDescriptor.Singleton<ITransportMessagePublisher, KafkaMessagePublisher>());
         return builder;
     }

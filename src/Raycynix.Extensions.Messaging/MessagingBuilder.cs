@@ -42,6 +42,24 @@ public sealed class MessagingBuilder(IServiceCollection services)
     }
 
     /// <summary>
+    /// Registers a direct request handler for a specific destination and request/response pair.
+    /// </summary>
+    /// <typeparam name="TRequest">The request payload type.</typeparam>
+    /// <typeparam name="TResponse">The response payload type.</typeparam>
+    /// <typeparam name="THandler">The request handler implementation type.</typeparam>
+    /// <param name="destination">The logical destination handled by the implementation.</param>
+    /// <returns>The same builder instance.</returns>
+    public MessagingBuilder AddRequestHandler<TRequest, TResponse, THandler>(string destination)
+        where THandler : class, IRequestHandler<TRequest, TResponse>
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        Services.AddScoped<IRequestHandler<TRequest, TResponse>, THandler>();
+        Services.AddSingleton(new RequestHandlerRegistration(typeof(TRequest), typeof(TResponse), destination));
+        return this;
+    }
+
+    /// <summary>
     /// Registers delegate-based gRPC/protobuf serialization for a specific message type.
     /// </summary>
     /// <typeparam name="TMessage">The payload type.</typeparam>
