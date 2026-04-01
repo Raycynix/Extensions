@@ -6,7 +6,7 @@ namespace Raycynix.Extensions.Messaging.Implementations;
 /// <summary>
 /// Republishes pending and failed outbox messages through the configured transport.
 /// </summary>
-internal sealed class MessageOutboxRecoveryProcessor(
+public sealed class MessageOutboxRecoveryProcessor(
     IEnumerable<ITransportMessagePublisher> transportPublishers,
     IMessageOutboxStore outboxStore,
     MessagingConfiguration configuration)

@@ -88,6 +88,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messagi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.HttpJson", "src\Raycynix.Extensions.Messaging.HttpJson\Raycynix.Extensions.Messaging.HttpJson.csproj", "{9D0B64F7-5F7F-44D2-816C-516C957F5896}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.Database", "src\Raycynix.Extensions.Messaging.Database\Raycynix.Extensions.Messaging.Database.csproj", "{92385CED-2963-4FC0-90F7-AC0B44C32373}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CD7E63E8-34E0-4B86-8B86-12F31B36DF23}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration", "Configuration", "{50D04682-1C22-4DAC-8EF5-6E5B8402A4C9}"
@@ -155,6 +157,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.Grpc.Tests", "tests\Raycynix.Extensions.Messaging.Grpc.Tests\Raycynix.Extensions.Messaging.Grpc.Tests.csproj", "{EF4B1F30-976E-4B70-9538-968B29AE9C6D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.HttpJson.Tests", "tests\Raycynix.Extensions.Messaging.HttpJson.Tests\Raycynix.Extensions.Messaging.HttpJson.Tests.csproj", "{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.Database.Tests", "tests\Raycynix.Extensions.Messaging.Database.Tests\Raycynix.Extensions.Messaging.Database.Tests.csproj", "{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -838,6 +842,30 @@ Global
 		{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4}.Release|x64.Build.0 = Release|Any CPU
 		{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4}.Release|x86.Build.0 = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|x64.Build.0 = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Debug|x86.Build.0 = Debug|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|x64.ActiveCfg = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|x64.Build.0 = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|x86.ActiveCfg = Release|Any CPU
+		{92385CED-2963-4FC0-90F7-AC0B44C32373}.Release|x86.Build.0 = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|x64.Build.0 = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Debug|x86.Build.0 = Debug|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x64.ActiveCfg = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x64.Build.0 = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x86.ActiveCfg = Release|Any CPU
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -919,5 +947,7 @@ Global
 		{079F6D6D-FF21-4BFA-B9DC-542064662021} = {03660AE8-ED57-491E-BDF7-97A69B72F293}
 		{9D0B64F7-5F7F-44D2-816C-516C957F5896} = {03660AE8-ED57-491E-BDF7-97A69B72F293}
 		{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4} = {A998262B-9A6C-4A1D-999C-A8C60B185694}
+		{92385CED-2963-4FC0-90F7-AC0B44C32373} = {03660AE8-ED57-491E-BDF7-97A69B72F293}
+		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70} = {A998262B-9A6C-4A1D-999C-A8C60B185694}
 	EndGlobalSection
 EndGlobal

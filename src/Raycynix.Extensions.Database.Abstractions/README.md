@@ -9,6 +9,9 @@
 - `IDatabaseInitializer`
 - `IConfigurator`
 - `IGenericConfigurator<T>`
+- `DatabaseTableAttribute`
+
+`IConfigurator` describes both model configuration and the cache key fragment that identifies the model shape produced by that configurator. This allows reusable packages to contribute EF Core mappings without breaking shared model caching.
 
 ## Purpose
 

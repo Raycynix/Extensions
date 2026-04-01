@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Logging.Abstractions;
@@ -31,6 +32,76 @@ public sealed class DatabaseContextTests
         context.ChangeTracker.LazyLoadingEnabled.Should().BeTrue();
         context.ChangeTracker.AutoDetectChangesEnabled.Should().BeFalse();
         context.ChangeTracker.QueryTrackingBehavior.Should().Be(QueryTrackingBehavior.NoTracking);
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="GenericConfigurator{T}"/> uses <see cref="DatabaseTableAttribute"/> when present.
+    /// </summary>
+    [Fact]
+    public void GenericConfigurator_ShouldUseConfiguredTableNameAttribute()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddRaycynixDatabase(BuildConfiguration())
+            .AddAssembly<AttributedEntity>();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var entityType = context.Model.FindEntityType(typeof(AttributedEntity));
+
+        entityType.Should().NotBeNull();
+        entityType.FindAnnotation("Relational:TableName")!.Value.Should().Be("attributed_entities");
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="GenericConfigurator{T}"/> can override the attribute table name with a runtime value.
+    /// </summary>
+    [Fact]
+    public void GenericConfigurator_ShouldUseRuntimeTableNameOverride()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        RuntimeAttributedEntityConfigurator.RuntimeTableName = "runtime_attributed_entities";
+        services.AddRaycynixDatabase(BuildConfiguration())
+            .AddAssembly<RuntimeAttributedEntity>();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var entityType = context.Model.FindEntityType(typeof(RuntimeAttributedEntity));
+
+        entityType.Should().NotBeNull();
+        entityType.FindAnnotation("Relational:TableName")!.Value.Should().Be("runtime_attributed_entities");
+    }
+
+    [DatabaseTable("attributed_entities")]
+    private sealed class AttributedEntityConfigurator : GenericConfigurator<AttributedEntity>
+    {
+        public override Type[] DependsOn => [];
+    }
+
+    private sealed class AttributedEntity
+    {
+        public int Id { get; set; }
+    }
+
+    [DatabaseTable("ignored_attributed_entities")]
+    private sealed class RuntimeAttributedEntityConfigurator : GenericConfigurator<RuntimeAttributedEntity>
+    {
+        public static string RuntimeTableName { get; set; } = "ignored_attributed_entities";
+
+        public override Type[] DependsOn => [];
+
+        public override void Configure(ModelBuilder modelBuilder)
+        {
+            ConfigureEntity(modelBuilder, RuntimeTableName);
+        }
+    }
+
+    private sealed class RuntimeAttributedEntity
+    {
+        public int Id { get; set; }
     }
 
     private static IConfiguration BuildConfiguration()

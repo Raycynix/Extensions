@@ -18,6 +18,11 @@ public interface IConfigurator
     Type[] DependsOn { get; }
 
     /// <summary>
+    /// Gets the cache key fragment that identifies the model shape produced by the configurator.
+    /// </summary>
+    string ModelCacheKey { get; }
+
+    /// <summary>
     /// Applies model configuration for the entity.
     /// </summary>
     /// <param name="modelBuilder">The model builder used to configure the entity.</param>
