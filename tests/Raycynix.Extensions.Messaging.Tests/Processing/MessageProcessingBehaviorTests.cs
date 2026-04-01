@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
-using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Tests.Processing;
@@ -123,9 +122,77 @@ public sealed class MessageProcessingBehaviorTests
         metrics.Histograms["raycynix_messaging_dispatch_duration_seconds"].MeasureCount.Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that an already processed incoming message is skipped on subsequent deliveries.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenMessageWasAlreadyProcessed_ShouldSkipDuplicateDelivery()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddSingleton<IncomingProcessingState>();
+        services.AddRaycynixMessaging(configuration)
+            .AddMessageHandler<IncomingProcessingMessage, RecordingIncomingHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+        var inboxStore = provider.GetRequiredService<IIncomingMessageInboxStore>();
+        var state = provider.GetRequiredService<IncomingProcessingState>();
+        var message = CreateIncomingMessage("msg-1", """{"value":"once"}""");
+
+        await processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+        await processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+
+        state.Values.Should().ContainSingle().Which.Should().Be("once");
+
+        var inboxEntry = await inboxStore.GetAsync("msg-1", TestContext.Current.CancellationToken);
+        inboxEntry.Should().NotBeNull();
+        inboxEntry!.Status.Should().Be(IncomingMessageInboxStatus.Processed);
+    }
+
+    /// <summary>
+    /// Verifies that a failed incoming message can be processed successfully on a later retry.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenPreviousAttemptFailed_ShouldAllowRetry()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddSingleton<RetryingIncomingState>();
+        services.AddRaycynixMessaging(configuration)
+            .AddMessageHandler<IncomingProcessingMessage, RetryingIncomingHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+        var inboxStore = provider.GetRequiredService<IIncomingMessageInboxStore>();
+        var state = provider.GetRequiredService<RetryingIncomingState>();
+        var message = CreateIncomingMessage("msg-2", """{"value":"retry"}""");
+
+        var firstAttempt = () => processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+        await firstAttempt.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("incoming failure");
+
+        await processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+
+        state.AttemptCount.Should().Be(2);
+        state.Values.Should().ContainSingle().Which.Should().Be("retry");
+
+        var inboxEntry = await inboxStore.GetAsync("msg-2", TestContext.Current.CancellationToken);
+        inboxEntry.Should().NotBeNull();
+        inboxEntry!.Status.Should().Be(IncomingMessageInboxStatus.Processed);
+    }
+
     private sealed record RetryableDispatchMessage(string OrderId);
 
     private sealed record ObservedDispatchMessage(string OrderId);
+
+    private sealed record IncomingProcessingMessage(string Value);
 
     private sealed class RetryingHandlerState
     {
@@ -137,6 +204,18 @@ public sealed class MessageProcessingBehaviorTests
     private sealed class AlwaysFailingHandlerState
     {
         public int AttemptCount { get; set; }
+    }
+
+    private sealed class IncomingProcessingState
+    {
+        public List<string> Values { get; } = [];
+    }
+
+    private sealed class RetryingIncomingState
+    {
+        public int AttemptCount { get; set; }
+
+        public List<string> Values { get; } = [];
     }
 
     /// <summary>
@@ -183,6 +262,41 @@ public sealed class MessageProcessingBehaviorTests
             MessageEnvelope<ObservedDispatchMessage> envelope,
             CancellationToken cancellationToken = default)
         {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Records incoming payload values for duplicate-delivery verification.
+    /// </summary>
+    private sealed class RecordingIncomingHandler(IncomingProcessingState state) : IMessageHandler<IncomingProcessingMessage>
+    {
+        public ValueTask HandleAsync(
+            MessageEnvelope<IncomingProcessingMessage> envelope,
+            CancellationToken cancellationToken = default)
+        {
+            state.Values.Add(envelope.Message.Value);
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Fails once and then succeeds for inbox retry verification.
+    /// </summary>
+    private sealed class RetryingIncomingHandler(RetryingIncomingState state) : IMessageHandler<IncomingProcessingMessage>
+    {
+        public ValueTask HandleAsync(
+            MessageEnvelope<IncomingProcessingMessage> envelope,
+            CancellationToken cancellationToken = default)
+        {
+            state.AttemptCount++;
+
+            if (state.AttemptCount == 1)
+            {
+                throw new InvalidOperationException("incoming failure");
+            }
+
+            state.Values.Add(envelope.Message.Value);
             return ValueTask.CompletedTask;
         }
     }
@@ -260,5 +374,21 @@ public sealed class MessageProcessingBehaviorTests
         public void Dispose()
         {
         }
+    }
+
+    private static IncomingTransportMessage CreateIncomingMessage(string messageId, string json)
+    {
+        return new IncomingTransportMessage
+        {
+            Destination = "raycynix.extensions.messaging.tests.processing.incoming-processing-message",
+            Payload = System.Text.Encoding.UTF8.GetBytes(json),
+            Format = MessageFormat.Json,
+            MessageId = messageId,
+            CreatedAt = DateTimeOffset.UtcNow,
+            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Message-Format"] = MessageFormat.Json.ToString()
+            }
+        };
     }
 }

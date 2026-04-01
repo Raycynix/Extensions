@@ -18,6 +18,11 @@ public sealed class MessagingConfiguration
     public bool AutoGenerateCorrelationId { get; set; } = true;
 
     /// <summary>
+    /// Gets the incoming message processing configuration.
+    /// </summary>
+    public IncomingMessageProcessingConfiguration IncomingProcessing { get; set; } = new();
+
+    /// <summary>
     /// Gets the dispatch retry configuration.
     /// </summary>
     public MessageDispatchRetryConfiguration DispatchRetry { get; set; } = new();

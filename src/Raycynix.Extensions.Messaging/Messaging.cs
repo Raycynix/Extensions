@@ -44,6 +44,7 @@ public static class Messaging
         services.AddSingleton<IMessageSerializer, MessageSerializer>();
         services.AddSingleton<IncomingMessageTypeResolver>();
         services.AddSingleton<MessageObservability>();
+        services.AddSingleton<IIncomingMessageInboxStore, InMemoryIncomingMessageInboxStore>();
         services.AddSingleton<IIncomingMessageProcessor, IncomingMessageProcessor>();
         services.AddSingleton<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
