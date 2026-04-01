@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -12,6 +13,7 @@ using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Models;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.Conventions;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.PolicyProvider;
 using Raycynix.Extensions.Security.AspNetCore.Implementations;
 using Raycynix.Extensions.Security.Configurations;
@@ -50,6 +52,10 @@ public static class Security
             .AddJwtBearer(options => ConfigureJwtBearer(options, config));
 
         services.AddAuthorization();
+        services.Configure<MvcOptions>(options =>
+        {
+            options.Conventions.Add(new RaycynixAuthorizationApplicationModelConvention());
+        });
         services.Replace(ServiceDescriptor.Singleton<IAuthorizationPolicyProvider, RaycynixAuthorizationPolicyProvider>());
         services.Replace(ServiceDescriptor.Singleton<IAuthorizationMiddlewareResultHandler, RaycynixAuthorizationMiddlewareResultHandler>());
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();

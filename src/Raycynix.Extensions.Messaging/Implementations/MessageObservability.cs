@@ -11,6 +11,8 @@ public sealed class MessageObservability
     private readonly IMetricHistogram? _dispatchDuration;
     private readonly IMetricCounter? _publishCounter;
     private readonly IMetricHistogram? _publishDuration;
+    private readonly IMetricCounter? _requestCounter;
+    private readonly IMetricHistogram? _requestDuration;
 
     /// <summary>
     /// Initializes a new observability helper instance.
@@ -48,6 +50,19 @@ public sealed class MessageObservability
             "raycynix_messaging_publish_duration_seconds",
             "Duration of observed messaging publish operations.",
             "format",
+            "destination");
+
+        _requestCounter = metricsService.CreateCounter(
+            "raycynix_messaging_request_total",
+            "Total number of observed direct request dispatch operations.",
+            "request_type",
+            "destination",
+            "status");
+
+        _requestDuration = metricsService.CreateHistogram(
+            "raycynix_messaging_request_duration_seconds",
+            "Duration of observed direct request dispatch operations.",
+            "request_type",
             "destination");
     }
 
@@ -119,6 +134,40 @@ public sealed class MessageObservability
         RecordPublish(format, destination, "failure");
     }
 
+    /// <summary>
+    /// Starts observing a direct request dispatch operation.
+    /// </summary>
+    /// <param name="requestType">The request payload type.</param>
+    /// <param name="destination">The logical destination.</param>
+    /// <returns>A timer handle.</returns>
+    public IDisposable BeginRequest(Type requestType, string destination)
+    {
+        ArgumentNullException.ThrowIfNull(requestType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        return _requestDuration?.MeasureDuration(GetMessageTypeName(requestType), destination) ?? NoopDisposable.Instance;
+    }
+
+    /// <summary>
+    /// Records a successful direct request dispatch operation.
+    /// </summary>
+    /// <param name="requestType">The request payload type.</param>
+    /// <param name="destination">The logical destination.</param>
+    public void RecordRequestSuccess(Type requestType, string destination)
+    {
+        RecordRequest(requestType, destination, "success");
+    }
+
+    /// <summary>
+    /// Records a failed direct request dispatch operation.
+    /// </summary>
+    /// <param name="requestType">The request payload type.</param>
+    /// <param name="destination">The logical destination.</param>
+    public void RecordRequestFailure(Type requestType, string destination)
+    {
+        RecordRequest(requestType, destination, "failure");
+    }
+
     private void RecordDispatch(Type messageType, string destination, string status)
     {
         _dispatchCounter?.Increment(labelValues: [GetMessageTypeName(messageType), destination, status]);
@@ -127,6 +176,11 @@ public sealed class MessageObservability
     private void RecordPublish(string format, string destination, string status)
     {
         _publishCounter?.Increment(labelValues: [format, destination, status]);
+    }
+
+    private void RecordRequest(Type requestType, string destination, string status)
+    {
+        _requestCounter?.Increment(labelValues: [GetMessageTypeName(requestType), destination, status]);
     }
 
     private static string GetMessageTypeName(Type messageType)

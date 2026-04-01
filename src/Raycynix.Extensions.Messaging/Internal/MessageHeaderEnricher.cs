@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Contracts.Constants;
 using Raycynix.Extensions.Contracts.Models;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
@@ -9,7 +10,8 @@ namespace Raycynix.Extensions.Messaging.Internal;
 
 internal sealed class MessageHeaderEnricher(
     IServiceProvider serviceProvider,
-    IMessageContractResolver contractResolver)
+    IMessageContractResolver contractResolver,
+    Configurations.MessagingConfiguration configuration)
 {
     public (ContractMetadata Contract, IReadOnlyDictionary<string, string> Headers) Enrich<TPayload>(
         TPayload payload,
@@ -26,6 +28,11 @@ internal sealed class MessageHeaderEnricher(
         if (!string.IsNullOrWhiteSpace(correlationId))
         {
             enrichedHeaders[MessageHeaderNames.CorrelationId] = correlationId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuration.SourceName))
+        {
+            enrichedHeaders[MessageHeaderNames.Source] = configuration.SourceName;
         }
 
         ApplyTraceHeaders(enrichedHeaders);
@@ -67,7 +74,9 @@ internal sealed class MessageHeaderEnricher(
 
     private void ApplySecurityHeaders(IDictionary<string, string> headers)
     {
-        var securityContext = serviceProvider.GetService(typeof(ISecurityContext)) as ISecurityContext;
+        var securityContext = serviceProvider
+            .GetServices<ISecurityContext>()
+            .FirstOrDefault(static currentContext => currentContext.IsAuthenticated);
         if (securityContext is null || !securityContext.IsAuthenticated)
         {
             return;

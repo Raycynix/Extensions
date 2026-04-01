@@ -2,12 +2,15 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.HttpJson.Configurations;
 using Raycynix.Extensions.Messaging.HttpJson.Interfaces;
 using Raycynix.Extensions.Messaging.HttpJson.Internal;
+using Raycynix.Extensions.Security.Abstractions.Attributes;
+using Raycynix.Extensions.Security.Abstractions.Enums;
 
 namespace Raycynix.Extensions.Messaging.HttpJson.Tests.Registration;
 
@@ -150,11 +153,104 @@ public sealed class HttpJsonRegistrationTests
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that malformed inbound security headers are rejected before request dispatch.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WithInvalidSecurityHeaders_ShouldReturnUnauthorized()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<CreateOrderRequest, CreateOrderResponse, CreateOrderRequestHandler>("/api/orders")
+            .AddHttpJson(options =>
+            {
+                options.BaseAddress = "https://orders.service.local";
+                options.TimeoutSeconds = 15;
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IHttpJsonRequestProcessor>();
+
+        var response = await processor.ProcessAsync<CreateOrderRequest, CreateOrderResponse>(
+            "/api/orders",
+            System.Text.Encoding.UTF8.GetBytes("{\"orderId\":\"order-9\"}"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Subject-Authenticated"] = "true"
+            },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+    }
+
+    /// <summary>
+    /// Verifies that direct HTTP JSON requests return forbidden when messaging authorization requirements are not satisfied.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenAuthorizationRequirementsAreNotSatisfied_ShouldReturnForbidden()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<CreateOrderRequest, CreateOrderResponse, SecuredCreateOrderRequestHandler>("/api/orders/secured")
+            .AddHttpJson(options =>
+            {
+                options.BaseAddress = "https://orders.service.local";
+                options.TimeoutSeconds = 15;
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IHttpJsonRequestProcessor>();
+
+        var response = await processor.ProcessAsync<CreateOrderRequest, CreateOrderResponse>(
+            "/api/orders/secured",
+            System.Text.Encoding.UTF8.GetBytes("{\"orderId\":\"order-11\"}"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Message-Source"] = "orders.service",
+                ["X-Subject-Authenticated"] = "true",
+                ["X-Subject-Id"] = "svc-orders",
+                ["X-Subject-Type"] = "Service",
+                ["X-Subject-Permissions"] = "orders.read"
+            },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+    }
+
     private sealed record CreateOrderRequest(string OrderId);
 
     private sealed record CreateOrderResponse(string OrderId);
 
     private sealed class CreateOrderRequestHandler : IRequestHandler<CreateOrderRequest, CreateOrderResponse>
+    {
+        public ValueTask<ResponseEnvelope<CreateOrderResponse>> HandleAsync(
+            RequestEnvelope<CreateOrderRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<CreateOrderResponse>
+            {
+                Response = new CreateOrderResponse(request.Request.OrderId),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
+
+    /// <summary>
+    /// Requires a stronger permission than the caller provides.
+    /// </summary>
+    [RequireAuthenticatedSubject]
+    [RequireSubjectType(SecuritySubjectType.Service)]
+    [RequirePermission("orders.write")]
+    [RequireTrustedSource("orders.service")]
+    private sealed class SecuredCreateOrderRequestHandler : IRequestHandler<CreateOrderRequest, CreateOrderResponse>
     {
         public ValueTask<ResponseEnvelope<CreateOrderResponse>> HandleAsync(
             RequestEnvelope<CreateOrderRequest> request,

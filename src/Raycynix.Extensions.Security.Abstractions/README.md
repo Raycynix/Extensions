@@ -2,7 +2,7 @@
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Security.Abstractions` contains the contracts used by the Raycynix security and secrets packages.
+`Raycynix.Extensions.Security.Abstractions` contains the transport-neutral contracts used by the Raycynix security and secrets packages.
 
 ## What it contains
 
@@ -11,10 +11,11 @@
 - `ISecretResolver`
 - `SecuritySubjectType`
 - `SecurityClaimTypes`
+- shared authorization attributes such as `RequirePermissionAttribute` and `RequireRoleAttribute`
 
 ## Purpose
 
-This package allows other packages to depend on shared security and secret-resolution contracts without depending on the implementation packages.
+This package allows other packages to depend on shared security, authorization, and secret-resolution contracts without depending on implementation packages.
 
 The security model assumes:
 
@@ -22,6 +23,17 @@ The security model assumes:
 - supported subject types are `User` and `Service`
 - `Roles` are aggregates
 - `Permissions` are the canonical access checks
+
+The authorization model exposes declarative attributes that can be reused by multiple pipelines, including messaging and ASP.NET Core:
+
+- `RequireAuthenticatedSubjectAttribute`
+- `RequireSubjectTypeAttribute`
+- `RequirePermissionAttribute`
+- `RequireAnyPermissionAttribute`
+- `RequireAllPermissionsAttribute`
+- `RequireRoleAttribute`
+- `RequireAnyRoleAttribute`
+- `RequireAllRolesAttribute`
 
 The secret model assumes:
 

@@ -3,12 +3,15 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Grpc.Configurations;
 using Raycynix.Extensions.Messaging.Grpc.Interfaces;
 using Raycynix.Extensions.Messaging.Grpc.Internal;
+using Raycynix.Extensions.Security.Abstractions.Attributes;
+using Raycynix.Extensions.Security.Abstractions.Enums;
 
 namespace Raycynix.Extensions.Messaging.Grpc.Tests.Registration;
 
@@ -133,11 +136,98 @@ public sealed class GrpcRegistrationTests
         exception.Which.StatusCode.Should().Be(StatusCode.Unimplemented);
     }
 
+    /// <summary>
+    /// Verifies that malformed inbound security headers are rejected before gRPC request dispatch.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WithInvalidSecurityHeaders_ShouldThrowUnauthenticatedRpcException()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<GetOrderRequest, GetOrderResponse, GetOrderRequestHandler>("orders.v1/get")
+            .AddGrpc(options => options.Address = "https://orders.grpc.local");
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IGrpcRequestProcessor>();
+
+        var act = () => processor.ProcessAsync<GetOrderRequest, GetOrderResponse>(
+            "orders.v1/get",
+            new GetOrderRequest("order-10"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Subject-Authenticated"] = "true"
+            },
+            TestContext.Current.CancellationToken).AsTask();
+
+        var exception = await act.Should().ThrowAsync<RpcException>();
+        exception.Which.StatusCode.Should().Be(StatusCode.Unauthenticated);
+    }
+
+    /// <summary>
+    /// Verifies that direct gRPC requests surface permission denied when messaging authorization requirements are not satisfied.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenAuthorizationRequirementsAreNotSatisfied_ShouldThrowPermissionDeniedRpcException()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<GetOrderRequest, GetOrderResponse, SecuredGetOrderRequestHandler>("orders.v1/secured-get")
+            .AddGrpc(options => options.Address = "https://orders.grpc.local");
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IGrpcRequestProcessor>();
+
+        var act = () => processor.ProcessAsync<GetOrderRequest, GetOrderResponse>(
+            "orders.v1/secured-get",
+            new GetOrderRequest("order-12"),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["X-Message-Source"] = "orders.service",
+                ["X-Subject-Authenticated"] = "true",
+                ["X-Subject-Id"] = "svc-orders",
+                ["X-Subject-Type"] = "Service",
+                ["X-Subject-Permissions"] = "orders.read"
+            },
+            TestContext.Current.CancellationToken).AsTask();
+
+        var exception = await act.Should().ThrowAsync<RpcException>();
+        exception.Which.StatusCode.Should().Be(StatusCode.PermissionDenied);
+    }
+
     private sealed record GetOrderRequest(string OrderId);
 
     private sealed record GetOrderResponse(string OrderId);
 
     private sealed class GetOrderRequestHandler : IRequestHandler<GetOrderRequest, GetOrderResponse>
+    {
+        public ValueTask<ResponseEnvelope<GetOrderResponse>> HandleAsync(
+            RequestEnvelope<GetOrderRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<GetOrderResponse>
+            {
+                Response = new GetOrderResponse(request.Request.OrderId),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
+
+    /// <summary>
+    /// Requires a stronger permission than the caller provides.
+    /// </summary>
+    [RequireAuthenticatedSubject]
+    [RequireSubjectType(SecuritySubjectType.Service)]
+    [RequirePermission("orders.write")]
+    [RequireTrustedSource("orders.service")]
+    private sealed class SecuredGetOrderRequestHandler : IRequestHandler<GetOrderRequest, GetOrderResponse>
     {
         public ValueTask<ResponseEnvelope<GetOrderResponse>> HandleAsync(
             RequestEnvelope<GetOrderRequest> request,

@@ -1,5 +1,6 @@
 using System.Net;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
+using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.HttpJson.Interfaces;
 
@@ -49,6 +50,18 @@ internal sealed class HttpJsonRequestProcessor(
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new HttpJsonProcessedResponse { StatusCode = HttpStatusCode.RequestTimeout };
+        }
+        catch (IncomingSecurityHeadersValidationException)
+        {
+            return new HttpJsonProcessedResponse { StatusCode = HttpStatusCode.Unauthorized };
+        }
+        catch (IncomingMessageAuthenticationException)
+        {
+            return new HttpJsonProcessedResponse { StatusCode = HttpStatusCode.Unauthorized };
+        }
+        catch (IncomingMessageAuthorizationException)
+        {
+            return new HttpJsonProcessedResponse { StatusCode = HttpStatusCode.Forbidden };
         }
         catch (InvalidOperationException exception) when (exception.Message.StartsWith("No request handler is registered", StringComparison.Ordinal))
         {

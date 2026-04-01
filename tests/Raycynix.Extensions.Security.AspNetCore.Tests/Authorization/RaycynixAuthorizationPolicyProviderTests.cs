@@ -30,6 +30,20 @@ public class RaycynixAuthorizationPolicyProviderTests
     }
 
     /// <summary>
+    /// Verifies that the authenticated policy name produces the expected authenticated policy.
+    /// </summary>
+    [Fact]
+    public async Task GetPolicyAsync_ShouldBuildAuthenticatedPolicy()
+    {
+        var provider = CreateProvider();
+
+        var policy = await provider.GetPolicyAsync(SecurityPolicies.Authenticated);
+
+        policy.Should().NotBeNull();
+        policy!.AuthenticationSchemes.Should().Contain(JwtBearerDefaults.AuthenticationScheme);
+    }
+
+    /// <summary>
     /// Verifies that an all-permissions policy name produces the expected requirement.
     /// </summary>
     [Fact]

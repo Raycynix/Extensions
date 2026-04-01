@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.6.0</Version>
+        <Version>0.7.0</Version>
 
         <IsPackable>true</IsPackable>
 
@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

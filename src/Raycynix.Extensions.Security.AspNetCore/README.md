@@ -2,14 +2,16 @@
 
 ![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
 
-`Raycynix.Extensions.Security.AspNetCore` adds ASP.NET Core JWT authentication integration for Raycynix security.
+`Raycynix.Extensions.Security.AspNetCore` adds ASP.NET Core JWT authentication, dynamic authorization policies, and shared authorization-attribute integration for Raycynix security.
 
 ## What it contains
 
 - `AddRaycynixAspNetCoreSecurity(...)`
 - `UseRaycynixSecurity(this IApplicationBuilder app)`
 - per-request `ClaimsPrincipal` to `ISecurityContext` mapping
-- dynamic API policies for `permission:*`, `role:*`, and `subject:*`
+- dynamic API policies for `authenticated`, `permission:*`, `role:*`, and `subject:*`
+- MVC convention support for shared security attributes from `Raycynix.Extensions.Security.Abstractions`
+- endpoint-builder helpers through `RequireRaycynixAuthorization(...)`
 - consistent `401 Unauthorized` and `403 Forbidden` JSON responses
 
 ## Usage
@@ -42,7 +44,30 @@ using Raycynix.Extensions.Security.AspNetCore.Authorization;
 [Authorize(Policy = SecurityPolicies.Role("admin"))]
 [Authorize(Policy = SecurityPolicies.AnyRole("admin", "support"))]
 [Authorize(Policy = SecurityPolicies.AllRoles("manager", "auditor"))]
+[Authorize(Policy = SecurityPolicies.Authenticated)]
 [Authorize(Policy = SecurityPolicies.ServiceOnly)]
+```
+
+Or use the shared security attributes and let the package translate them into standard ASP.NET Core authorization policies:
+
+```csharp
+using Raycynix.Extensions.Security.Abstractions.Attributes;
+
+[RequireAuthenticatedSubject]
+[RequireSubjectType(SecuritySubjectType.Service)]
+[RequirePermission("users.read")]
+public sealed class UsersController : ControllerBase
+{
+}
+```
+
+For minimal APIs or endpoint builders, use the helper extension:
+
+```csharp
+app.MapGet("/users/{id}", HandleUserAsync)
+    .RequireRaycynixAuthorization(
+        new RequireAuthenticatedSubjectAttribute(),
+        new RequirePermissionAttribute("users.read"));
 ```
 
 The package expects JWT access tokens with:

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Implementations;
 
 namespace Raycynix.Extensions.Messaging.Internal;
 
@@ -9,7 +10,12 @@ namespace Raycynix.Extensions.Messaging.Internal;
 /// </summary>
 internal sealed class RequestDispatcher(
     IServiceProvider serviceProvider,
-    IEnumerable<RequestHandlerRegistration> registrations) : IRequestDispatcher
+    IEnumerable<RequestHandlerRegistration> registrations,
+    Configurations.MessagingConfiguration configuration,
+    IncomingSecurityHeadersValidator securityHeadersValidator,
+    IncomingSecurityContextAccessor securityContextAccessor,
+    IncomingSecurityContextFactory securityContextFactory,
+    Implementations.MessageObservability observability) : IRequestDispatcher
 {
     /// <inheritdoc />
     public async ValueTask<ResponseEnvelope<TResponse>> DispatchAsync<TRequest, TResponse>(
@@ -17,6 +23,13 @@ internal sealed class RequestDispatcher(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (configuration.IncomingProcessing.ValidateSecurityHeaders)
+        {
+            securityHeadersValidator.Validate(request.Headers);
+        }
+
+        using var observation = observability.BeginRequest(typeof(TRequest), request.Destination);
 
         var matchingRegistrations = registrations
             .Where(candidate =>
@@ -37,6 +50,7 @@ internal sealed class RequestDispatcher(
                 $"Multiple request handlers are registered for destination '{request.Destination}' and types '{typeof(TRequest).FullName}'/'{typeof(TResponse).FullName}'.");
         }
 
+        using var securityContextScope = securityContextAccessor.Push(securityContextFactory.Create(request.Headers));
         using var scope = serviceProvider.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().ToArray();
         if (handlers.Length != 1)
@@ -45,6 +59,17 @@ internal sealed class RequestDispatcher(
                 $"Exactly one request handler implementation must be registered for destination '{request.Destination}' and types '{typeof(TRequest).FullName}'/'{typeof(TResponse).FullName}'.");
         }
 
-        return await handlers[0].HandleAsync(request, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            scope.ServiceProvider.GetRequiredService<MessagingAuthorizationEvaluator>().Authorize(handlers[0].GetType(), request.Headers);
+            var response = await handlers[0].HandleAsync(request, cancellationToken).ConfigureAwait(false);
+            observability.RecordRequestSuccess(typeof(TRequest), request.Destination);
+            return response;
+        }
+        catch
+        {
+            observability.RecordRequestFailure(typeof(TRequest), request.Destination);
+            throw;
+        }
     }
 }

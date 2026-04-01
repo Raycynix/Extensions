@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.3</Version>
+        <Version>0.3.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core JWT authentication integration for Raycynix security.</Description>
-        <PackageTags>raycynix;security;aspnetcore;jwt;authentication;authorization;rbac;dotnet</PackageTags>
+        <Description>ASP.NET Core JWT authentication, authorization policies, and shared authorization-attribute integration for Raycynix security.</Description>
+        <PackageTags>raycynix;security;aspnetcore;jwt;authentication;authorization;rbac;policies;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

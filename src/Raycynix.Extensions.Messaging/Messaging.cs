@@ -8,6 +8,7 @@ using Raycynix.Extensions.Messaging.Configurations;
 using Raycynix.Extensions.Messaging.Implementations;
 using Raycynix.Extensions.Messaging.Internal;
 using Raycynix.Extensions.Messaging.Serialization;
+using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Messaging;
 
@@ -38,6 +39,9 @@ public static class Messaging
 
         services.AddSingleton<IMessageContractResolver, MessageContractResolver>();
         services.AddSingleton<MessageHeaderEnricher>();
+        services.AddSingleton<IncomingSecurityHeadersValidator>();
+        services.AddSingleton<IncomingSecurityContextAccessor>();
+        services.AddSingleton<IncomingSecurityContextFactory>();
         services.AddSingleton<IMessageEnvelopeFactory, MessageEnvelopeFactory>();
         services.AddSingleton<IRequestEnvelopeFactory, RequestEnvelopeFactory>();
         services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
@@ -54,6 +58,9 @@ public static class Messaging
         services.AddSingleton<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
         services.AddSingleton<IMessageCodec, NewtonsoftJsonMessageCodec>();
+        services.AddScoped<ISecurityContext>(serviceProvider =>
+            serviceProvider.GetRequiredService<IncomingSecurityContextAccessor>().Current);
+        services.AddScoped<MessagingAuthorizationEvaluator>();
 
         return new MessagingBuilder(services);
     }

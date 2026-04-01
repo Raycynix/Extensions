@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Configurations;
@@ -9,7 +10,9 @@ namespace Raycynix.Extensions.Messaging.Internal;
 internal sealed class MessageDispatcher(
     IServiceScopeFactory serviceScopeFactory,
     MessagingConfiguration configuration,
-    MessageObservability observability) : IMessageDispatcher
+    MessageObservability observability,
+    IncomingSecurityContextAccessor securityContextAccessor,
+    IncomingSecurityContextFactory securityContextFactory) : IMessageDispatcher
 {
     /// <inheritdoc />
     public async ValueTask<MessageDispatchResult> DispatchAsync<TMessage>(
@@ -70,11 +73,14 @@ internal sealed class MessageDispatcher(
         MessageEnvelope<TMessage> envelope,
         CancellationToken cancellationToken)
     {
+        using var securityContextScope = securityContextAccessor.Push(securityContextFactory.Create(envelope.Headers));
         using var scope = serviceScopeFactory.CreateScope();
         var handlers = scope.ServiceProvider.GetServices<IMessageHandler<TMessage>>().ToArray();
+        var authorizationEvaluator = scope.ServiceProvider.GetRequiredService<MessagingAuthorizationEvaluator>();
 
         foreach (var handler in handlers)
         {
+            authorizationEvaluator.Authorize(handler.GetType(), envelope.Headers);
             await handler.HandleAsync(envelope, cancellationToken).ConfigureAwait(false);
         }
 
@@ -84,6 +90,11 @@ internal sealed class MessageDispatcher(
     private bool ShouldRetry(Exception exception, int attemptCount, CancellationToken cancellationToken)
     {
         if (exception is OperationCanceledException)
+        {
+            return false;
+        }
+
+        if (exception is IncomingMessageAuthenticationException or IncomingMessageAuthorizationException)
         {
             return false;
         }

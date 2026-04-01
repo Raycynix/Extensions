@@ -13,12 +13,18 @@ internal sealed class IncomingMessageProcessor(
     IMessageDispatcher dispatcher,
     MessagingConfiguration configuration,
     IIncomingMessageInboxStore inboxStore,
+    IncomingSecurityHeadersValidator securityHeadersValidator,
     IncomingMessageTypeResolver typeResolver) : IIncomingMessageProcessor
 {
     /// <inheritdoc />
     public async Task ProcessAsync(IncomingTransportMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
+
+        if (configuration.IncomingProcessing.ValidateSecurityHeaders)
+        {
+            securityHeadersValidator.Validate(message.Headers);
+        }
 
         if (ShouldUseInbox())
         {

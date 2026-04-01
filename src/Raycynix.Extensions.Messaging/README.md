@@ -27,15 +27,17 @@
 - delegate-based gRPC/protobuf codec registration through `AddGrpcMessage<TMessage>(...)`
 - transport-neutral message envelope creation and serialization
 - transport-neutral direct request/response abstractions
+- incoming dispatch pipeline with retry, deduplication, and idempotency foundations
+- optional metrics/observability integration
+- in-memory inbox/outbox and outbox recovery foundation
 
 ## What it does not contain
 
 - broker-specific Kafka client setup
 - broker-specific RabbitMQ client setup
-- background consumers
-- hosted services for message polling
-- outbox persistence
-- dead-letter queue processing
+- persistent inbox/outbox storage
+- database-backed transactional coordination
+- broker topology management beyond provider packages
 
 ## Usage
 
@@ -49,6 +51,13 @@ builder.Services.AddRaycynixMessaging(builder.Configuration, options =>
 .AddGrpcMessage<MyGrpcMessage>(
     message => message.ToByteArray(),
     payload => MyGrpcMessage.Parser.ParseFrom(payload.Span));
+```
+
+Register direct request handlers in the shared pipeline:
+
+```csharp
+builder.Services.AddRaycynixMessaging(builder.Configuration)
+    .AddRequestHandler<GetOrderRequest, GetOrderResponse, GetOrderRequestHandler>("orders.v1/get");
 ```
 
 Create and publish a message through a broker transport:
@@ -121,6 +130,7 @@ Contract metadata and propagation headers are added automatically:
 - `X-Contract-Name`
 - `X-Contract-Version`
 - `X-Correlation-Id`
+- `X-Message-Source`
 - `traceparent`
 - service identity headers when `ISecurityContext` is available
 
@@ -130,3 +140,10 @@ For a concrete transport, add one of the provider packages:
 - `Raycynix.Extensions.Messaging.RabbitMQ`
 - `Raycynix.Extensions.Messaging.HttpJson`
 - `Raycynix.Extensions.Messaging.Grpc`
+
+The base package also includes:
+
+- inbound security-header validation
+- scoped inbound `ISecurityContext` projection from messaging headers
+- declarative handler authorization using shared security attributes
+- background outbox recovery service for in-memory recovery scenarios

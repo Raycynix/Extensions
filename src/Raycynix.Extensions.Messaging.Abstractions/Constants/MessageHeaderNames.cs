@@ -54,4 +54,9 @@ public static class MessageHeaderNames
     /// Gets the permissions header.
     /// </summary>
     public const string SubjectPermissions = "X-Subject-Permissions";
+
+    /// <summary>
+    /// Gets the logical source header identifying the publishing service or caller.
+    /// </summary>
+    public const string Source = "X-Message-Source";
 }

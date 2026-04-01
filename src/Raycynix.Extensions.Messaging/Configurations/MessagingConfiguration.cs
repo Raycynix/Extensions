@@ -8,6 +8,11 @@ namespace Raycynix.Extensions.Messaging.Configurations;
 public sealed class MessagingConfiguration
 {
     /// <summary>
+    /// Gets or sets the logical source name stamped onto outgoing messages and requests.
+    /// </summary>
+    public string? SourceName { get; set; }
+
+    /// <summary>
     /// Gets the default payload format for outgoing messages.
     /// </summary>
     public MessageFormat DefaultFormat { get; set; } = MessageFormat.Json;
@@ -47,6 +52,11 @@ public sealed class MessagingConfiguration
     /// </summary>
     public void Validate()
     {
+        if (IncomingProcessing.TrustedSources.Any(static source => string.IsNullOrWhiteSpace(source)))
+        {
+            throw new InvalidOperationException("Incoming trusted message sources cannot contain empty values.");
+        }
+
         if (string.IsNullOrWhiteSpace(Grpc.ContentType))
         {
             throw new InvalidOperationException("gRPC content type cannot be empty.");

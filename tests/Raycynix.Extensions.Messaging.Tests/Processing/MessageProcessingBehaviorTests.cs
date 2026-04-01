@@ -1,10 +1,15 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
+using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using Raycynix.Extensions.Security.Abstractions.Attributes;
+using Raycynix.Extensions.Security.Abstractions.Enums;
+using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Tests.Processing;
 
@@ -123,6 +128,43 @@ public sealed class MessageProcessingBehaviorTests
     }
 
     /// <summary>
+    /// Verifies that direct request dispatch records success metrics when a metrics service is available.
+    /// </summary>
+    [Fact]
+    public async Task DispatchRequestAsync_WhenMetricsAreAvailable_ShouldRecordRequestMetrics()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        var metrics = new FakeMetricsService();
+        services.AddSingleton<IMetricsService>(metrics);
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<ObservedRequest, ObservedResponse, ObservedRequestHandler>("orders.v1/get");
+
+        await using var provider = services.BuildServiceProvider();
+        var dispatcher = provider.GetRequiredService<IRequestDispatcher>();
+        var envelopeFactory = provider.GetRequiredService<IRequestEnvelopeFactory>();
+        var request = envelopeFactory.Create(
+            new ObservedRequest("order-4"),
+            "orders.v1/get",
+            MessageFormat.Json);
+
+        var response = await dispatcher.DispatchAsync<ObservedRequest, ObservedResponse>(
+            request,
+            TestContext.Current.CancellationToken);
+        var expectedLabels = new[] { typeof(ObservedRequest).FullName!, "orders.v1/get", "success" };
+
+        response.Response.OrderId.Should().Be("order-4");
+        metrics.Counters.Should().ContainKey("raycynix_messaging_request_total");
+        metrics.Histograms.Should().ContainKey("raycynix_messaging_request_duration_seconds");
+        metrics.Counters["raycynix_messaging_request_total"].Records.Should().ContainSingle();
+        metrics.Counters["raycynix_messaging_request_total"].Records[0].LabelValues.Should().Equal(expectedLabels);
+        metrics.Histograms["raycynix_messaging_request_duration_seconds"].MeasureCount.Should().Be(1);
+    }
+
+    /// <summary>
     /// Verifies that an already processed incoming message is skipped on subsequent deliveries.
     /// </summary>
     [Fact]
@@ -188,9 +230,111 @@ public sealed class MessageProcessingBehaviorTests
         inboxEntry!.Status.Should().Be(IncomingMessageInboxStatus.Processed);
     }
 
+    /// <summary>
+    /// Verifies that inbound handlers receive a scoped security context and execute when source and authorization requirements are satisfied.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenInboundAuthorizationRequirementsAreSatisfied_ShouldPopulateSecurityContextAndExecuteHandler()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MessagingConfiguration:SourceName"] = "tests.service"
+            })
+            .Build();
+
+        services.AddSingleton<SecuredIncomingState>();
+        services.AddRaycynixMessaging(configuration, options =>
+            {
+                options.IncomingProcessing.TrustedSources.Add("orders.service");
+            })
+            .AddMessageHandler<IncomingProcessingMessage, SecuredIncomingHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+        var message = CreateIncomingMessage("msg-3", """{"value":"secured"}""", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["X-Message-Source"] = "orders.service",
+            ["X-Subject-Authenticated"] = "true",
+            ["X-Subject-Id"] = "svc-orders",
+            ["X-Subject-Type"] = "Service",
+            ["X-Subject-Permissions"] = "orders.read"
+        });
+
+        await processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+
+        provider.GetRequiredService<SecuredIncomingState>().Records.Should().ContainSingle();
+        provider.GetRequiredService<SecuredIncomingState>().Records[0].Should().Be(("secured", "svc-orders", SecuritySubjectType.Service));
+    }
+
+    /// <summary>
+    /// Verifies that inbound handlers fail fast when declarative authorization requirements are not satisfied.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenInboundAuthorizationRequirementsAreNotSatisfied_ShouldThrowAuthorizationException()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddSingleton<SecuredIncomingState>();
+        services.AddRaycynixMessaging(configuration)
+            .AddMessageHandler<IncomingProcessingMessage, SecuredIncomingHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+        var message = CreateIncomingMessage("msg-4", """{"value":"denied"}""", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["X-Message-Source"] = "orders.service",
+            ["X-Subject-Authenticated"] = "true",
+            ["X-Subject-Id"] = "svc-orders",
+            ["X-Subject-Type"] = "Service",
+            ["X-Subject-Permissions"] = "orders.write"
+        });
+
+        var act = () => processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<IncomingMessageAuthorizationException>();
+    }
+
+    /// <summary>
+    /// Verifies that inbound processing rejects messages from untrusted sources when trusted sources are configured.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_WhenInboundSourceIsUntrusted_ShouldThrowAuthenticationException()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration, options =>
+            {
+                options.IncomingProcessing.TrustedSources.Add("orders.service");
+            })
+            .AddMessageHandler<IncomingProcessingMessage, RecordingIncomingHandler>();
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+        var message = CreateIncomingMessage("msg-5", """{"value":"untrusted"}""", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["X-Message-Source"] = "billing.service"
+        });
+
+        var act = () => processor.ProcessAsync(message, TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<IncomingMessageAuthenticationException>();
+    }
+
     private sealed record RetryableDispatchMessage(string OrderId);
 
     private sealed record ObservedDispatchMessage(string OrderId);
+
+    private sealed record ObservedRequest(string OrderId);
+
+    private sealed record ObservedResponse(string OrderId);
 
     private sealed record IncomingProcessingMessage(string Value);
 
@@ -216,6 +360,11 @@ public sealed class MessageProcessingBehaviorTests
         public int AttemptCount { get; set; }
 
         public List<string> Values { get; } = [];
+    }
+
+    private sealed class SecuredIncomingState
+    {
+        public List<(string Value, string SubjectId, SecuritySubjectType SubjectType)> Records { get; } = [];
     }
 
     /// <summary>
@@ -267,6 +416,23 @@ public sealed class MessageProcessingBehaviorTests
     }
 
     /// <summary>
+    /// Successful request handler used for request observability verification.
+    /// </summary>
+    private sealed class ObservedRequestHandler : IRequestHandler<ObservedRequest, ObservedResponse>
+    {
+        public ValueTask<ResponseEnvelope<ObservedResponse>> HandleAsync(
+            RequestEnvelope<ObservedRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<ObservedResponse>
+            {
+                Response = new ObservedResponse(request.Request.OrderId),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
+
+    /// <summary>
     /// Records incoming payload values for duplicate-delivery verification.
     /// </summary>
     private sealed class RecordingIncomingHandler(IncomingProcessingState state) : IMessageHandler<IncomingProcessingMessage>
@@ -297,6 +463,26 @@ public sealed class MessageProcessingBehaviorTests
             }
 
             state.Values.Add(envelope.Message.Value);
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Requires source trust and permission-based authorization for inbound execution.
+    /// </summary>
+    [RequireAuthenticatedSubject]
+    [RequireSubjectType(SecuritySubjectType.Service)]
+    [RequirePermission("orders.read")]
+    [RequireTrustedSource("orders.service")]
+    private sealed class SecuredIncomingHandler(
+        SecuredIncomingState state,
+        ISecurityContext securityContext) : IMessageHandler<IncomingProcessingMessage>
+    {
+        public ValueTask HandleAsync(
+            MessageEnvelope<IncomingProcessingMessage> envelope,
+            CancellationToken cancellationToken = default)
+        {
+            state.Records.Add((envelope.Message.Value, securityContext.SubjectId, securityContext.SubjectType));
             return ValueTask.CompletedTask;
         }
     }
@@ -376,8 +562,24 @@ public sealed class MessageProcessingBehaviorTests
         }
     }
 
-    private static IncomingTransportMessage CreateIncomingMessage(string messageId, string json)
+    private static IncomingTransportMessage CreateIncomingMessage(
+        string messageId,
+        string json,
+        IReadOnlyDictionary<string, string>? headers = null)
     {
+        var actualHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["X-Message-Format"] = MessageFormat.Json.ToString()
+        };
+
+        if (headers is not null)
+        {
+            foreach (var header in headers)
+            {
+                actualHeaders[header.Key] = header.Value;
+            }
+        }
+
         return new IncomingTransportMessage
         {
             Destination = "raycynix.extensions.messaging.tests.processing.incoming-processing-message",
@@ -385,10 +587,7 @@ public sealed class MessageProcessingBehaviorTests
             Format = MessageFormat.Json,
             MessageId = messageId,
             CreatedAt = DateTimeOffset.UtcNow,
-            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["X-Message-Format"] = MessageFormat.Json.ToString()
-            }
+            Headers = actualHeaders
         };
     }
 }

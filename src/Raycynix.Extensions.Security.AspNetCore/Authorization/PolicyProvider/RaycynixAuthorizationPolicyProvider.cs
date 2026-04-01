@@ -34,6 +34,11 @@ public sealed class RaycynixAuthorizationPolicyProvider : DefaultAuthorizationPo
 
     private static AuthorizationPolicy? BuildPolicy(string policyName)
     {
+        if (string.Equals(policyName, SecurityPolicies.Authenticated, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildAuthenticatedPolicy();
+        }
+
         if (policyName.StartsWith(SecurityPolicies.AnyPermissionPrefix, StringComparison.OrdinalIgnoreCase))
         {
             var permissions = SplitValues(policyName[SecurityPolicies.AnyPermissionPrefix.Length..]);
@@ -105,6 +110,13 @@ public sealed class RaycynixAuthorizationPolicyProvider : DefaultAuthorizationPo
         return new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()
             .AddRequirements(requirement)
+            .Build();
+    }
+
+    private static AuthorizationPolicy BuildAuthenticatedPolicy()
+    {
+        return new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
             .Build();
     }
 

@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
+using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Grpc.Interfaces;
 
@@ -37,6 +38,18 @@ internal sealed class GrpcRequestProcessor(
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw new RpcException(new Status(StatusCode.Cancelled, "The gRPC request was cancelled."));
+        }
+        catch (IncomingSecurityHeadersValidationException exception)
+        {
+            throw new RpcException(new Status(StatusCode.Unauthenticated, exception.Message));
+        }
+        catch (IncomingMessageAuthenticationException exception)
+        {
+            throw new RpcException(new Status(StatusCode.Unauthenticated, exception.Message));
+        }
+        catch (IncomingMessageAuthorizationException exception)
+        {
+            throw new RpcException(new Status(StatusCode.PermissionDenied, exception.Message));
         }
         catch (InvalidOperationException exception) when (exception.Message.StartsWith("No request handler is registered", StringComparison.Ordinal))
         {
