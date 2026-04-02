@@ -20,7 +20,7 @@ public class DatabaseConfiguration
     /// <summary>
     /// Gets the selected database provider.
     /// </summary>
-    public DatabaseProvider Provider { get; init; } = DatabaseProvider.PostgreSql;
+    public DatabaseProvider Provider { get; init; } = DatabaseProvider.Sqlite;
 
     /// <summary>
     /// Gets a value indicating whether EF Core migrations should be applied during initialization.
@@ -61,11 +61,6 @@ public class DatabaseConfiguration
     /// Gets the delay, in seconds, between retry attempts.
     /// </summary>
     public int RetryDelaySeconds { get; init; } = 10;
-
-    /// <summary>
-    /// Gets the PostgreSQL-specific settings.
-    /// </summary>
-    public PostgreSqlConfiguration? PostgreSqlConfiguration { get; init; }
 
     /// <summary>
     /// Gets the SQL Server-specific settings.

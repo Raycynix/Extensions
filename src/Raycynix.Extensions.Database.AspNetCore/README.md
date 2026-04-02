@@ -13,11 +13,12 @@ This package exposes `UseRaycynixDatabaseInitializationAsync(this WebApplication
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
-{
-    options.Provider = DatabaseProvider.PostgreSql;
-    options.UseMigrations = true;
-});
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+    })
+    .AddPostgreSql();
 
 var app = builder.Build();
 

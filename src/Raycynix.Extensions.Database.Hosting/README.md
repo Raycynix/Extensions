@@ -18,11 +18,12 @@ This package resolves `IDatabaseInitializer` from DI and runs it during applicat
 ```csharp
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
-{
-    options.Provider = DatabaseProvider.PostgreSql;
-    options.UseMigrations = true;
-});
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+    })
+    .AddPostgreSql();
 
 var host = builder.Build();
 

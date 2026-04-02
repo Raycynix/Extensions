@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.PostgreSql.Configurations;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 

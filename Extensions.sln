@@ -160,6 +160,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messagi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.Database.Tests", "tests\Raycynix.Extensions.Messaging.Database.Tests\Raycynix.Extensions.Messaging.Database.Tests.csproj", "{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.PostgreSql", "src\Raycynix.Extensions.Database.PostgreSql\Raycynix.Extensions.Database.PostgreSql.csproj", "{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -866,6 +868,18 @@ Global
 		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x64.Build.0 = Release|Any CPU
 		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}.Release|x86.Build.0 = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|x64.Build.0 = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x64.ActiveCfg = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x64.Build.0 = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -949,5 +963,6 @@ Global
 		{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4} = {A998262B-9A6C-4A1D-999C-A8C60B185694}
 		{92385CED-2963-4FC0-90F7-AC0B44C32373} = {03660AE8-ED57-491E-BDF7-97A69B72F293}
 		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70} = {A998262B-9A6C-4A1D-999C-A8C60B185694}
+		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 	EndGlobalSection
 EndGlobal

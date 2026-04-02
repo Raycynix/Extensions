@@ -16,8 +16,7 @@ internal sealed class DatabaseObservability
     {
         _tracer = serviceProvider.GetService(typeof(ITracer)) as ITracer;
 
-        var metricsService = serviceProvider.GetService(typeof(IMetricsService)) as IMetricsService;
-        if (metricsService is null)
+        if (serviceProvider.GetService(typeof(IMetricsService)) is not IMetricsService metricsService)
         {
             return;
         }

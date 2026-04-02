@@ -11,12 +11,15 @@
 - `DatabaseBuilder.AddAssembly(...)`
 - `DatabaseContext`
 - `DatabaseConfiguration`
-- provider-specific EF Core setup
+- provider registration infrastructure
 - `IDatabaseInitializer`
 - `DatabaseInitializer`
 
 ## What it does not contain
 
+- PostgreSQL provider integration
+- SQL Server provider integration beyond the built-in core registration
+- MySQL provider integration beyond the built-in core registration
 - `WebApplication` extensions
 - ASP.NET Core startup integration
 - generic-host startup integration
@@ -26,9 +29,19 @@
 ```csharp
 builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
 {
-    options.Provider = DatabaseProvider.PostgreSql;
     options.UseMigrations = true;
 });
+```
+
+For PostgreSQL, add the provider package and extend the registration:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+    })
+    .AddPostgreSql();
 ```
 
 If a reusable package contributes EF Core configurators to the shared `DatabaseContext`, register its assembly explicitly:
@@ -39,6 +52,8 @@ builder.Services.AddRaycynixDatabase(builder.Configuration)
 ```
 
 This keeps a single shared `DatabaseContext` while allowing infrastructure packages to extend the model without creating their own context.
+
+Provider-specific packages can extend the same fluent builder with methods such as `AddPostgreSql()`.
 
 For static table names, configurators can declare the default mapping with `DatabaseTableAttribute` instead of calling `ToTable(...)` manually inside `Configure(...)`.
 
