@@ -12,6 +12,7 @@ using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Database.Implementations;
 using Raycynix.Extensions.Messaging.Database.Models;
 
 namespace Raycynix.Extensions.Messaging.Database.Tests.Registration;
@@ -392,6 +393,150 @@ public sealed class MessagingDatabaseRegistrationTests
                 TestContext.Current.CancellationToken);
 
             reclaimed.Should().BeTrue();
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that cleanup removes expired processed inbox rows.
+    /// </summary>
+    [Fact]
+    public async Task CleanupProcessor_ShouldDeleteExpiredProcessedInboxRows()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                databaseContext.Set<MessagingInboxEntryEntity>().AddRange(
+                    new MessagingInboxEntryEntity
+                    {
+                        MessageId = "inbox-expired",
+                        Destination = "orders.processed",
+                        Status = (int)IncomingMessageInboxStatus.Processed,
+                        UpdatedAt = DateTimeOffset.UtcNow.AddDays(-30)
+                    },
+                    new MessagingInboxEntryEntity
+                    {
+                        MessageId = "inbox-fresh",
+                        Destination = "orders.processed",
+                        Status = (int)IncomingMessageInboxStatus.Processed,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+
+            await using (var cleanupScope = provider.CreateAsyncScope())
+            {
+                var processorType = typeof(MessagingDatabase)
+                    .Assembly
+                    .GetTypes()
+                    .Single(static type => type.Name == nameof(MessagingDatabaseCleanupProcessor));
+                var processor = cleanupScope.ServiceProvider.GetRequiredService(processorType);
+                var processAsync = processorType.GetMethod(nameof(MessagingDatabaseCleanupProcessor.ProcessAsync))!;
+                var deletedCount = await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
+                deletedCount.Should().Be(1);
+            }
+
+            await using (var verificationScope = provider.CreateAsyncScope())
+            {
+                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                (await databaseContext.Set<MessagingInboxEntryEntity>()
+                        .AnyAsync(entry => entry.MessageId == "inbox-expired", TestContext.Current.CancellationToken))
+                    .Should()
+                    .BeFalse();
+                (await databaseContext.Set<MessagingInboxEntryEntity>()
+                        .AnyAsync(entry => entry.MessageId == "inbox-fresh", TestContext.Current.CancellationToken))
+                    .Should()
+                    .BeTrue();
+            }
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that cleanup removes expired dispatched outbox rows and keeps fresh ones.
+    /// </summary>
+    [Fact]
+    public async Task CleanupProcessor_ShouldDeleteExpiredDispatchedOutboxRows()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                databaseContext.Set<MessagingOutboxEntryEntity>().AddRange(
+                    new MessagingOutboxEntryEntity
+                    {
+                        MessageId = "outbox-expired",
+                        Destination = "orders.created",
+                        Payload = "{}"u8.ToArray(),
+                        Format = (int)MessageFormat.Json,
+                        ContentType = "application/json",
+                        CreatedAt = DateTimeOffset.UtcNow.AddDays(-40),
+                        Headers = "{}",
+                        Status = (int)MessageOutboxStatus.Dispatched,
+                        UpdatedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                        AttemptCount = 1,
+                        NextAttemptAt = DateTimeOffset.MaxValue
+                    },
+                    new MessagingOutboxEntryEntity
+                    {
+                        MessageId = "outbox-fresh",
+                        Destination = "orders.created",
+                        Payload = "{}"u8.ToArray(),
+                        Format = (int)MessageFormat.Json,
+                        ContentType = "application/json",
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        Headers = "{}",
+                        Status = (int)MessageOutboxStatus.Dispatched,
+                        UpdatedAt = DateTimeOffset.UtcNow,
+                        AttemptCount = 1,
+                        NextAttemptAt = DateTimeOffset.MaxValue
+                    });
+                await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+
+            await using (var cleanupScope = provider.CreateAsyncScope())
+            {
+                var processorType = typeof(MessagingDatabase)
+                    .Assembly
+                    .GetTypes()
+                    .Single(static type => type.Name == nameof(MessagingDatabaseCleanupProcessor));
+                var processor = cleanupScope.ServiceProvider.GetRequiredService(processorType);
+                var processAsync = processorType.GetMethod(nameof(MessagingDatabaseCleanupProcessor.ProcessAsync))!;
+                var deletedCount = await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
+                deletedCount.Should().Be(1);
+            }
+
+            await using (var verificationScope = provider.CreateAsyncScope())
+            {
+                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                (await databaseContext.Set<MessagingOutboxEntryEntity>()
+                        .AnyAsync(entry => entry.MessageId == "outbox-expired", TestContext.Current.CancellationToken))
+                    .Should()
+                    .BeFalse();
+                (await databaseContext.Set<MessagingOutboxEntryEntity>()
+                        .AnyAsync(entry => entry.MessageId == "outbox-fresh", TestContext.Current.CancellationToken))
+                    .Should()
+                    .BeTrue();
+            }
         }
         finally
         {
