@@ -36,6 +36,11 @@ public sealed class MessageOutboxConfiguration
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
+    /// Gets or sets the lease timeout for a message that is currently being dispatched.
+    /// </summary>
+    public TimeSpan DispatchLeaseTimeout { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Validates the outbox configuration.
     /// </summary>
     public void Validate()
@@ -53,6 +58,11 @@ public sealed class MessageOutboxConfiguration
         if (RetryDelay < TimeSpan.Zero)
         {
             throw new InvalidOperationException("Outbox retry delay cannot be negative.");
+        }
+
+        if (DispatchLeaseTimeout <= TimeSpan.Zero)
+        {
+            throw new InvalidOperationException("Outbox dispatch lease timeout must be greater than zero.");
         }
     }
 }

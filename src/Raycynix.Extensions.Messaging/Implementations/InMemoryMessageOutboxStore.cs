@@ -34,6 +34,51 @@ public sealed class InMemoryMessageOutboxStore : IMessageOutboxStore
     }
 
     /// <inheritdoc />
+    public Task<bool> TryBeginDispatchAsync(
+        string messageId,
+        DateTimeOffset leaseUntil,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        while (true)
+        {
+            if (!_entries.TryGetValue(messageId, out var existingEntry))
+            {
+                return Task.FromResult(false);
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var canLease = existingEntry.Status switch
+            {
+                MessageOutboxStatus.Pending => existingEntry.NextAttemptAt <= now,
+                MessageOutboxStatus.Failed => existingEntry.NextAttemptAt <= now,
+                MessageOutboxStatus.Dispatching => existingEntry.NextAttemptAt <= now,
+                _ => false
+            };
+
+            if (!canLease)
+            {
+                return Task.FromResult(false);
+            }
+
+            var updatedEntry = existingEntry with
+            {
+                Status = MessageOutboxStatus.Dispatching,
+                UpdatedAt = now,
+                NextAttemptAt = leaseUntil,
+                Error = existingEntry.Status == MessageOutboxStatus.Failed ? existingEntry.Error : null
+            };
+
+            if (_entries.TryUpdate(messageId, updatedEntry, existingEntry))
+            {
+                return Task.FromResult(true);
+            }
+        }
+    }
+
+    /// <inheritdoc />
     public Task<IReadOnlyCollection<MessageOutboxEntry>> GetAvailableAsync(
         DateTimeOffset asOf,
         int maxCount,
@@ -43,7 +88,8 @@ public sealed class InMemoryMessageOutboxStore : IMessageOutboxStore
         cancellationToken.ThrowIfCancellationRequested();
 
         var entries = _entries.Values
-            .Where(entry => entry.Status is MessageOutboxStatus.Pending or MessageOutboxStatus.Failed)
+            .Where(entry =>
+                entry.Status is MessageOutboxStatus.Pending or MessageOutboxStatus.Failed or MessageOutboxStatus.Dispatching)
             .Where(entry => entry.NextAttemptAt <= asOf)
             .OrderBy(entry => entry.NextAttemptAt)
             .ThenBy(entry => entry.CreatedAt)

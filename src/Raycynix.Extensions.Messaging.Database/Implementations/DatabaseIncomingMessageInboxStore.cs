@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -12,7 +11,7 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists inbox state for incoming messages in the configured database.
 /// </summary>
 internal sealed class DatabaseIncomingMessageInboxStore(
-    IServiceScopeFactory serviceScopeFactory,
+    DatabaseContext databaseContext,
     MessagingConfiguration configuration) : IIncomingMessageInboxStore
 {
     /// <inheritdoc />
@@ -20,15 +19,13 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var existing = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken)
-            .ConfigureAwait(false);
+        var set = databaseContext.Set<MessagingInboxEntryEntity>();
+        var existing = set.Local.SingleOrDefault(entry => entry.MessageId == message.MessageId) ??
+            await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
 
         if (existing is null)
         {
-            databaseContext.Set<MessagingInboxEntryEntity>().Add(new MessagingInboxEntryEntity
+            set.Add(new MessagingInboxEntryEntity
             {
                 MessageId = message.MessageId,
                 Destination = message.Destination,
@@ -75,11 +72,9 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
-            .ConfigureAwait(false);
+        var set = databaseContext.Set<MessagingInboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
+            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -101,11 +96,9 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(exception);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
-            .ConfigureAwait(false);
+        var set = databaseContext.Set<MessagingInboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
+            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -123,9 +116,10 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
+        var entry = databaseContext.ChangeTracker.Entries<MessagingInboxEntryEntity>()
+            .Where(current => current.Entity.MessageId == messageId)
+            .Select(current => current.Entity)
+            .SingleOrDefault() ?? await databaseContext.Set<MessagingInboxEntryEntity>()
             .AsNoTracking()
             .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
             .ConfigureAwait(false);
@@ -164,11 +158,9 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         IncomingTransportMessage message,
         CancellationToken cancellationToken)
     {
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
-            .ConfigureAwait(false);
+        var set = databaseContext.Set<MessagingInboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
+            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -191,8 +183,6 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         string messageId,
         CancellationToken cancellationToken)
     {
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
         return await databaseContext.Set<MessagingInboxEntryEntity>()
             .AsNoTracking()
             .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
@@ -209,8 +199,6 @@ internal sealed class DatabaseIncomingMessageInboxStore(
             return false;
         }
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
         var now = DateTimeOffset.UtcNow;
         var rowsAffected = await databaseContext.Set<MessagingInboxEntryEntity>()
             .Where(current =>

@@ -35,6 +35,16 @@ public sealed class MessageOutboxRecoveryProcessor(
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var leased = await outboxStore.TryBeginDispatchAsync(
+                    entry.Message.MessageId,
+                    DateTimeOffset.UtcNow.Add(configuration.Outbox.DispatchLeaseTimeout),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!leased)
+            {
+                continue;
+            }
+
             try
             {
                 await transportPublisher.PublishAsync(entry.Message, cancellationToken).ConfigureAwait(false);

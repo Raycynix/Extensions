@@ -11,12 +11,17 @@ public enum MessageOutboxStatus
     Pending = 0,
 
     /// <summary>
+    /// Indicates that the message is currently leased by a dispatcher or recovery worker.
+    /// </summary>
+    Dispatching = 1,
+
+    /// <summary>
     /// Indicates that the message has already been published successfully.
     /// </summary>
-    Dispatched = 1,
+    Dispatched = 2,
 
     /// <summary>
     /// Indicates that the latest publish attempt failed.
     /// </summary>
-    Failed = 2
+    Failed = 3
 }

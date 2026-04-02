@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.7.0</Version>
+        <Version>0.8.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Transport-agnostic messaging contracts, codecs, publishers, and handlers for Raycynix applications.</Description>
-        <PackageTags>raycynix;messaging;abstractions;events;integration;dotnet</PackageTags>
+        <Description>Transport-agnostic messaging contracts, codecs, handlers, outbox abstractions, and direct communication primitives for Raycynix applications.</Description>
+        <PackageTags>raycynix;messaging;abstractions;events;integration;outbox;inbox;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

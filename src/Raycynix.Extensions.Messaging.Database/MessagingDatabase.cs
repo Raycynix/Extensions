@@ -33,8 +33,8 @@ public static class MessagingDatabase
         builder.Services.Replace(ServiceDescriptor.Singleton(configuration));
         builder.Services.AddRaycynixDatabaseAssembly(typeof(MessagingInboxEntryEntity).Assembly);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, MessagingDatabasePersistenceInitializationService>());
-        builder.Services.Replace(ServiceDescriptor.Singleton<IIncomingMessageInboxStore, DatabaseIncomingMessageInboxStore>());
-        builder.Services.Replace(ServiceDescriptor.Singleton<IMessageOutboxStore, DatabaseMessageOutboxStore>());
+        builder.Services.Replace(ServiceDescriptor.Scoped<IIncomingMessageInboxStore, DatabaseIncomingMessageInboxStore>());
+        builder.Services.Replace(ServiceDescriptor.Scoped<IMessageOutboxStore, DatabaseMessageOutboxStore>());
 
         return builder;
     }

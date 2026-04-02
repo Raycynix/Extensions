@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
@@ -15,7 +16,7 @@ namespace Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 internal sealed class RabbitMqInboundConsumer(
     RabbitMqConnectionAccessor connectionAccessor,
     RabbitMqMessagingConfiguration configuration,
-    IIncomingMessageProcessor processor) : BackgroundService
+    IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
     private const string DeliveryAttemptHeader = "X-Delivery-Attempt";
     private const string ErrorHeader = "X-Processing-Error";
@@ -43,6 +44,8 @@ internal sealed class RabbitMqInboundConsumer(
             try
             {
                 var incomingMessage = CreateIncomingMessage(delivery);
+                await using var scope = serviceScopeFactory.CreateAsyncScope();
+                var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
                 await processor.ProcessAsync(incomingMessage, stoppingToken).ConfigureAwait(false);
                 await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
             }
@@ -66,7 +69,7 @@ internal sealed class RabbitMqInboundConsumer(
             ContentType = delivery.ContentType,
             MessageId = delivery.MessageId ?? Guid.NewGuid().ToString("N"),
             CorrelationId = delivery.CorrelationId,
-            CausationId = headers.TryGetValue("causation-id", out var causationId) ? causationId : null,
+            CausationId = headers.GetValueOrDefault("causation-id"),
             CreatedAt = delivery.Timestamp ?? DateTimeOffset.UtcNow,
             Headers = headers
         };

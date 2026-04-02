@@ -38,7 +38,7 @@ public static class HttpJsonMessagingBuilderExtensions
             client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
         });
         builder.Services.TryAddSingleton<IHttpJsonTransport, HttpJsonTransport>();
-        builder.Services.TryAddSingleton<IHttpJsonRequestProcessor, HttpJsonRequestProcessor>();
+        builder.Services.TryAddScoped<IHttpJsonRequestProcessor, HttpJsonRequestProcessor>();
         builder.Services.TryAddSingleton<IHttpJsonRequestClient, HttpJsonRequestClient>();
         builder.Services.Replace(ServiceDescriptor.Singleton<IDirectRequestClient, HttpJsonRequestClient>());
 

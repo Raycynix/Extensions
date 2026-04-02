@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.1.1</Version>
+        <Version>0.2.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Database-backed messaging inbox and outbox persistence built on the shared Raycynix DatabaseContext and EF Core configurators.</Description>
-        <PackageTags>raycynix;messaging;database;efcore;outbox;inbox;configurators;sqlite;postgresql;sqlserver;mysql;dotnet</PackageTags>
+        <Description>Database-backed messaging inbox and outbox persistence with ambient unit-of-work support built on the shared Raycynix DatabaseContext and EF Core configurators.</Description>
+        <PackageTags>raycynix;messaging;database;efcore;outbox;inbox;unitofwork;configurators;sqlite;postgresql;sqlserver;mysql;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

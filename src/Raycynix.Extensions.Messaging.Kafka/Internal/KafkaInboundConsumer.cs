@@ -1,5 +1,4 @@
-using System.Text;
-using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
@@ -17,7 +16,7 @@ internal sealed class KafkaInboundConsumer(
     IKafkaConsumer consumer,
     ITransportMessagePublisher transportPublisher,
     KafkaMessagingConfiguration configuration,
-    IIncomingMessageProcessor processor) : BackgroundService
+    IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
     private const string DeliveryAttemptHeader = "X-Delivery-Attempt";
     private const string ErrorHeader = "X-Processing-Error";
@@ -44,6 +43,8 @@ internal sealed class KafkaInboundConsumer(
 
             try
             {
+                await using var scope = serviceScopeFactory.CreateAsyncScope();
+                var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
                 await processor.ProcessAsync(CreateIncomingMessage(message), stoppingToken).ConfigureAwait(false);
                 consumer.Commit(message);
             }

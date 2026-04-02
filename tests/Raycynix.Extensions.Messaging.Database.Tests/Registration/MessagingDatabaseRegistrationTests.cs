@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
+using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
@@ -33,12 +34,14 @@ public sealed class MessagingDatabaseRegistrationTests
             await using (var provider = BuildProvider(databasePath))
             {
                 await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
-                var store = provider.GetRequiredService<IMessageOutboxStore>();
+                await using var scope = provider.CreateAsyncScope();
+                var store = scope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 await store.EnqueueAsync(CreateSerializedMessage("msg-1"), TestContext.Current.CancellationToken);
             }
 
             await using var reloadedProvider = BuildProvider(databasePath);
-            var reloadedStore = reloadedProvider.GetRequiredService<IMessageOutboxStore>();
+            await using var reloadedScope = reloadedProvider.CreateAsyncScope();
+            var reloadedStore = reloadedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
             var entry = await reloadedStore.GetAsync("msg-1", TestContext.Current.CancellationToken);
 
             entry.Should().NotBeNull();
@@ -66,7 +69,8 @@ public sealed class MessagingDatabaseRegistrationTests
             {
                 await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
                 var state = provider.GetRequiredService<InboxHandlerState>();
-                var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+                await using var scope = provider.CreateAsyncScope();
+                var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
                 await processor.ProcessAsync(CreateIncomingMessage("msg-2"), TestContext.Current.CancellationToken);
                 state.Values.Should().ContainSingle().Which.Should().Be("once");
             }
@@ -74,7 +78,8 @@ public sealed class MessagingDatabaseRegistrationTests
             await using (var provider = BuildProvider(databasePath))
             {
                 var state = provider.GetRequiredService<InboxHandlerState>();
-                var processor = provider.GetRequiredService<IIncomingMessageProcessor>();
+                await using var scope = provider.CreateAsyncScope();
+                var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
                 await processor.ProcessAsync(CreateIncomingMessage("msg-2"), TestContext.Current.CancellationToken);
                 state.Values.Should().BeEmpty();
             }
@@ -98,12 +103,13 @@ public sealed class MessagingDatabaseRegistrationTests
             await using (var provider = BuildProvider(databasePath))
             {
                 await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
-                var store = provider.GetRequiredService<IMessageOutboxStore>();
+                await using var scope = provider.CreateAsyncScope();
+                var store = scope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 var processorType = typeof(Messaging)
                     .Assembly
                     .GetTypes()
                     .Single(static type => type.Name == nameof(Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor));
-                var processor = provider.GetRequiredService(processorType);
+                var processor = scope.ServiceProvider.GetRequiredService(processorType);
 
                 await store.EnqueueAsync(CreateSerializedMessage("msg-3"), TestContext.Current.CancellationToken);
                 await store.MarkFailedAsync(
@@ -118,7 +124,8 @@ public sealed class MessagingDatabaseRegistrationTests
             }
 
             await using var reloadedProvider = BuildProvider(databasePath);
-            var storeAfterRecovery = reloadedProvider.GetRequiredService<IMessageOutboxStore>();
+            await using var reloadedScope = reloadedProvider.CreateAsyncScope();
+            var storeAfterRecovery = reloadedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
             var entryAfterRecovery = await storeAfterRecovery.GetAsync("msg-3", TestContext.Current.CancellationToken);
 
             entryAfterRecovery.Should().NotBeNull();
@@ -143,7 +150,6 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             await using var provider = BuildProvider(databasePath);
             await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
-            var store = provider.GetRequiredService<IIncomingMessageInboxStore>();
             var message = CreateIncomingMessage("msg-concurrent");
             var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -151,7 +157,9 @@ public sealed class MessagingDatabaseRegistrationTests
                 .Select(async _ =>
                 {
                     await start.Task.ConfigureAwait(false);
-                    return await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+                    await using var scope = provider.CreateAsyncScope();
+                    var scopedStore = scope.ServiceProvider.GetRequiredService<IIncomingMessageInboxStore>();
+                    return await scopedStore.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
                 })
                 .ToArray();
 
@@ -185,11 +193,13 @@ public sealed class MessagingDatabaseRegistrationTests
                 });
             await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
 
-            var store = provider.GetRequiredService<IIncomingMessageInboxStore>();
             var message = CreateIncomingMessage("msg-stale");
-            var firstAttempt = await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
-
-            firstAttempt.Should().BeTrue();
+            await using (var processingScope = provider.CreateAsyncScope())
+            {
+                var store = processingScope.ServiceProvider.GetRequiredService<IIncomingMessageInboxStore>();
+                var firstAttempt = await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+                firstAttempt.Should().BeTrue();
+            }
 
             await using (var scope = provider.CreateAsyncScope())
             {
@@ -200,7 +210,186 @@ public sealed class MessagingDatabaseRegistrationTests
                 await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
             }
 
-            var reclaimed = await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+            await using var reclaimScope = provider.CreateAsyncScope();
+            var reclaimStore = reclaimScope.ServiceProvider.GetRequiredService<IIncomingMessageInboxStore>();
+            var reclaimed = await reclaimStore.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+
+            reclaimed.Should().BeTrue();
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that publishing within the ambient database unit of work does not flush unrelated business changes prematurely.
+    /// </summary>
+    [Fact]
+    public async Task PublishAsync_WithAmbientBusinessChanges_ShouldDeferOutboxPersistenceUntilSaveChanges()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+
+            var messageId = "msg-ambient-uow";
+
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var publisher = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
+                var envelopeFactory = scope.ServiceProvider.GetRequiredService<IMessageEnvelopeFactory>();
+                var transportPublisher = provider.GetRequiredService<RecordingTransportPublisher>();
+
+                databaseContext.Set<TestBusinessEntity>().Add(new TestBusinessEntity
+                {
+                    Id = "order-ambient",
+                    Name = "pending"
+                });
+
+                var template = envelopeFactory.Create(
+                    new PersistedInboxMessage("deferred"),
+                    "orders.created",
+                    MessageFormat.Json);
+                var envelope = new MessageEnvelope<PersistedInboxMessage>
+                {
+                    Message = template.Message,
+                    Destination = template.Destination,
+                    Format = template.Format,
+                    MessageId = messageId,
+                    Contract = template.Contract,
+                    CorrelationId = template.CorrelationId,
+                    CausationId = template.CausationId,
+                    CreatedAt = template.CreatedAt,
+                    Headers = template.Headers
+                };
+
+                await publisher.PublishAsync(envelope, TestContext.Current.CancellationToken);
+                transportPublisher.PublishedMessageIds.Should().BeEmpty();
+
+                await using var beforeSaveScope = provider.CreateAsyncScope();
+                var beforeSaveContext = beforeSaveScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var beforeSaveStore = beforeSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+                (await beforeSaveContext.Set<TestBusinessEntity>().AnyAsync(TestContext.Current.CancellationToken)).Should().BeFalse();
+                (await beforeSaveStore.GetAsync(messageId, TestContext.Current.CancellationToken)).Should().BeNull();
+
+                await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+
+            await using (var afterSaveScope = provider.CreateAsyncScope())
+            {
+                var afterSaveContext = afterSaveScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var afterSaveStore = afterSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+                (await afterSaveContext.Set<TestBusinessEntity>().AnyAsync(entity => entity.Id == "order-ambient", TestContext.Current.CancellationToken))
+                    .Should()
+                    .BeTrue();
+
+                var entry = await afterSaveStore.GetAsync(messageId, TestContext.Current.CancellationToken);
+                entry.Should().NotBeNull();
+                entry.Status.Should().Be(MessageOutboxStatus.Pending);
+            }
+
+            await using (var recoveryScope = provider.CreateAsyncScope())
+            {
+                var recoveryProcessor = recoveryScope.ServiceProvider.GetRequiredService<Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor>();
+                var processed = await recoveryProcessor.ProcessAvailableAsync(TestContext.Current.CancellationToken);
+                processed.Should().Be(1);
+            }
+
+            var recordingPublisher = provider.GetRequiredService<RecordingTransportPublisher>();
+            recordingPublisher.PublishedMessageIds.Should().ContainSingle().Which.Should().Be(messageId);
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that only one worker acquires concurrent outbox dispatch leases.
+    /// </summary>
+    [Fact]
+    public async Task TryBeginDispatchAsync_WithConcurrentRecoveryWorkers_ShouldLeaseMessageOnlyOnce()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await using (var seedScope = provider.CreateAsyncScope())
+            {
+                var store = seedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-race"), TestContext.Current.CancellationToken);
+            }
+
+            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var attempts = Enumerable.Range(0, 8)
+                .Select(async _ =>
+                {
+                    await start.Task.ConfigureAwait(false);
+                    await using var scope = provider.CreateAsyncScope();
+                    var scopedStore = scope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+                    return await scopedStore.TryBeginDispatchAsync(
+                        "msg-dispatch-race",
+                        DateTimeOffset.UtcNow.AddMinutes(5),
+                        TestContext.Current.CancellationToken);
+                })
+                .ToArray();
+
+            start.SetResult();
+            var results = await Task.WhenAll(attempts);
+
+            results.Count(static current => current).Should().Be(1);
+            results.Count(static current => !current).Should().Be(7);
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that stale outbox dispatch leases can be reclaimed after a crashed dispatcher run.
+    /// </summary>
+    [Fact]
+    public async Task TryBeginDispatchAsync_WithStaleDispatchLease_ShouldReclaimMessage()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await using (var seedScope = provider.CreateAsyncScope())
+            {
+                var store = seedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-stale"), TestContext.Current.CancellationToken);
+                var leased = await store.TryBeginDispatchAsync(
+                    "msg-dispatch-stale",
+                    DateTimeOffset.UtcNow.AddMinutes(10),
+                    TestContext.Current.CancellationToken);
+                leased.Should().BeTrue();
+            }
+
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
+                    .SingleAsync(current => current.MessageId == "msg-dispatch-stale", TestContext.Current.CancellationToken);
+                entry.NextAttemptAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+                await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+
+            await using var reclaimScope = provider.CreateAsyncScope();
+            var reclaimStore = reclaimScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
+            var reclaimed = await reclaimStore.TryBeginDispatchAsync(
+                "msg-dispatch-stale",
+                DateTimeOffset.UtcNow.AddMinutes(5),
+                TestContext.Current.CancellationToken);
 
             reclaimed.Should().BeTrue();
         }
@@ -217,9 +406,12 @@ public sealed class MessagingDatabaseRegistrationTests
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton<InboxHandlerState>();
-        services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
+        services.AddSingleton<RecordingTransportPublisher>();
+        services.AddSingleton<ITransportMessagePublisher>(serviceProvider =>
+            serviceProvider.GetRequiredService<RecordingTransportPublisher>());
 
-        services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath));
+        services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath))
+            .AddAssembly<MessagingDatabaseRegistrationTests>();
         services.AddRaycynixMessaging(BuildMessagingConfiguration(additionalConfiguration))
             .AddMessageHandler<PersistedInboxMessage, PersistedInboxHandler>()
             .AddDatabasePersistence();
@@ -319,6 +511,7 @@ public sealed class MessagingDatabaseRegistrationTests
         public List<string> Values { get; } = [];
     }
 
+    /// <inheritdoc />
     private sealed class PersistedInboxHandler(InboxHandlerState state) : IMessageHandler<PersistedInboxMessage>
     {
         public ValueTask HandleAsync(
@@ -338,6 +531,27 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             PublishedMessageIds.Add(message.MessageId);
             return ValueTask.CompletedTask;
+        }
+    }
+
+    [DatabaseTable("messaging_database_test_business_entities")]
+    private sealed class TestBusinessEntity
+    {
+        public string Id { get; init; } = string.Empty;
+
+        public string Name { get; init; } = string.Empty;
+    }
+
+    private sealed class TestBusinessEntityConfigurator : GenericConfigurator<TestBusinessEntity>
+    {
+        public override Type[] DependsOn => [];
+
+        public override void Configure(ModelBuilder modelBuilder)
+        {
+            var entity = ConfigureEntity(modelBuilder);
+            entity.HasKey(static current => current.Id);
+            entity.Property(static current => current.Id).HasMaxLength(128);
+            entity.Property(static current => current.Name).HasMaxLength(256);
         }
     }
 

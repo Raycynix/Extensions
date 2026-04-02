@@ -15,6 +15,21 @@ public interface IMessageOutboxStore
     Task EnqueueAsync(SerializedMessage message, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Attempts to lease an outbox message for dispatch.
+    /// </summary>
+    /// <param name="messageId">The message identifier.</param>
+    /// <param name="leaseUntil">The moment until which the dispatch lease is valid.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>
+    /// <see langword="true"/> when the message was leased for the current dispatcher; otherwise,
+    /// <see langword="false"/>.
+    /// </returns>
+    Task<bool> TryBeginDispatchAsync(
+        string messageId,
+        DateTimeOffset leaseUntil,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets outbox messages available for dispatch at the specified moment.
     /// </summary>
     /// <param name="asOf">The point in time used to filter available messages.</param>

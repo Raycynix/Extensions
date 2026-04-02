@@ -10,6 +10,7 @@
 - persistent `IIncomingMessageInboxStore`
 - persistent `IMessageOutboxStore`
 - EF Core configurators registered into the shared `DatabaseContext`
+- ambient unit-of-work aware outbox persistence for shared `DatabaseContext` scopes
 
 ## What it does not contain
 
@@ -33,4 +34,4 @@ builder.Services.AddRaycynixMessaging(builder.Configuration)
 
 The package replaces the default in-memory inbox/outbox stores with database-backed implementations and registers its EF Core configurators into the shared `DatabaseContext` through `AddRaycynixDatabaseAssembly(...)`. Table creation still flows through the existing Raycynix database initialization pipeline.
 
-This package gives messaging persistence that survives process restarts and works with the existing outbox recovery pipeline. It does not provide distributed transactions, but it does provide durable inbox/outbox state in the configured database.
+This package gives messaging persistence that survives process restarts, participates in the ambient shared `DatabaseContext` unit of work for outbox writes, and works with the existing outbox recovery pipeline. It does not provide distributed transactions, but it does provide durable inbox/outbox state and database-backed recovery/dispatch leasing in the configured database.

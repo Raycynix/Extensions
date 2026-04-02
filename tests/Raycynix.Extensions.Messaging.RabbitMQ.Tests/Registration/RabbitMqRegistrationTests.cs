@@ -113,7 +113,7 @@ public sealed class RabbitMqRegistrationTests
         var hostedService = new RabbitMqInboundConsumer(
             provider.GetRequiredService<RabbitMqConnectionAccessor>(),
             provider.GetRequiredService<RabbitMqMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await processingState.Processed.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
@@ -165,7 +165,7 @@ public sealed class RabbitMqRegistrationTests
         var hostedService = new RabbitMqInboundConsumer(
             provider.GetRequiredService<RabbitMqConnectionAccessor>(),
             provider.GetRequiredService<RabbitMqMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await Task.Delay(200, TestContext.Current.CancellationToken);
@@ -224,7 +224,7 @@ public sealed class RabbitMqRegistrationTests
         var hostedService = new RabbitMqInboundConsumer(
             provider.GetRequiredService<RabbitMqConnectionAccessor>(),
             provider.GetRequiredService<RabbitMqMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await Task.Delay(200, TestContext.Current.CancellationToken);

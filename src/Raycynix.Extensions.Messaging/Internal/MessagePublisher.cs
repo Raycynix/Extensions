@@ -24,9 +24,71 @@ internal sealed class MessagePublisher(
             return;
         }
 
+        if (outboxStore is ITransactionalMessageOutboxStore transactionalOutboxStore)
+        {
+            await transactionalOutboxStore.EnqueueDeferredAsync(serialized, cancellationToken).ConfigureAwait(false);
+
+            if (transactionalOutboxStore.ShouldDeferToAmbientUnitOfWork)
+            {
+                return;
+            }
+
+            await transactionalOutboxStore.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!configuration.Outbox.AutoDispatchOnPublish)
+            {
+                return;
+            }
+
+            var leased = await transactionalOutboxStore.TryBeginDispatchDeferredAsync(
+                    serialized.MessageId,
+                    DateTimeOffset.UtcNow.Add(configuration.Outbox.DispatchLeaseTimeout),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!leased)
+            {
+                await transactionalOutboxStore.FlushAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
+            await transactionalOutboxStore.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await transportPublisher.PublishAsync(serialized, cancellationToken).ConfigureAwait(false);
+                await transactionalOutboxStore.MarkDispatchedDeferredAsync(serialized.MessageId, cancellationToken).ConfigureAwait(false);
+                await transactionalOutboxStore.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                await transactionalOutboxStore.MarkFailedDeferredAsync(
+                        serialized.MessageId,
+                        exception,
+                        DateTimeOffset.UtcNow.Add(configuration.Outbox.RetryDelay),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                await transactionalOutboxStore.FlushAsync(cancellationToken).ConfigureAwait(false);
+                throw;
+            }
+
+            return;
+        }
+
         await outboxStore.EnqueueAsync(serialized, cancellationToken).ConfigureAwait(false);
 
         if (!configuration.Outbox.AutoDispatchOnPublish)
+        {
+            return;
+        }
+
+        var acquired = await outboxStore.TryBeginDispatchAsync(
+                serialized.MessageId,
+                DateTimeOffset.UtcNow.Add(configuration.Outbox.DispatchLeaseTimeout),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!acquired)
         {
             return;
         }

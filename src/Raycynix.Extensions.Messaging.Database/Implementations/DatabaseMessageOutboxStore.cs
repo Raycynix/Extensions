@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -13,17 +12,152 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists outbox state for outgoing messages in the configured database.
 /// </summary>
 internal sealed class DatabaseMessageOutboxStore(
-    IServiceScopeFactory serviceScopeFactory) : IMessageOutboxStore
+    DatabaseContext databaseContext) : ITransactionalMessageOutboxStore
 {
+    private static readonly HashSet<Type> MessagingEntityTypes =
+    [
+        typeof(MessagingOutboxEntryEntity),
+        typeof(MessagingInboxEntryEntity)
+    ];
+
+    /// <inheritdoc />
+    public bool ShouldDeferToAmbientUnitOfWork => databaseContext.Database.CurrentTransaction is not null || HasExternalPendingChanges();
+
     /// <inheritdoc />
     public async Task EnqueueAsync(SerializedMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
+        await EnqueueCoreAsync(message, cancellationToken).ConfigureAwait(false);
+        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+    /// <inheritdoc />
+    public Task EnqueueDeferredAsync(SerializedMessage message, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        return EnqueueCoreAsync(message, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> TryBeginDispatchAsync(
+        string messageId,
+        DateTimeOffset leaseUntil,
+        CancellationToken cancellationToken = default)
+    {
+        var leased = await TryBeginDispatchCoreAsync(messageId, leaseUntil, cancellationToken).ConfigureAwait(false);
+        if (!leased)
+        {
+            return false;
+        }
+
+        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public Task<bool> TryBeginDispatchDeferredAsync(
+        string messageId,
+        DateTimeOffset leaseUntil,
+        CancellationToken cancellationToken = default)
+    {
+        return TryBeginDispatchCoreAsync(messageId, leaseUntil, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyCollection<MessageOutboxEntry>> GetAvailableAsync(
+        DateTimeOffset asOf,
+        int maxCount,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
+
+        var pendingStatus = (int)MessageOutboxStatus.Pending;
+        var dispatchingStatus = (int)MessageOutboxStatus.Dispatching;
+        var failedStatus = (int)MessageOutboxStatus.Failed;
+        var entities = await databaseContext.Set<MessagingOutboxEntryEntity>()
+            .AsNoTracking()
+            .Where(entry =>
+                entry.Status == pendingStatus ||
+                entry.Status == failedStatus ||
+                entry.Status == dispatchingStatus)
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return entities
+            .Where(entry => entry.NextAttemptAt <= asOf)
+            .OrderBy(entry => entry.NextAttemptAt)
+            .ThenBy(entry => entry.CreatedAt)
+            .Take(maxCount)
+            .Select(Map)
+            .ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task MarkDispatchedAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        await MarkDispatchedCoreAsync(messageId, cancellationToken).ConfigureAwait(false);
+        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task MarkDispatchedDeferredAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        return MarkDispatchedCoreAsync(messageId, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task MarkFailedAsync(
+        string messageId,
+        Exception exception,
+        DateTimeOffset nextAttemptAt,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        await MarkFailedCoreAsync(messageId, exception, nextAttemptAt, cancellationToken).ConfigureAwait(false);
+        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task MarkFailedDeferredAsync(
+        string messageId,
+        Exception exception,
+        DateTimeOffset nextAttemptAt,
+        CancellationToken cancellationToken = default)
+    {
+        return MarkFailedCoreAsync(messageId, exception, nextAttemptAt, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<MessageOutboxEntry?> GetAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        var entry = databaseContext.ChangeTracker.Entries<MessagingOutboxEntryEntity>()
+            .Where(current => current.Entity.MessageId == messageId)
+            .Select(current => current.Entity)
+            .SingleOrDefault() ?? await databaseContext.Set<MessagingOutboxEntryEntity>()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return entry is null ? null : Map(entry);
+    }
+
+    /// <inheritdoc />
+    public Task FlushAsync(CancellationToken cancellationToken = default)
+    {
+        return databaseContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnqueueCoreAsync(SerializedMessage message, CancellationToken cancellationToken)
+    {
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
-        var existing = await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+        var existing = set.Local.SingleOrDefault(entry => entry.MessageId == message.MessageId) ??
+            await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
 
         if (existing is null)
@@ -44,62 +178,74 @@ internal sealed class DatabaseMessageOutboxStore(
                 AttemptCount = 0,
                 NextAttemptAt = now
             });
-        }
-        else
-        {
-            existing.Destination = message.Destination;
-            existing.Payload = message.Payload;
-            existing.Format = (int)message.Format;
-            existing.ContentType = message.ContentType;
-            existing.CorrelationId = message.CorrelationId;
-            existing.CausationId = message.CausationId;
-            existing.CreatedAt = message.CreatedAt;
-            existing.Headers = JsonSerializer.Serialize(message.Headers);
-            existing.Status = (int)MessageOutboxStatus.Pending;
-            existing.UpdatedAt = now;
-            existing.NextAttemptAt = now;
-            existing.Error = null;
+            return;
         }
 
-        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        existing.Destination = message.Destination;
+        existing.Payload = message.Payload;
+        existing.Format = (int)message.Format;
+        existing.ContentType = message.ContentType;
+        existing.CorrelationId = message.CorrelationId;
+        existing.CausationId = message.CausationId;
+        existing.CreatedAt = message.CreatedAt;
+        existing.Headers = JsonSerializer.Serialize(message.Headers);
+        existing.Status = (int)MessageOutboxStatus.Pending;
+        existing.UpdatedAt = now;
+        existing.NextAttemptAt = now;
+        existing.Error = null;
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyCollection<MessageOutboxEntry>> GetAvailableAsync(
-        DateTimeOffset asOf,
-        int maxCount,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
-
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var pendingStatus = (int)MessageOutboxStatus.Pending;
-        var failedStatus = (int)MessageOutboxStatus.Failed;
-        var entities = await databaseContext.Set<MessagingOutboxEntryEntity>()
-            .AsNoTracking()
-            .Where(entry => entry.Status == pendingStatus || entry.Status == failedStatus)
-            .ToArrayAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return entities
-            .Where(entry => entry.NextAttemptAt <= asOf)
-            .OrderBy(entry => entry.NextAttemptAt)
-            .ThenBy(entry => entry.CreatedAt)
-            .Take(maxCount)
-            .Select(Map)
-            .ToArray();
-    }
-
-    /// <inheritdoc />
-    public async Task MarkDispatchedAsync(string messageId, CancellationToken cancellationToken = default)
+    private async Task<bool> TryBeginDispatchCoreAsync(
+        string messageId,
+        DateTimeOffset leaseUntil,
+        CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
+        var set = databaseContext.Set<MessagingOutboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
+            await set
             .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null)
+        {
+            return false;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var canLease = (MessageOutboxStatus)entry.Status switch
+        {
+            MessageOutboxStatus.Pending => entry.NextAttemptAt <= now,
+            MessageOutboxStatus.Failed => entry.NextAttemptAt <= now,
+            MessageOutboxStatus.Dispatching => entry.NextAttemptAt <= now,
+            _ => false
+        };
+
+        if (!canLease)
+        {
+            return false;
+        }
+
+        var previousStatus = (MessageOutboxStatus)entry.Status;
+        entry.Status = (int)MessageOutboxStatus.Dispatching;
+        entry.UpdatedAt = now;
+        entry.NextAttemptAt = leaseUntil;
+        if (previousStatus != MessageOutboxStatus.Failed)
+        {
+            entry.Error = null;
+        }
+
+        return true;
+    }
+
+    private async Task MarkDispatchedCoreAsync(string messageId, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        var set = databaseContext.Set<MessagingOutboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
+            await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
             .ConfigureAwait(false);
 
         if (entry is null)
@@ -112,23 +258,20 @@ internal sealed class DatabaseMessageOutboxStore(
         entry.AttemptCount++;
         entry.NextAttemptAt = DateTimeOffset.MaxValue;
         entry.Error = null;
-        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task MarkFailedAsync(
+    private async Task MarkFailedCoreAsync(
         string messageId,
         Exception exception,
         DateTimeOffset nextAttemptAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         ArgumentNullException.ThrowIfNull(exception);
 
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
-            .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+        var set = databaseContext.Set<MessagingOutboxEntryEntity>();
+        var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
+            await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
             .ConfigureAwait(false);
 
         if (entry is null)
@@ -141,22 +284,13 @@ internal sealed class DatabaseMessageOutboxStore(
         entry.AttemptCount++;
         entry.NextAttemptAt = nextAttemptAt;
         entry.Error = exception.Message;
-        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task<MessageOutboxEntry?> GetAsync(string messageId, CancellationToken cancellationToken = default)
+    private bool HasExternalPendingChanges()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
-
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
-            .AsNoTracking()
-            .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
-            .ConfigureAwait(false);
-
-        return entry is null ? null : Map(entry);
+        return databaseContext.ChangeTracker.Entries()
+            .Where(static entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Any(entry => !MessagingEntityTypes.Contains(entry.Entity.GetType()));
     }
 
     private static MessageOutboxEntry Map(MessagingOutboxEntryEntity entry)

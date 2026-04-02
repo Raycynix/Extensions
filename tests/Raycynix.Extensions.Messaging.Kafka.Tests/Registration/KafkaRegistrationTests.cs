@@ -115,7 +115,7 @@ public sealed class KafkaRegistrationTests
             provider.GetRequiredService<IKafkaConsumer>(),
             provider.GetRequiredService<ITransportMessagePublisher>(),
             provider.GetRequiredService<KafkaMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await state.Processed.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
@@ -167,7 +167,7 @@ public sealed class KafkaRegistrationTests
             provider.GetRequiredService<IKafkaConsumer>(),
             provider.GetRequiredService<ITransportMessagePublisher>(),
             provider.GetRequiredService<KafkaMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await WaitForAsync(() => fakeTransportPublisher.PublishedMessages.Count == 1, TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
@@ -226,7 +226,7 @@ public sealed class KafkaRegistrationTests
             provider.GetRequiredService<IKafkaConsumer>(),
             provider.GetRequiredService<ITransportMessagePublisher>(),
             provider.GetRequiredService<KafkaMessagingConfiguration>(),
-            provider.GetRequiredService<IIncomingMessageProcessor>());
+            provider.GetRequiredService<IServiceScopeFactory>());
 
         await hostedService.StartAsync(TestContext.Current.CancellationToken);
         await WaitForAsync(() => fakeTransportPublisher.PublishedMessages.Count == 1, TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);

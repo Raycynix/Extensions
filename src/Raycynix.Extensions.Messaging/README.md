@@ -29,7 +29,8 @@
 - transport-neutral direct request/response abstractions
 - incoming dispatch pipeline with retry, deduplication, and idempotency foundations
 - optional metrics/observability integration
-- in-memory inbox/outbox and outbox recovery foundation
+- scoped envelope/request factories that can project ambient security context safely
+- in-memory inbox/outbox and outbox recovery foundation with dispatch leases
 
 ## What it does not contain
 
@@ -147,3 +148,4 @@ The base package also includes:
 - scoped inbound `ISecurityContext` projection from messaging headers
 - declarative handler authorization using shared security attributes
 - background outbox recovery service for in-memory recovery scenarios
+- dispatch leasing to prevent duplicate outbox recovery publishes

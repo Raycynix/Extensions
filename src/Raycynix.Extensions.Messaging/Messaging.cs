@@ -38,12 +38,12 @@ public static class Messaging
             serviceProvider.GetRequiredService<IConfigurationAccessor<MessagingConfiguration>>().Current);
 
         services.AddSingleton<IMessageContractResolver, MessageContractResolver>();
-        services.AddSingleton<MessageHeaderEnricher>();
+        services.AddScoped<MessageHeaderEnricher>();
         services.AddSingleton<IncomingSecurityHeadersValidator>();
         services.AddSingleton<IncomingSecurityContextAccessor>();
         services.AddSingleton<IncomingSecurityContextFactory>();
-        services.AddSingleton<IMessageEnvelopeFactory, MessageEnvelopeFactory>();
-        services.AddSingleton<IRequestEnvelopeFactory, RequestEnvelopeFactory>();
+        services.AddScoped<IMessageEnvelopeFactory, MessageEnvelopeFactory>();
+        services.AddScoped<IRequestEnvelopeFactory, RequestEnvelopeFactory>();
         services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
         services.AddSingleton<IRequestDispatcher, RequestDispatcher>();
         services.AddSingleton<IMessageCodecResolver, MessageCodecResolver>();
@@ -52,10 +52,10 @@ public static class Messaging
         services.AddSingleton<MessageObservability>();
         services.AddSingleton<IIncomingMessageInboxStore, InMemoryIncomingMessageInboxStore>();
         services.AddSingleton<IMessageOutboxStore, InMemoryMessageOutboxStore>();
-        services.AddSingleton<IIncomingMessageProcessor, IncomingMessageProcessor>();
-        services.AddSingleton<MessageOutboxRecoveryProcessor>();
+        services.AddScoped<IIncomingMessageProcessor, IncomingMessageProcessor>();
+        services.AddScoped<MessageOutboxRecoveryProcessor>();
         services.AddSingleton<IHostedService, MessageOutboxRecoveryService>();
-        services.AddSingleton<IMessagePublisher, MessagePublisher>();
+        services.AddScoped<IMessagePublisher, MessagePublisher>();
         services.AddSingleton<IDirectRequestClient, DirectRequestClient>();
         services.AddSingleton<IMessageCodec, NewtonsoftJsonMessageCodec>();
         services.AddScoped<ISecurityContext>(serviceProvider =>
