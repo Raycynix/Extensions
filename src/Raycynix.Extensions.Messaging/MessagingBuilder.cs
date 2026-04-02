@@ -54,8 +54,9 @@ public sealed class MessagingBuilder(IServiceCollection services)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
 
+        Services.AddScoped<THandler>();
         Services.AddScoped<IRequestHandler<TRequest, TResponse>, THandler>();
-        Services.AddSingleton(new RequestHandlerRegistration(typeof(TRequest), typeof(TResponse), destination));
+        Services.AddSingleton(new RequestHandlerRegistration(typeof(TRequest), typeof(TResponse), typeof(THandler), destination));
         return this;
     }
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Configurations;
 using Raycynix.Extensions.Messaging.Database.Models;
 
 namespace Raycynix.Extensions.Messaging.Database.Implementations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists inbox state for incoming messages in the configured database.
 /// </summary>
 internal sealed class DatabaseIncomingMessageInboxStore(
-    IServiceScopeFactory serviceScopeFactory) : IIncomingMessageInboxStore
+    IServiceScopeFactory serviceScopeFactory,
+    MessagingConfiguration configuration) : IIncomingMessageInboxStore
 {
     /// <inheritdoc />
     public async Task<bool> TryBeginProcessingAsync(IncomingTransportMessage message, CancellationToken cancellationToken = default)
@@ -33,20 +35,39 @@ internal sealed class DatabaseIncomingMessageInboxStore(
                 Status = (int)IncomingMessageInboxStatus.Processing,
                 UpdatedAt = DateTimeOffset.UtcNow
             });
-            await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            return true;
+
+            try
+            {
+                await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                // Another worker may have inserted the same inbox row concurrently.
+                var current = await GetCurrentEntryAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
+                if (current is not null)
+                {
+                    return (IncomingMessageInboxStatus)current.Status switch
+                    {
+                        IncomingMessageInboxStatus.Processing => await TryReclaimStaleProcessingEntryAsync(
+                                current,
+                                message,
+                                cancellationToken)
+                            .ConfigureAwait(false),
+                        IncomingMessageInboxStatus.Processed => false,
+                        IncomingMessageInboxStatus.Failed => await TryResumeFailedEntryAsync(
+                                message,
+                                cancellationToken)
+                            .ConfigureAwait(false),
+                        _ => false
+                    };
+                }
+
+                throw;
+            }
         }
 
-        if ((IncomingMessageInboxStatus)existing.Status is IncomingMessageInboxStatus.Processing or IncomingMessageInboxStatus.Processed)
-        {
-            return false;
-        }
-
-        existing.Status = (int)IncomingMessageInboxStatus.Processing;
-        existing.UpdatedAt = DateTimeOffset.UtcNow;
-        existing.Error = null;
-        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return true;
+        return await HandleExistingEntryAsync(existing, message, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -119,5 +140,95 @@ internal sealed class DatabaseIncomingMessageInboxStore(
                 UpdatedAt = entry.UpdatedAt,
                 Error = entry.Error
             };
+    }
+
+    private async Task<bool> HandleExistingEntryAsync(
+        MessagingInboxEntryEntity existing,
+        IncomingTransportMessage message,
+        CancellationToken cancellationToken)
+    {
+        if ((IncomingMessageInboxStatus)existing.Status == IncomingMessageInboxStatus.Processed)
+        {
+            return false;
+        }
+
+        if ((IncomingMessageInboxStatus)existing.Status == IncomingMessageInboxStatus.Processing)
+        {
+            return await TryReclaimStaleProcessingEntryAsync(existing, message, cancellationToken).ConfigureAwait(false);
+        }
+
+        return await TryResumeFailedEntryAsync(message, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<bool> TryResumeFailedEntryAsync(
+        IncomingTransportMessage message,
+        CancellationToken cancellationToken)
+    {
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
+            .SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null)
+        {
+            return false;
+        }
+
+        if ((IncomingMessageInboxStatus)entry.Status is IncomingMessageInboxStatus.Processing or IncomingMessageInboxStatus.Processed)
+        {
+            return false;
+        }
+
+        entry.Status = (int)IncomingMessageInboxStatus.Processing;
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+        entry.Error = null;
+        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    private async Task<MessagingInboxEntryEntity?> GetCurrentEntryAsync(
+        string messageId,
+        CancellationToken cancellationToken)
+    {
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        return await databaseContext.Set<MessagingInboxEntryEntity>()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<bool> TryReclaimStaleProcessingEntryAsync(
+        MessagingInboxEntryEntity entry,
+        IncomingTransportMessage message,
+        CancellationToken cancellationToken)
+    {
+        if (!IsProcessingLeaseStale(entry.UpdatedAt))
+        {
+            return false;
+        }
+
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var now = DateTimeOffset.UtcNow;
+        var rowsAffected = await databaseContext.Set<MessagingInboxEntryEntity>()
+            .Where(current =>
+                current.MessageId == message.MessageId &&
+                current.Status == (int)IncomingMessageInboxStatus.Processing &&
+                current.UpdatedAt == entry.UpdatedAt)
+            .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(static current => current.Destination, _ => message.Destination)
+                    .SetProperty(static current => current.UpdatedAt, _ => now)
+                    .SetProperty(static current => current.Error, _ => null),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        return rowsAffected == 1;
+    }
+
+    private bool IsProcessingLeaseStale(DateTimeOffset updatedAt)
+    {
+        return DateTimeOffset.UtcNow - updatedAt >= configuration.IncomingProcessing.ProcessingLeaseTimeout;
     }
 }

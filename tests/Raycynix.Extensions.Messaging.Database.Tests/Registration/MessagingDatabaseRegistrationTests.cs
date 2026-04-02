@@ -1,14 +1,17 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database;
+using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Database.Models;
 
 namespace Raycynix.Extensions.Messaging.Database.Tests.Registration;
 
@@ -128,7 +131,88 @@ public sealed class MessagingDatabaseRegistrationTests
         }
     }
 
-    private static ServiceProvider BuildProvider(string databasePath)
+    /// <summary>
+    /// Verifies that concurrent duplicate inbox inserts do not surface primary-key failures.
+    /// </summary>
+    [Fact]
+    public async Task TryBeginProcessingAsync_WithConcurrentDuplicateDelivery_ShouldReturnFalseInsteadOfThrowing()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(databasePath);
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            var store = provider.GetRequiredService<IIncomingMessageInboxStore>();
+            var message = CreateIncomingMessage("msg-concurrent");
+            var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var attempts = Enumerable.Range(0, 8)
+                .Select(async _ =>
+                {
+                    await start.Task.ConfigureAwait(false);
+                    return await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+                })
+                .ToArray();
+
+            start.SetResult();
+            var results = await Task.WhenAll(attempts);
+
+            results.Count(static current => current).Should().Be(1);
+            results.Count(static current => !current).Should().Be(7);
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that stale Processing inbox entries can be reclaimed after an interrupted consumer run.
+    /// </summary>
+    [Fact]
+    public async Task TryBeginProcessingAsync_WithStaleProcessingEntry_ShouldReclaimLease()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await using var provider = BuildProvider(
+                databasePath,
+                new Dictionary<string, string?>
+                {
+                    ["MessagingConfiguration:IncomingProcessing:ProcessingLeaseTimeout"] = "00:00:01"
+                });
+            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+
+            var store = provider.GetRequiredService<IIncomingMessageInboxStore>();
+            var message = CreateIncomingMessage("msg-stale");
+            var firstAttempt = await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+
+            firstAttempt.Should().BeTrue();
+
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
+                    .SingleAsync(current => current.MessageId == message.MessageId, TestContext.Current.CancellationToken);
+                entry.UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+                await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+
+            var reclaimed = await store.TryBeginProcessingAsync(message, TestContext.Current.CancellationToken);
+
+            reclaimed.Should().BeTrue();
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
+    private static ServiceProvider BuildProvider(
+        string databasePath,
+        params IEnumerable<KeyValuePair<string, string?>>[] additionalConfiguration)
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
@@ -136,7 +220,7 @@ public sealed class MessagingDatabaseRegistrationTests
         services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
 
         services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath));
-        services.AddRaycynixMessaging(BuildMessagingConfiguration())
+        services.AddRaycynixMessaging(BuildMessagingConfiguration(additionalConfiguration))
             .AddMessageHandler<PersistedInboxMessage, PersistedInboxHandler>()
             .AddDatabasePersistence();
 
@@ -157,15 +241,23 @@ public sealed class MessagingDatabaseRegistrationTests
             .Build();
     }
 
-    private static IConfiguration BuildMessagingConfiguration()
+    private static IConfiguration BuildMessagingConfiguration(
+        params IEnumerable<KeyValuePair<string, string?>>[] additionalConfiguration)
     {
+        var values = new Dictionary<string, string?>
+        {
+            ["MessagingConfiguration:Outbox:Enabled"] = "true",
+            ["MessagingConfiguration:Outbox:EnableRecovery"] = "true",
+            ["MessagingConfiguration:Outbox:AutoDispatchOnPublish"] = "false"
+        };
+
+        foreach (var pair in additionalConfiguration.SelectMany(static current => current))
+        {
+            values[pair.Key] = pair.Value;
+        }
+
         return new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["MessagingConfiguration:Outbox:Enabled"] = "true",
-                ["MessagingConfiguration:Outbox:EnableRecovery"] = "true",
-                ["MessagingConfiguration:Outbox:AutoDispatchOnPublish"] = "false"
-            })
+            .AddInMemoryCollection(values)
             .Build();
     }
 

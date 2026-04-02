@@ -21,6 +21,11 @@ public sealed class IncomingMessageProcessingConfiguration
     public bool ValidateSecurityHeaders { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets the maximum time a message may remain in the Processing state before the lease is considered stale.
+    /// </summary>
+    public TimeSpan ProcessingLeaseTimeout { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Gets or sets the list of trusted inbound message sources.
     /// </summary>
     public List<string> TrustedSources { get; set; } = [];

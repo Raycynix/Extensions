@@ -208,6 +208,38 @@ public sealed class MessagingRegistrationTests
         collector.Values.Should().ContainInOrder("first:order-1", "second:order-1");
     }
 
+    /// <summary>
+    /// Verifies that direct requests are routed to the handler registered for the matching destination
+    /// even when multiple handlers share the same request/response types.
+    /// </summary>
+    [Fact]
+    public async Task DispatchAsync_ShouldRouteRequestToDestinationSpecificHandler()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>())
+            .Build();
+
+        services.AddRaycynixMessaging(configuration)
+            .AddRequestHandler<RouteableRequest, RouteableResponse, OrdersRouteHandler>("/orders/get")
+            .AddRequestHandler<RouteableRequest, RouteableResponse, InvoicesRouteHandler>("/invoices/get");
+
+        await using var provider = services.BuildServiceProvider();
+        var envelopeFactory = provider.GetRequiredService<IRequestEnvelopeFactory>();
+        var dispatcher = provider.GetRequiredService<IRequestDispatcher>();
+        var request = envelopeFactory.Create(
+            new RouteableRequest("42"),
+            "/invoices/get",
+            MessageFormat.Json);
+
+        var response = await dispatcher.DispatchAsync<RouteableRequest, RouteableResponse>(
+            request,
+            TestContext.Current.CancellationToken);
+
+        response.Response.Handler.Should().Be("invoices");
+        response.Response.Id.Should().Be("42");
+    }
+
     private sealed record TestGrpcMessage(byte[] Value);
 
     private sealed record SpecialJsonMessage(string Value);
@@ -219,6 +251,10 @@ public sealed class MessagingRegistrationTests
     private sealed record TraceableRequest(string OrderId);
 
     private sealed record DispatchMessage(string OrderId);
+
+    private sealed record RouteableRequest(string Id);
+
+    private sealed record RouteableResponse(string Handler, string Id);
 
     private sealed class FakeSecurityContext : ISecurityContext
     {
@@ -286,6 +322,34 @@ public sealed class MessagingRegistrationTests
         {
             collector.Values.Add($"second:{envelope.Message.OrderId}");
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class OrdersRouteHandler : IRequestHandler<RouteableRequest, RouteableResponse>
+    {
+        public ValueTask<ResponseEnvelope<RouteableResponse>> HandleAsync(
+            RequestEnvelope<RouteableRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<RouteableResponse>
+            {
+                Response = new RouteableResponse("orders", request.Request.Id),
+                CorrelationId = request.CorrelationId
+            });
+        }
+    }
+
+    private sealed class InvoicesRouteHandler : IRequestHandler<RouteableRequest, RouteableResponse>
+    {
+        public ValueTask<ResponseEnvelope<RouteableResponse>> HandleAsync(
+            RequestEnvelope<RouteableRequest> request,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(new ResponseEnvelope<RouteableResponse>
+            {
+                Response = new RouteableResponse("invoices", request.Request.Id),
+                CorrelationId = request.CorrelationId
+            });
         }
     }
 }

@@ -57,6 +57,11 @@ public sealed class MessagingConfiguration
             throw new InvalidOperationException("Incoming trusted message sources cannot contain empty values.");
         }
 
+        if (IncomingProcessing.ProcessingLeaseTimeout <= TimeSpan.Zero)
+        {
+            throw new InvalidOperationException("Incoming processing lease timeout must be greater than zero.");
+        }
+
         if (string.IsNullOrWhiteSpace(Grpc.ContentType))
         {
             throw new InvalidOperationException("gRPC content type cannot be empty.");

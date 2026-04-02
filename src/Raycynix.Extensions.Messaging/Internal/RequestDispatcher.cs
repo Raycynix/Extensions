@@ -15,7 +15,7 @@ internal sealed class RequestDispatcher(
     IncomingSecurityHeadersValidator securityHeadersValidator,
     IncomingSecurityContextAccessor securityContextAccessor,
     IncomingSecurityContextFactory securityContextFactory,
-    Implementations.MessageObservability observability) : IRequestDispatcher
+    MessageObservability observability) : IRequestDispatcher
 {
     /// <inheritdoc />
     public async ValueTask<ResponseEnvelope<TResponse>> DispatchAsync<TRequest, TResponse>(
@@ -50,19 +50,20 @@ internal sealed class RequestDispatcher(
                 $"Multiple request handlers are registered for destination '{request.Destination}' and types '{typeof(TRequest).FullName}'/'{typeof(TResponse).FullName}'.");
         }
 
+        var matchedRegistration = matchingRegistrations[0];
         using var securityContextScope = securityContextAccessor.Push(securityContextFactory.Create(request.Headers));
         using var scope = serviceProvider.CreateScope();
-        var handlers = scope.ServiceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().ToArray();
-        if (handlers.Length != 1)
+        var handler = scope.ServiceProvider.GetRequiredService(matchedRegistration.HandlerType) as IRequestHandler<TRequest, TResponse>;
+        if (handler is null)
         {
             throw new InvalidOperationException(
-                $"Exactly one request handler implementation must be registered for destination '{request.Destination}' and types '{typeof(TRequest).FullName}'/'{typeof(TResponse).FullName}'.");
+                $"The request handler '{matchedRegistration.HandlerType.FullName}' registered for destination '{request.Destination}' does not implement '{typeof(IRequestHandler<TRequest, TResponse>).FullName}'.");
         }
 
         try
         {
-            scope.ServiceProvider.GetRequiredService<MessagingAuthorizationEvaluator>().Authorize(handlers[0].GetType(), request.Headers);
-            var response = await handlers[0].HandleAsync(request, cancellationToken).ConfigureAwait(false);
+            scope.ServiceProvider.GetRequiredService<MessagingAuthorizationEvaluator>().Authorize(matchedRegistration.HandlerType, request.Headers);
+            var response = await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
             observability.RecordRequestSuccess(typeof(TRequest), request.Destination);
             return response;
         }
