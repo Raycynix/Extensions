@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>0.2.3</Version>
+        <IsPackable>true</IsPackable>
+        <Description>gRPC direct request/response transport for Raycynix messaging.</Description>
+        <PackageTags>raycynix;messaging;grpc;protobuf;microservices;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
+    </ItemGroup>
+
+</Project>

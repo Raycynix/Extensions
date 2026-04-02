@@ -2,6 +2,8 @@ using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Tracing.Abstractions;
+using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Implementations;
 
 namespace Raycynix.Extensions.Tracing.Tests.Implementation;
 
@@ -33,7 +35,7 @@ public sealed class TracerTests
     [Fact]
     public void StartTrace_ShouldCreateActivity_AndApplyTags()
     {
-        var tracer = new Raycynix.Extensions.Tracing.Implementation.Tracer("tests.tracing");
+        var tracer = new Tracer("tests.tracing");
         using var listener = CreateListener();
 
         using (tracer.StartTrace("catalog.read", new Dictionary<string, string>
@@ -55,7 +57,7 @@ public sealed class TracerTests
     [Fact]
     public void AddTagAndBaggage_ShouldModifyCurrentActivity()
     {
-        var tracer = new Raycynix.Extensions.Tracing.Implementation.Tracer("tests.tracing");
+        var tracer = new Tracer("tests.tracing");
         using var listener = CreateListener();
 
         using (tracer.StartTrace("checkout"))
@@ -74,7 +76,7 @@ public sealed class TracerTests
     [Fact]
     public void StartTrace_ShouldReturnNoopDisposable_WhenNoListenerExists()
     {
-        var tracer = new Raycynix.Extensions.Tracing.Implementation.Tracer("tests.tracing.noop");
+        var tracer = new Tracer("tests.tracing.noop");
 
         var act = () =>
         {

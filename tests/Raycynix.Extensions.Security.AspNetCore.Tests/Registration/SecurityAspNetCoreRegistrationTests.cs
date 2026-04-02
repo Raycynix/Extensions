@@ -1,6 +1,9 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.Conventions;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Tests.Registration;
 
@@ -44,6 +47,22 @@ public class SecurityAspNetCoreRegistrationTests
         var action = () => services.AddRaycynixAspNetCoreSecurity(CreateValidConfiguration());
 
         action.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Verifies that ASP.NET Core security registration configures the shared MVC authorization convention.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixAspNetCoreSecurity_ShouldRegisterMvcAuthorizationConvention()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions();
+        services.AddRaycynixAspNetCoreSecurity(CreateValidConfiguration());
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<MvcOptions>>().Value;
+
+        options.Conventions.Should().ContainSingle(convention => convention is RaycynixAuthorizationApplicationModelConvention);
     }
 
     private static IConfiguration CreateValidConfiguration()

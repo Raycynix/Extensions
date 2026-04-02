@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions.Configurators;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -9,20 +10,24 @@ namespace Raycynix.Extensions.Database.Implementations;
 internal static class ConfiguratorProvider
 {
     /// <summary>
-    /// Creates and orders configurators found in the specified assembly.
+    /// Creates and orders configurators found in the specified assemblies.
     /// </summary>
-    /// <param name="callerAssembly">The assembly that contains configurator implementations.</param>
+    /// <param name="serviceProvider">The service provider used to activate configurators.</param>
+    /// <param name="assemblies">The assemblies that contain configurator implementations.</param>
     /// <returns>The ordered configurator instances.</returns>
     /// <exception cref="InvalidDataException">Thrown when a circular dependency is detected.</exception>
-    public static List<IConfigurator> Provide(Assembly callerAssembly)
+    public static List<IConfigurator> Provide(IServiceProvider serviceProvider, IEnumerable<Assembly> assemblies)
     {
-        var configuratorTypes = callerAssembly.GetTypes()
+        var configuratorTypes = assemblies
+            .Distinct()
+            .SelectMany(static assembly => assembly.GetTypes())
             .Where(t => t is { IsAbstract: false, IsInterface: false, IsClass: true })
             .Where(t => typeof(IConfigurator).IsAssignableFrom(t))
+            .Distinct()
             .ToArray();
 
         var configurators = configuratorTypes
-            .Select(t => Activator.CreateInstance(t) as IConfigurator)
+            .Select(type => ActivatorUtilities.CreateInstance(serviceProvider, type) as IConfigurator)
             .Where(c => c is not null)
             .Cast<IConfigurator>()
             .ToArray();

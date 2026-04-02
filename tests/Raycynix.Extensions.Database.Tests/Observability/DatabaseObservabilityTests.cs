@@ -1,8 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Database.Models;
+using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions;
+using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Database.Tests.Observability;
 

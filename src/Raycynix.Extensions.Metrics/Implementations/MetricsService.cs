@@ -1,5 +1,6 @@
 using Prometheus;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Metrics.Implementations;
 

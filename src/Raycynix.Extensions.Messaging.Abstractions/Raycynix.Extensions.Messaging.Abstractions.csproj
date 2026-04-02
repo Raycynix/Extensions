@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>0.8.0</Version>
+
+        <IsPackable>true</IsPackable>
+
+        <Description>Transport-agnostic messaging contracts, codecs, handlers, outbox abstractions, and direct communication primitives for Raycynix applications.</Description>
+        <PackageTags>raycynix;messaging;abstractions;events;integration;outbox;inbox;dotnet</PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

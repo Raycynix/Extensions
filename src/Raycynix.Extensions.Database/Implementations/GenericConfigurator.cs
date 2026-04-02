@@ -1,4 +1,7 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Abstractions.Configurators;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -22,6 +25,11 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
     public abstract Type[] DependsOn { get; }
 
     /// <summary>
+    /// Gets the cache key fragment that identifies the model shape produced by the configurator.
+    /// </summary>
+    public virtual string ModelCacheKey => Type.FullName ?? Type.Name;
+
+    /// <summary>
     /// Applies the default model configuration for <typeparamref name="T"/>.
     /// </summary>
     /// <param name="modelBuilder">
@@ -29,9 +37,9 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
     /// </param>
     public virtual void Configure(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<T>().ToTable(typeof(T).Name);
+        ConfigureEntity(modelBuilder);
     }
-
+    
     /// <summary>
     /// Seeds data for <typeparamref name="T"/> during model creation.
     /// </summary>
@@ -40,5 +48,35 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
     /// </param>
     public virtual void Seed(ModelBuilder modelBuilder)
     {
+    }
+
+    /// <summary>
+    /// Gets the configured entity builder and applies the resolved table name.
+    /// </summary>
+    /// <param name="modelBuilder">The model builder used to configure the entity mapping.</param>
+    /// <param name="tableName">An optional runtime table name override.</param>
+    /// <returns>The configured entity builder.</returns>
+    protected EntityTypeBuilder<T> ConfigureEntity(ModelBuilder modelBuilder, string? tableName = null)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
+        var entityBuilder = modelBuilder.Entity<T>();
+        entityBuilder.ToTable(ResolveTableName(tableName));
+        return entityBuilder;
+    }
+
+    /// <summary>
+    /// Resolves the table name from an explicit override, a configurator attribute, or the entity type name.
+    /// </summary>
+    /// <param name="tableName">An optional runtime table name override.</param>
+    /// <returns>The resolved table name.</returns>
+    protected string ResolveTableName(string? tableName = null)
+    {
+        if (!string.IsNullOrWhiteSpace(tableName))
+        {
+            return tableName;
+        }
+
+        return GetType().GetCustomAttribute<DatabaseTableAttribute>()?.Name ?? typeof(T).Name;
     }
 }

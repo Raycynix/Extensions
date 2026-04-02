@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Models;
+using Raycynix.Extensions.Database.Enums;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 

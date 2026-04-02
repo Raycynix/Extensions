@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.3.1</Version>
+        <Version>0.4.0</Version>
         
         <IsPackable>true</IsPackable>
 
-        <Description>Abstractions for Raycynix database initialization and model configurators.</Description>
-        <PackageTags>raycynix;database;abstractions;contracts;efcore;configurators;dotnet</PackageTags>
+        <Description>Abstractions for Raycynix database initialization, EF Core model configurators, table-mapping attributes, and model cache contracts.</Description>
+        <PackageTags>raycynix;database;abstractions;contracts;efcore;configurators;tablemapping;modelcache;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

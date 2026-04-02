@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Logging.Abstractions;
+using Raycynix.Extensions.Logging.Implementations;
 
 namespace Raycynix.Extensions.Logging.Tests.Registration;
 
@@ -25,7 +26,7 @@ public sealed class LoggingRegistrationTests
             .Subject;
 
         descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
-        descriptor.ImplementationType.Should().Be(typeof(Raycynix.Extensions.Logging.Implementation.Logger<>));
+        descriptor.ImplementationType.Should().Be(typeof(Logger<>));
     }
 
     private sealed class TestCategory;

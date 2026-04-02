@@ -5,7 +5,7 @@ using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Configurations;
-using Raycynix.Extensions.Security.Implementation;
+using Raycynix.Extensions.Security.Implementations;
 using Raycynix.Extensions.Security.Internal;
 
 namespace Raycynix.Extensions.Security;

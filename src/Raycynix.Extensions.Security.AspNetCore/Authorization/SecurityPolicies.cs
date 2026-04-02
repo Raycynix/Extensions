@@ -1,4 +1,5 @@
 using Raycynix.Extensions.Security.Abstractions.Enums;
+using Raycynix.Extensions.Security.Abstractions.Attributes;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Authorization;
 
@@ -7,6 +8,11 @@ namespace Raycynix.Extensions.Security.AspNetCore.Authorization;
 /// </summary>
 public static class SecurityPolicies
 {
+    /// <summary>
+    /// A policy that allows access to any authenticated subject.
+    /// </summary>
+    public const string Authenticated = "authenticated";
+
     /// <summary>
     /// A policy that allows access only to authenticated user subjects.
     /// </summary>
@@ -93,6 +99,51 @@ public static class SecurityPolicies
     public static string Subject(SecuritySubjectType subjectType)
     {
         return $"{SubjectPrefix}{subjectType.ToString().ToLowerInvariant()}";
+    }
+
+    /// <summary>
+    /// Builds dynamic policy names from the supplied security attributes.
+    /// </summary>
+    /// <param name="attributes">The attributes that declare authorization requirements.</param>
+    /// <returns>The distinct dynamic policy names required by the attributes.</returns>
+    public static IReadOnlyCollection<string> FromAttributes(IEnumerable<object> attributes)
+    {
+        ArgumentNullException.ThrowIfNull(attributes);
+
+        var policies = new List<string>();
+
+        foreach (var attribute in attributes)
+        {
+            switch (attribute)
+            {
+                case RequireAuthenticatedSubjectAttribute:
+                    policies.Add(Authenticated);
+                    break;
+                case RequirePermissionAttribute requirePermission:
+                    policies.Add(Permission(requirePermission.Permission));
+                    break;
+                case RequireAnyPermissionAttribute requireAnyPermission when requireAnyPermission.Permissions.Count > 0:
+                    policies.Add(AnyPermission(requireAnyPermission.Permissions.ToArray()));
+                    break;
+                case RequireAllPermissionsAttribute requireAllPermissions when requireAllPermissions.Permissions.Count > 0:
+                    policies.Add(AllPermissions(requireAllPermissions.Permissions.ToArray()));
+                    break;
+                case RequireRoleAttribute requireRole:
+                    policies.Add(Role(requireRole.Role));
+                    break;
+                case RequireAnyRoleAttribute requireAnyRole when requireAnyRole.Roles.Count > 0:
+                    policies.Add(AnyRole(requireAnyRole.Roles.ToArray()));
+                    break;
+                case RequireAllRolesAttribute requireAllRoles when requireAllRoles.Roles.Count > 0:
+                    policies.Add(AllRoles(requireAllRoles.Roles.ToArray()));
+                    break;
+                case RequireSubjectTypeAttribute requireSubjectType:
+                    policies.Add(Subject(requireSubjectType.SubjectType));
+                    break;
+            }
+        }
+
+        return policies.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     private static string JoinValues(IEnumerable<string> values)

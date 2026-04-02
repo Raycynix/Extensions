@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Metrics.Tests.Registration;
 

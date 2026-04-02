@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Raycynix.Extensions.Security.Abstractions.Enums;
-using Raycynix.Extensions.Security.Implementation;
+using Raycynix.Extensions.Security.Implementations;
 
 namespace Raycynix.Extensions.Security.Tests.Context;
 

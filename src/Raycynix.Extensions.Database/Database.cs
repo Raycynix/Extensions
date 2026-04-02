@@ -2,17 +2,19 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
-using Raycynix.Extensions.Database.Models;
 using MySqlConfiguration = Raycynix.Extensions.Database.Configurations.MySqlConfiguration;
 
 namespace Raycynix.Extensions.Database;
@@ -22,106 +24,157 @@ namespace Raycynix.Extensions.Database;
 /// </summary>
 public static class Database
 {
-    /// <summary>
-    /// Registers the database context, initializer, and provider-specific EF Core configuration.
-    /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
-    /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixDatabase(this IServiceCollection services, IConfiguration configuration,
-        Action<DatabaseConfiguration>? setup = null)
+    extension(IServiceCollection services)
     {
-        var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-
-        services.AddRaycynixConfiguration<DatabaseConfiguration>(
-            configuration,
-            configurePostBind: setup);
-        services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
-        services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
-        services.AddSingleton(callerAssembly);
-        services.AddSingleton<DatabaseObservability>();
-        services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
-
-        services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
+        /// <summary>
+        /// Registers the database context, initializer, and provider-specific EF Core configuration.
+        /// </summary>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
+        /// <returns>A builder that can be used to extend the database model registration.</returns>
+        public DatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
+            Action<DatabaseConfiguration>? setup = null)
         {
-            var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-            var finalString = ResolveConnection(config);
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
 
-            switch (config.Provider)
+            var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
+            modelAssemblyRegistry.Add(callerAssembly);
+
+            services.AddRaycynixConfiguration<DatabaseConfiguration>(
+                configuration,
+                configurePostBind: setup);
+            
+            services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
+            services.AddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
+            
+            services.TryAddSingleton(modelAssemblyRegistry);
+            
+            services.AddSingleton<DatabaseObservability>();
+            services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
+
+            services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
             {
-                case DatabaseProvider.PostgreSql:
-                    options.UseNpgsql(finalString, npgsqlOptions =>
-                    {
-                        npgsqlOptions.EnableRetryOnFailure(
-                            config.RetryCount,
-                            TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                            null);
+                var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+                var finalString = ResolveConnection(config);
+                options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
 
-                        npgsqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
-
-                        var providerConfig = config.PostgreSqlConfiguration;
-                        if (providerConfig?.CommandTimeoutSeconds is not null)
+                switch (config.Provider)
+                {
+                    case DatabaseProvider.PostgreSql:
+                        options.UseNpgsql(finalString, npgsqlOptions =>
                         {
-                            npgsqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                        }
-                    });
-                    break;
+                            npgsqlOptions.EnableRetryOnFailure(
+                                config.RetryCount,
+                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                                null);
 
-                case DatabaseProvider.MsSqlServer:
-                    options.UseSqlServer(finalString, sqlOptions =>
-                    {
-                        sqlOptions.EnableRetryOnFailure(
-                            config.RetryCount,
-                            TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                            null);
+                            npgsqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
 
-                        sqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                            var providerConfig = config.PostgreSqlConfiguration;
+                            if (providerConfig?.CommandTimeoutSeconds is not null)
+                            {
+                                npgsqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                            }
+                        });
+                        break;
 
-                        var providerConfig = config.MsSqlServerConfiguration;
-                        if (providerConfig?.CommandTimeoutSeconds is not null)
+                    case DatabaseProvider.MsSqlServer:
+                        options.UseSqlServer(finalString, sqlOptions =>
                         {
-                            sqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                        }
-                    });
-                    break;
+                            sqlOptions.EnableRetryOnFailure(
+                                config.RetryCount,
+                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                                null);
 
-                case DatabaseProvider.MySql:
-                    options.UseMySQL(finalString, mySqlOptions =>
-                    {
-                        mySqlOptions.EnableRetryOnFailure(
-                            config.RetryCount,
-                            TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                            null);
+                            sqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
 
-                        mySqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                            var providerConfig = config.MsSqlServerConfiguration;
+                            if (providerConfig?.CommandTimeoutSeconds is not null)
+                            {
+                                sqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                            }
+                        });
+                        break;
 
-                        var providerConfig = config.MySqlConfiguration;
-                        if (providerConfig?.CommandTimeoutSeconds is not null)
+                    case DatabaseProvider.MySql:
+                        options.UseMySQL(finalString, mySqlOptions =>
                         {
-                            mySqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                        }
-                    });
-                    break;
+                            mySqlOptions.EnableRetryOnFailure(
+                                config.RetryCount,
+                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
+                                null);
 
-                case DatabaseProvider.Sqlite:
-                default:
-                    options.UseSqlite(finalString, sqliteOptions =>
-                    {
-                        sqliteOptions.MigrationsAssembly(callerAssembly.GetName().Name);
+                            mySqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
 
-                        var providerConfig = config.SqlliteConfiguration;
-                        if (providerConfig?.CommandTimeoutSeconds is not null)
+                            var providerConfig = config.MySqlConfiguration;
+                            if (providerConfig?.CommandTimeoutSeconds is not null)
+                            {
+                                mySqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                            }
+                        });
+                        break;
+
+                    case DatabaseProvider.Sqlite:
+                    default:
+                        options.UseSqlite(finalString, sqliteOptions =>
                         {
-                            sqliteOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                        }
-                    });
-                    break;
-            }
-        });
+                            sqliteOptions.MigrationsAssembly(callerAssembly.GetName().Name);
 
-        return services;
+                            var providerConfig = config.SqlliteConfiguration;
+                            if (providerConfig?.CommandTimeoutSeconds is not null)
+                            {
+                                sqliteOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                            }
+                        });
+                        break;
+                }
+            });
+
+            return new DatabaseBuilder(services);
+        }
+
+        /// <summary>
+        /// Registers an additional assembly that contributes EF Core configurators to the shared database context.
+        /// </summary>
+        /// <param name="assembly">The assembly to register.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixDatabaseAssembly(Assembly assembly)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(assembly);
+
+            var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
+            modelAssemblyRegistry.Add(assembly);
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an additional assembly that contributes EF Core configurators to the shared database context.
+        /// </summary>
+        /// <typeparam name="TMarker">A marker type from the assembly to register.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixDatabaseAssembly<TMarker>()
+        {
+            return services.AddRaycynixDatabaseAssembly(typeof(TMarker).Assembly);
+        }
+    }
+
+    private static DatabaseModelAssemblyRegistry GetOrCreateModelAssemblyRegistry(IServiceCollection services)
+    {
+        if (services
+                .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseModelAssemblyRegistry))
+                ?.ImplementationInstance is DatabaseModelAssemblyRegistry existingRegistry)
+        {
+            return existingRegistry;
+        }
+
+        var registry = new DatabaseModelAssemblyRegistry();
+        services.AddSingleton(registry);
+        return registry;
     }
 
     private static string ResolveConnection(DatabaseConfiguration config)

@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.3.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Abstractions for Raycynix security context, shared claims, and secret resolution contracts.</Description>
-        <PackageTags>raycynix;security;secrets;abstractions;contracts;claims;rbac;dotnet</PackageTags>
+        <Description>Abstractions for Raycynix security context, authorization attributes, shared claims, and secret resolution contracts.</Description>
+        <PackageTags>raycynix;security;authorization;secrets;abstractions;contracts;claims;rbac;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
