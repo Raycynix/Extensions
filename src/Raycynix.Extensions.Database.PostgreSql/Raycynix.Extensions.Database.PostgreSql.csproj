@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1"/>
     </ItemGroup>
 

@@ -19,6 +19,7 @@
         <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+        <PackageReference Include="System.Threading.RateLimiting" Version="10.0.5" />
     </ItemGroup>
 
     <ItemGroup>
