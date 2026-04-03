@@ -6,6 +6,9 @@ using Raycynix.Extensions.Configuration.Abstractions.Models;
 
 namespace Raycynix.Extensions.Configuration.Internal;
 
+/// <summary>
+/// Bridges <see cref="IOptionsMonitor{TOptions}"/> changes into Raycynix reload policies and change handlers.
+/// </summary>
 internal sealed class ConfigurationChangeHostedService<TOptions>(
     IOptionsMonitor<TOptions> optionsMonitor,
     ConfigurationRuntimeState<TOptions> runtimeState,
@@ -18,6 +21,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
     private IDisposable? _registration;
     private TOptions? _currentValue;
 
+    /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _currentValue = optionsMonitor.CurrentValue;
@@ -27,6 +31,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _registration?.Dispose();
@@ -35,6 +40,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _registration?.Dispose();

@@ -31,6 +31,19 @@ app.MapGet("/dashboard", () => Results.Ok("enabled"))
 app.Run();
 ```
 
+## appsettings.json
+
+```json
+{
+  "FeatureFlags": {
+    "Flags": {
+      "NewDashboard": true,
+      "BetaApi": false
+    }
+  }
+}
+```
+
 Use the attribute for MVC or endpoint metadata scenarios:
 
 ```csharp

@@ -70,6 +70,33 @@ builder.Services.AddRaycynixConfigurationChangeHandler<MyOptions>(
     });
 ```
 
+## appsettings.json
+
+Typed options bind from a section named after the options type by default:
+
+```json
+{
+  "MyOptions": {
+    "Value": "from-config",
+    "TimeoutSeconds": 30
+  },
+  "FeatureFlags": {
+    "Flags": {
+      "NewDashboard": true,
+      "UseFastCache": false
+    }
+  }
+}
+```
+
+You can override the section name explicitly when needed:
+
+```csharp
+builder.Services.AddRaycynixConfiguration<MyOptions>(
+    builder.Configuration,
+    sectionName: "MyFeatureArea:MyOptions");
+```
+
 ## Applying Runtime Reload Rules
 
 Use runtime change handling in this order:

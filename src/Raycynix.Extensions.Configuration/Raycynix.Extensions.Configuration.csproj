@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core typed-configuration registration, access, feature flags, defaults, validation, reload governance, and change-handling helpers for Raycynix applications.</Description>
-        <PackageTags>raycynix;configuration;options;binding;accessor;feature-flags;defaults;validation;environment;reload;dotnet</PackageTags>
+        <Description>Core typed-configuration registration, feature flags, validation, reload governance, change handling, and environment-aware source composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;configuration;options;binding;accessor;feature-flags;validation;reload;environment;appsettings;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

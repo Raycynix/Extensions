@@ -63,6 +63,32 @@ public class ConfigurationRegistrationTests
         accessor.Current.TimeoutSeconds.Should().Be(45);
     }
 
+    /// <summary>
+    /// Verifies that an explicit section name can be used instead of the options type name.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixConfiguration_ShouldBindFromExplicitSectionName()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["FeatureArea:Sample:Value"] = "from-custom-section",
+                ["FeatureArea:Sample:TimeoutSeconds"] = "12"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddRaycynixConfiguration<SampleOptions>(
+            configuration,
+            sectionName: "FeatureArea:Sample");
+
+        using var provider = services.BuildServiceProvider();
+        var accessor = provider.GetRequiredService<IConfigurationAccessor<SampleOptions>>();
+
+        accessor.Current.Value.Should().Be("from-custom-section");
+        accessor.Current.TimeoutSeconds.Should().Be(12);
+    }
+
     private class SampleOptions
     {
         public string Value { get; set; } = string.Empty;

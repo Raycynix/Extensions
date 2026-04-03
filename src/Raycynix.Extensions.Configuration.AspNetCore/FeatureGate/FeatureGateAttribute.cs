@@ -27,5 +27,8 @@ public sealed class FeatureGateAttribute : Attribute
             : FeatureGateMetadata.CreateAll(featureFlags);
     }
 
+    /// <summary>
+    /// Gets the normalized feature gate metadata represented by the attribute.
+    /// </summary>
     internal FeatureGateMetadata Metadata { get; }
 }

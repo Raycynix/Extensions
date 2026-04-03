@@ -6,9 +6,13 @@ using Raycynix.Extensions.Configuration.Abstractions.Models;
 
 namespace Raycynix.Extensions.Configuration.Internal;
 
+/// <summary>
+/// Enforces runtime reload rules declared with <see cref="ConfigurationReloadBehaviorAttribute"/>.
+/// </summary>
 internal sealed class AttributeConfigurationReloadPolicy<TOptions> : IConfigurationReloadPolicy<TOptions>
     where TOptions : class
 {
+    /// <inheritdoc />
     public ConfigurationReloadResult Evaluate(ConfigurationChangeContext<TOptions> context)
     {
         var properties = typeof(TOptions).GetProperties(BindingFlags.Public | BindingFlags.Instance);
