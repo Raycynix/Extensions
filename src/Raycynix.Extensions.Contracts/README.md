@@ -104,6 +104,18 @@ var versioned = new VersionedContract<PagedResult<Money>>
 };
 ```
 
+## Contract Headers
+
+Use the shared header names when contracts cross transport boundaries explicitly:
+
+```csharp
+var headers = new Dictionary<string, string?>
+{
+    [ContractHeaders.ContractName] = "catalog.prices",
+    [ContractHeaders.ContractVersion] = "1.2.0"
+};
+```
+
 ## Versioning
 
 Use `ContractVersion` to express the current shared contract version:

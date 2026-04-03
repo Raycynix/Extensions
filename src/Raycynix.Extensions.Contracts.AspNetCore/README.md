@@ -21,6 +21,22 @@ var app = builder.Build();
 app.UseRaycynixContracts();
 ```
 
+## Response Shape Options
+
+Use plain contract results when you want headers plus the original response body:
+
+```csharp
+app.MapGet("/catalog/prices/{id}", (HttpContext httpContext) =>
+        httpContext.Contract(new Money
+        {
+            Amount = 149.99m,
+            Currency = "USD"
+        }))
+    .WithContract("catalog.prices", "1.2.0");
+```
+
+Use `VersionedContract(...)` when you want the body wrapped into `VersionedContract<T>`.
+
 ## How It Works
 
 Contract support in ASP.NET Core has two separate parts:
