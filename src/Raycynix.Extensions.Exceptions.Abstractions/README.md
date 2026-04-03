@@ -14,3 +14,23 @@
 ## Purpose
 
 This package lets other packages depend on Raycynix exception contracts without taking a dependency on the full implementation package.
+
+## Example
+
+Libraries can depend only on abstractions when they need retry or masking contracts:
+
+```csharp
+public sealed class SyncService(IRetryExecutor retryExecutor)
+{
+    public Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        return retryExecutor.ExecuteAsync(
+            operation: async token =>
+            {
+                await Task.Delay(10, token);
+            },
+            operationName: "SyncService.Execute",
+            cancellationToken: cancellationToken);
+    }
+}
+```

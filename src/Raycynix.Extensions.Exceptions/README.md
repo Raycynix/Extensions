@@ -32,4 +32,16 @@ builder.Services.AddRaycynixExceptions(options =>
 });
 ```
 
+You can also customize mappings for domain-specific exceptions:
+
+```csharp
+builder.Services.AddRaycynixExceptions(options =>
+{
+    options.Map<UnauthorizedAccessException>(
+        errorCode: "access_denied",
+        message: "You do not have permission to perform this action.",
+        statusCode: 403);
+});
+```
+
 For ASP.NET Core request pipeline integration, add `Raycynix.Extensions.Exceptions.AspNetCore`.
