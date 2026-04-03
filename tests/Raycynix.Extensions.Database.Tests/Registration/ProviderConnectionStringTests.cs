@@ -161,6 +161,37 @@ public sealed class ProviderConnectionStringTests
     }
 
     /// <summary>
+    /// Verifies that empty SQLite mode and cache values are treated as unset.
+    /// </summary>
+    [Fact]
+    public void SqliteRegistration_ShouldIgnoreEmptyModeAndCacheValues()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:SqliteConfiguration:Mode"] = "",
+                ["DatabaseConfiguration:SqliteConfiguration:Cache"] = "   "
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration)
+            .AddSqlite();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        var registration = GetProviderRegistration(serviceProvider, "sqlite");
+
+        var connectionString = registration.ResolveConnectionString(
+            CreateConnectionConfiguration(null, null, "orders.db", null, null),
+            serviceProvider);
+
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        builder.DataSource.Should().Be("orders.db");
+        builder.Mode.Should().Be(SqliteOpenMode.ReadWriteCreate);
+        builder.Cache.Should().Be(SqliteCacheMode.Default);
+    }
+
+    /// <summary>
     /// Verifies that invalid SQLite mode values fail with a clear parse error during connection-string resolution.
     /// </summary>
     [Fact]

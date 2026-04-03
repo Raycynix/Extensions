@@ -35,12 +35,12 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
             DataSource = connection.Name
         };
 
-        if (settings?.Mode is not null)
+        if (!string.IsNullOrWhiteSpace(settings?.Mode))
         {
             builder.Mode = Enum.Parse<SqliteOpenMode>(settings.Mode, ignoreCase: true);
         }
 
-        if (settings?.Cache is not null)
+        if (!string.IsNullOrWhiteSpace(settings?.Cache))
         {
             builder.Cache = Enum.Parse<SqliteCacheMode>(settings.Cache, ignoreCase: true);
         }
