@@ -46,9 +46,7 @@ public static class Database
                 serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
 
             services.TryAddSingleton(modelAssemblyRegistry);
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDatabaseProviderRegistration, MsSqlServerDatabaseProviderRegistration>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDatabaseProviderRegistration, MySqlDatabaseProviderRegistration>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDatabaseProviderRegistration, SqliteDatabaseProviderRegistration>());
+            services.AddSingleton(static serviceProvider => ResolveProviderDescriptor(serviceProvider));
 
             services.AddSingleton<DatabaseObservability>();
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
@@ -56,11 +54,7 @@ public static class Database
             services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
             {
                 var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-                var providerRegistration = serviceProvider
-                                               .GetServices<IDatabaseProviderRegistration>()
-                                               .FirstOrDefault(registration => registration.Provider == config.Provider)
-                                           ?? throw new NotSupportedException(
-                                               $"Database provider '{config.Provider}' is not registered. Add the matching provider package.");
+                var providerRegistration = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
 
                 var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
                 options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
@@ -108,5 +102,23 @@ public static class Database
         var registry = new DatabaseModelAssemblyRegistry();
         services.AddSingleton(registry);
         return registry;
+    }
+
+    private static DatabaseProviderDescriptor ResolveProviderDescriptor(IServiceProvider serviceProvider)
+    {
+        var registrations = serviceProvider.GetServices<IDatabaseProviderRegistration>().ToArray();
+
+        return registrations.Length switch
+        {
+            1 => new DatabaseProviderDescriptor
+            {
+                ProviderName = registrations[0].ProviderName,
+                Registration = registrations[0]
+            },
+            0 => throw new NotSupportedException(
+                "No database provider is registered. Add exactly one matching provider package, for example AddSqlite(), AddPostgreSql(), AddMsSql(), or AddMySql()."),
+            _ => throw new InvalidOperationException(
+                $"Multiple database providers are registered ({string.Join(", ", registrations.Select(static registration => registration.ProviderName))}). Register exactly one database provider package.")
+        };
     }
 }

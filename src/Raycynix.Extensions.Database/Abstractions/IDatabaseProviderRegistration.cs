@@ -1,7 +1,6 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
 
 namespace Raycynix.Extensions.Database.Abstractions;
 
@@ -11,9 +10,9 @@ namespace Raycynix.Extensions.Database.Abstractions;
 public interface IDatabaseProviderRegistration
 {
     /// <summary>
-    /// Gets the provider handled by the registration.
+    /// Gets the logical provider name handled by the registration.
     /// </summary>
-    DatabaseProvider Provider { get; }
+    string ProviderName { get; }
 
     /// <summary>
     /// Resolves the final provider-specific connection string.

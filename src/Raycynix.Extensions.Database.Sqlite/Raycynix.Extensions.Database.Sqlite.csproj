@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.0</Version>
+        <Version>1.0.0</Version>Ы
 
         <IsPackable>true</IsPackable>
 
-        <Description>PostgreSQL provider integration for Raycynix.Extensions.Database with AddPostgreSql registration, Npgsql connection-string composition, and EF Core UseNpgsql configuration.</Description>
-        <PackageTags>raycynix;database;postgresql;npgsql;provider;efcore;entityframework;dotnet</PackageTags>
+        <Description>SQLite provider integration for Raycynix.Extensions.Database with AddSqlite registration, SQLite connection-string composition, and EF Core UseSqlite configuration.</Description>
+        <PackageTags>raycynix;database;sqlite;provider;efcore;entityframework;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -17,7 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
     </ItemGroup>
 
 </Project>

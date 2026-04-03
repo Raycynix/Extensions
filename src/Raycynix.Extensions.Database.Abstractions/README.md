@@ -16,3 +16,32 @@
 ## Purpose
 
 This package exists so database-related contracts can be shared without depending on the full database implementation package.
+
+## Example
+
+Reusable packages can define configurators without referencing the runtime registration package:
+
+```csharp
+[DatabaseTable("orders")]
+public sealed class OrderConfigurator : IGenericConfigurator<Order>
+{
+    public Type Type => typeof(Order);
+
+    public Type[] DependsOn => [];
+
+    public string ModelCacheKey => typeof(Order).FullName!;
+
+    public void Configure(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Order>();
+        entity.ToTable("orders");
+        entity.HasKey(static current => current.Id);
+    }
+
+    public void Seed(ModelBuilder modelBuilder)
+    {
+    }
+}
+```
+
+The application can then register the assembly containing that configurator through `AddRaycynixDatabase(...).AddAssembly<TMarker>()`.

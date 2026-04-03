@@ -1,9 +1,9 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.Sqlite.Configurations;
 
 /// <summary>
 /// Represents SQLite-specific connection settings.
 /// </summary>
-public class SqlliteConfiguration
+public class SqliteConfiguration
 {
     /// <summary>
     /// Gets the SQLite open mode.

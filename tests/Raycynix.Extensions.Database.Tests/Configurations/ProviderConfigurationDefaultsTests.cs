@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.MsSql.Configurations;
+using Raycynix.Extensions.Database.MySql.Configurations;
 using Raycynix.Extensions.Database.PostgreSql.Configurations;
+using Raycynix.Extensions.Database.Sqlite.Configurations;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 
@@ -56,7 +59,7 @@ public sealed class ProviderConfigurationDefaultsTests
     [Fact]
     public void SqliteDefaults_ShouldMatchExpectedValues()
     {
-        var configuration = new SqlliteConfiguration();
+        var configuration = new SqliteConfiguration();
 
         configuration.Mode.Should().BeNull();
         configuration.Cache.Should().BeNull();

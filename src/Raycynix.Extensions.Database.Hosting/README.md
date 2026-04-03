@@ -13,6 +13,23 @@ This package resolves `IDatabaseInitializer` from DI and runs it during applicat
 - `InitializeRaycynixDatabaseAsync(this IServiceProvider serviceProvider)`
 - `InitializeRaycynixDatabaseAsync(this IHost host)`
 
+## appsettings.json
+
+```json
+{
+  "DatabaseConfiguration": {
+    "ConnectionConfiguration": {
+      "Name": "app.db"
+    },
+    "EnsureCreated": true,
+    "UseMigrations": false,
+    "SqliteConfiguration": {
+      "CommandTimeoutSeconds": 30
+    }
+  }
+}
+```
+
 ## Usage
 
 ```csharp
@@ -30,6 +47,8 @@ var host = builder.Build();
 await host.InitializeRaycynixDatabaseAsync();
 await host.RunAsync();
 ```
+
+Use exactly one provider package before invoking the host initializer.
 
 ## How it works
 

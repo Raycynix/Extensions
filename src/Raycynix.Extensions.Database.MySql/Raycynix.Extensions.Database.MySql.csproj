@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>PostgreSQL provider integration for Raycynix.Extensions.Database with AddPostgreSql registration, Npgsql connection-string composition, and EF Core UseNpgsql configuration.</Description>
-        <PackageTags>raycynix;database;postgresql;npgsql;provider;efcore;entityframework;dotnet</PackageTags>
+        <Description>MySQL provider integration for Raycynix.Extensions.Database with AddMySql registration, MySQL connection-string composition, and EF Core UseMySQL configuration.</Description>
+        <PackageTags>raycynix;database;mysql;provider;efcore;entityframework;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -17,7 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1"/>
+        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.1" />
     </ItemGroup>
 
 </Project>

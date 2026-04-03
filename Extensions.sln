@@ -28,6 +28,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore", "src\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj", "{056853E2-57A4-4C33-B065-FECBD0073A26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.PostgreSql", "src\Raycynix.Extensions.Database.PostgreSql\Raycynix.Extensions.Database.PostgreSql.csproj", "{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Sqlite", "src\Raycynix.Extensions.Database.Sqlite\Raycynix.Extensions.Database.Sqlite.csproj", "{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.MsSql", "src\Raycynix.Extensions.Database.MsSql\Raycynix.Extensions.Database.MsSql.csproj", "{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.MySql", "src\Raycynix.Extensions.Database.MySql\Raycynix.Extensions.Database.MySql.csproj", "{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{A33E87AD-E657-42B4-9115-71BBA2FA1212}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.Abstractions", "src\Raycynix.Extensions.Exceptions.Abstractions\Raycynix.Extensions.Exceptions.Abstractions.csproj", "{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2}"
@@ -159,8 +167,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.HttpJson.Tests", "tests\Raycynix.Extensions.Messaging.HttpJson.Tests\Raycynix.Extensions.Messaging.HttpJson.Tests.csproj", "{9810F7FE-B5D2-40BB-8765-38A29AD0A8A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Messaging.Database.Tests", "tests\Raycynix.Extensions.Messaging.Database.Tests\Raycynix.Extensions.Messaging.Database.Tests.csproj", "{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.PostgreSql", "src\Raycynix.Extensions.Database.PostgreSql\Raycynix.Extensions.Database.PostgreSql.csproj", "{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -880,6 +886,42 @@ Global
 		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x64.Build.0 = Release|Any CPU
 		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x86.ActiveCfg = Release|Any CPU
 		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB}.Release|x86.Build.0 = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|x64.Build.0 = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Debug|x86.Build.0 = Debug|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|x64.ActiveCfg = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|x64.Build.0 = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC}.Release|x86.Build.0 = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|x64.Build.0 = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Debug|x86.Build.0 = Debug|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|x64.ActiveCfg = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|x64.Build.0 = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|x86.ActiveCfg = Release|Any CPU
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573}.Release|x86.Build.0 = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|x64.Build.0 = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Debug|x86.Build.0 = Debug|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|x64.ActiveCfg = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|x64.Build.0 = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|x86.ActiveCfg = Release|Any CPU
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -964,5 +1006,8 @@ Global
 		{92385CED-2963-4FC0-90F7-AC0B44C32373} = {03660AE8-ED57-491E-BDF7-97A69B72F293}
 		{D1D8B8FF-F26B-4991-8C7B-F6E9B0281D70} = {A998262B-9A6C-4A1D-999C-A8C60B185694}
 		{879AA01B-1EAC-4ED8-BFCD-D5994A2613DB} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{7B3E4E8F-0DFA-436C-95A2-093E805B71AC} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{C35A7E17-0AC0-4D0E-B0FC-2B26E813A573} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{CA3A3FC1-2977-4EB5-92EB-0A881578E92D} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 	EndGlobalSection
 EndGlobal

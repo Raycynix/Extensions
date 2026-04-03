@@ -1,11 +1,12 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
+using MySqlConfiguration = Raycynix.Extensions.Database.MySql.Configurations.MySqlConfiguration;
 
-namespace Raycynix.Extensions.Database.Internal;
+namespace Raycynix.Extensions.Database.MySql.Internal;
 
 /// <summary>
 /// Implements MySQL-specific connection and EF Core configuration for the shared database context.
@@ -13,7 +14,7 @@ namespace Raycynix.Extensions.Database.Internal;
 internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
-    public DatabaseProvider Provider => DatabaseProvider.MySql;
+    public string ProviderName => "mysql";
 
     /// <inheritdoc />
     public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
@@ -25,8 +26,11 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
 
         var connection = configuration.ConnectionConfiguration
                          ?? throw new ArgumentException("Connection configuration is missing.");
+        
+        var providerConfig = serviceProvider
+            .GetService(typeof(IConfigurationAccessor<MySqlConfiguration>)) as IConfigurationAccessor<MySqlConfiguration>;
 
-        var providerConfig = configuration.MySqlConfiguration;
+        var settings = providerConfig?.Current;
         var builder = new MySqlConnectionStringBuilder
         {
             Server = connection.Host,
@@ -34,8 +38,8 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
             Database = connection.Name,
             UserID = connection.Username,
             Password = connection.Password,
-            AllowUserVariables = providerConfig?.AllowUserVariables ?? true,
-            Pooling = providerConfig?.Pooling ?? true
+            AllowUserVariables = settings?.AllowUserVariables ?? true,
+            Pooling = settings?.Pooling ?? true
         };
 
         return builder.ConnectionString;
@@ -49,6 +53,9 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
+        var providerConfig = serviceProvider
+            .GetService(typeof(IConfigurationAccessor<MySqlConfiguration>)) as IConfigurationAccessor<MySqlConfiguration>;
+        
         options.UseMySQL(connectionString, mySqlOptions =>
         {
             mySqlOptions.EnableRetryOnFailure(
@@ -58,10 +65,10 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
 
             mySqlOptions.MigrationsAssembly(migrationsAssembly.GetName().Name);
 
-            var providerConfig = configuration.MySqlConfiguration;
-            if (providerConfig?.CommandTimeoutSeconds is not null)
+            var settings = providerConfig?.Current;
+            if (settings?.CommandTimeoutSeconds is not null)
             {
-                mySqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                mySqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
     }

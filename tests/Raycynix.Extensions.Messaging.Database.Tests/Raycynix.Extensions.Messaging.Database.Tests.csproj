@@ -32,6 +32,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Sqlite\Raycynix.Extensions.Database.Sqlite.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />

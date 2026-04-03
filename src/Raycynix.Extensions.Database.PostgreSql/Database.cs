@@ -4,7 +4,6 @@ using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.PostgreSql.Configurations;
 using Raycynix.Extensions.Database.PostgreSql.Internal;
 
@@ -29,33 +28,11 @@ public static class Database
 
         builder.Services.AddRaycynixConfiguration<PostgreSqlConfiguration>(
             builder.Configuration,
+            $"{nameof(DatabaseConfiguration)}:{nameof(PostgreSqlConfiguration)}",
             configurePostBind: configure);
 
         builder.Services.AddSingleton(serviceProvider =>
             serviceProvider.GetRequiredService<IConfigurationAccessor<PostgreSqlConfiguration>>().Current);
-
-        builder.Services.AddSingleton(serviceProvider =>
-        {
-            var configuration = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current;
-
-            return new DatabaseConfiguration
-            {
-                ConnectionString = configuration.ConnectionString,
-                ConnectionConfiguration = configuration.ConnectionConfiguration,
-                Provider = DatabaseProvider.PostgreSql,
-                UseMigrations = configuration.UseMigrations,
-                EnsureCreated = configuration.EnsureCreated,
-                EnableSeed = configuration.EnableSeed,
-                EnableLazyLoading = configuration.EnableLazyLoading,
-                EnableAutoDetectChanges = configuration.EnableAutoDetectChanges,
-                UseQueryTrackingByDefault = configuration.UseQueryTrackingByDefault,
-                RetryCount = configuration.RetryCount,
-                RetryDelaySeconds = configuration.RetryDelaySeconds,
-                MsSqlServerConfiguration = configuration.MsSqlServerConfiguration,
-                MySqlConfiguration = configuration.MySqlConfiguration,
-                SqlliteConfiguration = configuration.SqlliteConfiguration
-            };
-        });
 
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IDatabaseProviderRegistration, PostgreSqlDatabaseProviderRegistration>());

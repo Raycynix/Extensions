@@ -1,11 +1,12 @@
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
+using Raycynix.Extensions.Database.MsSql.Configurations;
 
-namespace Raycynix.Extensions.Database.Internal;
+namespace Raycynix.Extensions.Database.MsSql.Internal;
 
 /// <summary>
 /// Implements SQL Server-specific connection and EF Core configuration for the shared database context.
@@ -13,7 +14,7 @@ namespace Raycynix.Extensions.Database.Internal;
 internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
-    public DatabaseProvider Provider => DatabaseProvider.MsSqlServer;
+    public string ProviderName => "sqlserver";
 
     /// <inheritdoc />
     public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
@@ -26,15 +27,19 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
         var connection = configuration.ConnectionConfiguration
                          ?? throw new ArgumentException("Connection configuration is missing.");
 
-        var providerConfig = configuration.MsSqlServerConfiguration;
+        var providerConfig = serviceProvider
+                .GetService(typeof(IConfigurationAccessor<MsSqlServerConfiguration>)) as
+            IConfigurationAccessor<MsSqlServerConfiguration>;
+
+        var settings = providerConfig?.Current;
         var builder = new SqlConnectionStringBuilder
         {
             DataSource = connection.Host,
             InitialCatalog = connection.Name,
             UserID = connection.Username,
             Password = connection.Password,
-            TrustServerCertificate = providerConfig?.TrustServerCertificate ?? true,
-            MultipleActiveResultSets = providerConfig?.MultipleActiveResultSets ?? false
+            TrustServerCertificate = settings?.TrustServerCertificate ?? true,
+            MultipleActiveResultSets = settings?.MultipleActiveResultSets ?? false
         };
 
         return builder.ConnectionString;
@@ -48,6 +53,10 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
+        var providerConfig = serviceProvider
+                .GetService(typeof(IConfigurationAccessor<MsSqlServerConfiguration>)) as
+            IConfigurationAccessor<MsSqlServerConfiguration>;
+
         options.UseSqlServer(connectionString, sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(
@@ -57,10 +66,10 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
 
             sqlOptions.MigrationsAssembly(migrationsAssembly.GetName().Name);
 
-            var providerConfig = configuration.MsSqlServerConfiguration;
-            if (providerConfig?.CommandTimeoutSeconds is not null)
+            var settings = providerConfig?.Current;
+            if (settings?.CommandTimeoutSeconds is not null)
             {
-                sqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
+                sqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
     }

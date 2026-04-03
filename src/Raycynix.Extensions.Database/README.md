@@ -18,8 +18,9 @@
 ## What it does not contain
 
 - PostgreSQL provider integration
-- SQL Server provider integration beyond the built-in core registration
-- MySQL provider integration beyond the built-in core registration
+- SQL Server provider integration
+- MySQL provider integration
+- SQLite provider integration
 - `WebApplication` extensions
 - ASP.NET Core startup integration
 - generic-host startup integration
@@ -33,7 +34,27 @@ builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
 });
 ```
 
-For PostgreSQL, add the provider package and extend the registration:
+## appsettings.json
+
+Core settings stay under `DatabaseConfiguration`:
+
+```json
+{
+  "DatabaseConfiguration": {
+    "ConnectionString": "Host=localhost;Port=5432;Database=app;Username=app;Password=secret",
+    "UseMigrations": true,
+    "EnsureCreated": false,
+    "EnableSeed": true,
+    "EnableLazyLoading": false,
+    "EnableAutoDetectChanges": true,
+    "UseQueryTrackingByDefault": true,
+    "RetryCount": 5,
+    "RetryDelaySeconds": 10
+  }
+}
+```
+
+Then add exactly one provider package and extend the registration:
 
 ```csharp
 builder.Services
@@ -42,6 +63,29 @@ builder.Services
         options.UseMigrations = true;
     })
     .AddPostgreSql();
+```
+
+Equivalent provider packages expose:
+
+- `AddPostgreSql()`
+- `AddMsSql()`
+- `AddMySql()`
+- `AddSqlite()`
+
+Provider-specific settings remain nested under the same root section:
+
+```json
+{
+  "DatabaseConfiguration": {
+    "PostgreSqlConfiguration": {
+      "Pooling": true,
+      "MinimumPoolSize": 5,
+      "MaximumPoolSize": 50,
+      "CommandTimeoutSeconds": 30,
+      "IncludeErrorDetail": false
+    }
+  }
+}
 ```
 
 If a reusable package contributes EF Core configurators to the shared `DatabaseContext`, register its assembly explicitly:
@@ -53,7 +97,7 @@ builder.Services.AddRaycynixDatabase(builder.Configuration)
 
 This keeps a single shared `DatabaseContext` while allowing infrastructure packages to extend the model without creating their own context.
 
-Provider-specific packages can extend the same fluent builder with methods such as `AddPostgreSql()`.
+Provider-specific packages extend the same fluent builder and the core package expects exactly one database provider registration.
 
 For static table names, configurators can declare the default mapping with `DatabaseTableAttribute` instead of calling `ToTable(...)` manually inside `Configure(...)`.
 

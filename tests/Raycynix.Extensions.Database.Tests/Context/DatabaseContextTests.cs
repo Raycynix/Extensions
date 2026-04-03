@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Context;
@@ -22,7 +22,8 @@ public sealed class DatabaseContextTests
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildConfiguration());
+        services.AddRaycynixDatabase(BuildConfiguration())
+            .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
@@ -43,6 +44,7 @@ public sealed class DatabaseContextTests
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildConfiguration())
+            .AddSqlite()
             .AddAssembly<AttributedEntity>();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -64,6 +66,7 @@ public sealed class DatabaseContextTests
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         RuntimeAttributedEntityConfigurator.RuntimeTableName = "runtime_attributed_entities";
         services.AddRaycynixDatabase(BuildConfiguration())
+            .AddSqlite()
             .AddAssembly<RuntimeAttributedEntity>();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -109,7 +112,6 @@ public sealed class DatabaseContextTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
                 ["DatabaseConfiguration:EnsureCreated"] = "true",
                 ["DatabaseConfiguration:EnableLazyLoading"] = "true",

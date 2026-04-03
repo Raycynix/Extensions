@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 
@@ -17,7 +16,6 @@ public sealed class DatabaseConfigurationTests
     {
         var configuration = new DatabaseConfiguration();
 
-        configuration.Provider.Should().Be(DatabaseProvider.PostgreSql);
         configuration.EnsureCreated.Should().BeTrue();
         configuration.EnableSeed.Should().BeTrue();
         configuration.EnableAutoDetectChanges.Should().BeTrue();
@@ -105,7 +103,6 @@ public sealed class DatabaseConfigurationTests
     {
         var configuration = new DatabaseConfiguration
         {
-            Provider = DatabaseProvider.Sqlite,
             ConnectionConfiguration = new TestConnectionConfiguration()
         };
 
@@ -113,7 +110,7 @@ public sealed class DatabaseConfigurationTests
 
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("*Sqlite connection requires a database name*");
+            .WithMessage("*Database connection requires a database name*");
     }
 
     /// <summary>
@@ -124,7 +121,6 @@ public sealed class DatabaseConfigurationTests
     {
         var configuration = new DatabaseConfiguration
         {
-            Provider = DatabaseProvider.Sqlite,
             ConnectionConfiguration = new TestConnectionConfiguration
             {
                 Name = "test.db"

@@ -1,0 +1,47 @@
+# Raycynix.Extensions.Database.Sqlite
+
+![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
+
+`Raycynix.Extensions.Database.Sqlite` adds SQLite support to `Raycynix.Extensions.Database`.
+
+## What it contains
+
+- `DatabaseBuilder.AddSqlite(...)`
+- `SqliteConfiguration`
+- SQLite connection-string building
+- `UseSqlite(...)` integration for the shared `DatabaseContext`
+
+## Usage
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.EnsureCreated = true;
+    })
+    .AddSqlite(sqlite =>
+    {
+        sqlite.CommandTimeoutSeconds = 30;
+    });
+```
+
+## appsettings.json
+
+```json
+{
+  "DatabaseConfiguration": {
+    "ConnectionConfiguration": {
+      "Name": "app.db"
+    },
+    "EnsureCreated": true,
+    "UseMigrations": false,
+    "SqliteConfiguration": {
+      "Mode": "ReadWriteCreate",
+      "Cache": "Shared",
+      "CommandTimeoutSeconds": 30
+    }
+  }
+}
+```
+
+This package keeps the shared `DatabaseContext` from the core package and only adds SQLite-specific registration on top of it.

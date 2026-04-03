@@ -2,8 +2,8 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Initialization;
@@ -23,7 +23,8 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath));
+        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath))
+            .AddSqlite();
 
         try
         {
@@ -51,7 +52,8 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath));
+        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath))
+            .AddSqlite();
 
         try
         {
@@ -75,7 +77,6 @@ public sealed class DatabaseInitializerTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databasePath}",
                 ["DatabaseConfiguration:EnsureCreated"] = "true",
                 ["DatabaseConfiguration:UseMigrations"] = "false",

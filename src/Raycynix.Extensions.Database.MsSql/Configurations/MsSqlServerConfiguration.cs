@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.MsSql.Configurations;
 
 /// <summary>
 /// Represents SQL Server-specific connection settings.

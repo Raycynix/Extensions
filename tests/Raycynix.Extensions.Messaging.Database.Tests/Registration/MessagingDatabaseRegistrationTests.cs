@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
@@ -556,6 +556,7 @@ public sealed class MessagingDatabaseRegistrationTests
             serviceProvider.GetRequiredService<RecordingTransportPublisher>());
 
         services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath))
+            .AddSqlite()
             .AddAssembly<MessagingDatabaseRegistrationTests>();
         services.AddRaycynixMessaging(BuildMessagingConfiguration(additionalConfiguration))
             .AddMessageHandler<PersistedInboxMessage, PersistedInboxHandler>()
@@ -569,7 +570,6 @@ public sealed class MessagingDatabaseRegistrationTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databasePath}",
                 ["DatabaseConfiguration:EnsureCreated"] = "true",
                 ["DatabaseConfiguration:UseMigrations"] = "false",

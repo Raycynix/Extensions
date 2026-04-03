@@ -6,7 +6,23 @@
 
 ## What it does
 
-This package exposes `UseRaycynixDatabaseInitializationAsync(this WebApplication app)` and delegates the actual work to `Raycynix.Extensions.Database.Hosting`.
+This package exposes `InitializeRaycynixDatabaseAsync(this WebApplication app)` and delegates the actual work to `Raycynix.Extensions.Database.Hosting`.
+
+## appsettings.json
+
+```json
+{
+  "DatabaseConfiguration": {
+    "ConnectionString": "Host=localhost;Port=5432;Database=app;Username=app;Password=secret",
+    "UseMigrations": true,
+    "EnsureCreated": false,
+    "PostgreSqlConfiguration": {
+      "CommandTimeoutSeconds": 30,
+      "IncludeErrorDetail": false
+    }
+  }
+}
+```
 
 ## Usage
 
@@ -26,6 +42,8 @@ await app.InitializeRaycynixDatabaseAsync();
 
 app.Run();
 ```
+
+Use exactly one provider package before calling the startup initializer.
 
 ## How it works
 

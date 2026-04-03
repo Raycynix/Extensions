@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions;
@@ -23,9 +22,9 @@ public sealed class DatabaseObservabilityTests
 
         var act = () =>
         {
-            using var operation = InvokeBeginOperation(observability, DatabaseProvider.Sqlite, "initialization");
-            InvokeRecordSuccess(observability, DatabaseProvider.Sqlite, "initialization");
-            InvokeRecordFailure(observability, DatabaseProvider.Sqlite, "initialization");
+            using var operation = InvokeBeginOperation(observability, "sqlite", "initialization");
+            InvokeRecordSuccess(observability, "sqlite", "initialization");
+            InvokeRecordFailure(observability, "sqlite", "initialization");
             InvokeAddTag(observability, "database.provider", "sqlite");
         };
 
@@ -49,12 +48,12 @@ public sealed class DatabaseObservabilityTests
 
         var observability = CreateObservability(services.BuildServiceProvider());
 
-        using (InvokeBeginOperation(observability, DatabaseProvider.PostgreSql, "migrate"))
+        using (InvokeBeginOperation(observability, "postgresql", "migrate"))
         {
         }
 
-        InvokeRecordSuccess(observability, DatabaseProvider.PostgreSql, "migrate");
-        InvokeRecordFailure(observability, DatabaseProvider.PostgreSql, "migrate");
+        InvokeRecordSuccess(observability, "postgresql", "migrate");
+        InvokeRecordFailure(observability, "postgresql", "migrate");
         InvokeAddTag(observability, "database.configurator.count", "2");
 
         tracer.StartedTraces.Should().ContainSingle();
@@ -80,21 +79,21 @@ public sealed class DatabaseObservabilityTests
         return Activator.CreateInstance(type, serviceProvider)!;
     }
 
-    private static IDisposable InvokeBeginOperation(object observability, DatabaseProvider provider, string operation)
+    private static IDisposable InvokeBeginOperation(object observability, string providerName, string operation)
     {
         return (IDisposable)observability.GetType()
             .GetMethod("BeginOperation")!
-            .Invoke(observability, [provider, operation])!;
+            .Invoke(observability, [providerName, operation])!;
     }
 
-    private static void InvokeRecordSuccess(object observability, DatabaseProvider provider, string operation)
+    private static void InvokeRecordSuccess(object observability, string providerName, string operation)
     {
-        observability.GetType().GetMethod("RecordSuccess")!.Invoke(observability, [provider, operation]);
+        observability.GetType().GetMethod("RecordSuccess")!.Invoke(observability, [providerName, operation]);
     }
 
-    private static void InvokeRecordFailure(object observability, DatabaseProvider provider, string operation)
+    private static void InvokeRecordFailure(object observability, string providerName, string operation)
     {
-        observability.GetType().GetMethod("RecordFailure")!.Invoke(observability, [provider, operation]);
+        observability.GetType().GetMethod("RecordFailure")!.Invoke(observability, [providerName, operation]);
     }
 
     private static void InvokeAddTag(object observability, string key, string value)
