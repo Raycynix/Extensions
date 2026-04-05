@@ -11,6 +11,8 @@
 - PostgreSQL connection-string building
 - `UseNpgsql(...)` integration for the shared `DatabaseContext`
 
+The provider is selected by calling `.AddPostgreSql(...)`, not by setting a legacy provider enum in configuration.
+
 ## Usage
 
 ```csharp

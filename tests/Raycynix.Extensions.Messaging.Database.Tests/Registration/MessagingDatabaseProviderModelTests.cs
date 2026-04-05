@@ -1,0 +1,167 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Database;
+using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.MsSql;
+using Raycynix.Extensions.Database.MySql;
+using Raycynix.Extensions.Database.PostgreSql;
+using Raycynix.Extensions.Database.Sqlite;
+using Raycynix.Extensions.Logging.Abstractions;
+using Raycynix.Extensions.Messaging.Database.Configurations;
+using Raycynix.Extensions.Messaging.Database.Models;
+
+namespace Raycynix.Extensions.Messaging.Database.Tests.Registration;
+
+/// <summary>
+/// Verifies provider-agnostic model metadata required by the database-backed messaging stores.
+/// </summary>
+public sealed class MessagingDatabaseProviderModelTests
+{
+    /// <summary>
+    /// Verifies that the SQLite provider builds the messaging model with concurrency tokens required for optimistic leases.
+    /// </summary>
+    [Fact]
+    public void MessagingPersistenceModel_ShouldConfigureConcurrencyTokens_ForSqlite()
+    {
+        using var provider = BuildProvider(
+            "Data Source=model-sqlite.db",
+            static builder => builder.AddSqlite());
+
+        AssertConcurrencyModel(provider);
+    }
+
+    /// <summary>
+    /// Verifies that the PostgreSQL provider builds the messaging model with concurrency tokens required for optimistic leases.
+    /// </summary>
+    [Fact]
+    public void MessagingPersistenceModel_ShouldConfigureConcurrencyTokens_ForPostgreSql()
+    {
+        using var provider = BuildProvider(
+            "Host=localhost;Port=5432;Database=messaging;Username=test;Password=test",
+            static builder => builder.AddPostgreSql());
+
+        AssertConcurrencyModel(provider);
+    }
+
+    /// <summary>
+    /// Verifies that the SQL Server provider builds the messaging model with concurrency tokens required for optimistic leases.
+    /// </summary>
+    [Fact]
+    public void MessagingPersistenceModel_ShouldConfigureConcurrencyTokens_ForMsSql()
+    {
+        using var provider = BuildProvider(
+            "Server=localhost;Database=messaging;User Id=sa;Password=Password123!;TrustServerCertificate=true",
+            static builder => builder.AddMsSql());
+
+        AssertConcurrencyModel(provider);
+    }
+
+    /// <summary>
+    /// Verifies that the MySQL provider builds the messaging model with concurrency tokens required for optimistic leases.
+    /// </summary>
+    [Fact]
+    public void MessagingPersistenceModel_ShouldConfigureConcurrencyTokens_ForMySql()
+    {
+        using var provider = BuildProvider(
+            "Server=localhost;Port=3306;Database=messaging;User ID=test;Password=test",
+            static builder => builder.AddMySql());
+
+        AssertConcurrencyModel(provider);
+    }
+
+    /// <summary>
+    /// Asserts that the messaging inbox and outbox entities are present in the model and use optimistic concurrency.
+    /// </summary>
+    /// <param name="provider">The root service provider that resolves the shared database context.</param>
+    private static void AssertConcurrencyModel(ServiceProvider provider)
+    {
+        using var scope = provider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        var inbox = context.Model.FindEntityType(typeof(MessagingInboxEntryEntity));
+        var outbox = context.Model.FindEntityType(typeof(MessagingOutboxEntryEntity));
+
+        inbox.Should().NotBeNull();
+        outbox.Should().NotBeNull();
+        inbox.FindProperty(nameof(MessagingInboxEntryEntity.UpdatedAt))!.IsConcurrencyToken.Should().BeTrue();
+        outbox.FindProperty(nameof(MessagingOutboxEntryEntity.UpdatedAt))!.IsConcurrencyToken.Should().BeTrue();
+        inbox.GetTableName().Should().NotBeNullOrWhiteSpace();
+        outbox.GetTableName().Should().NotBeNullOrWhiteSpace();
+    }
+
+    /// <summary>
+    /// Builds a database service provider for a specific relational provider without auto-registering the test assembly.
+    /// </summary>
+    /// <param name="connectionString">The provider-specific connection string used to configure the shared database context.</param>
+    /// <param name="registerProvider">The callback that attaches the desired provider package to the database builder.</param>
+    /// <returns>A fully built service provider for model inspection.</returns>
+    private static ServiceProvider BuildProvider(
+        string connectionString,
+        Func<DatabaseBuilder, DatabaseBuilder> registerProvider)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
+
+        var builder = services.AddRaycynixDatabase(
+            BuildDatabaseConfiguration(connectionString),
+            registerCallerAssembly: false);
+        registerProvider(builder);
+        services.AddRaycynixDatabaseAssembly(typeof(MessagingInboxEntryEntity).Assembly);
+
+        return services.BuildServiceProvider(validateScopes: true);
+    }
+
+    /// <summary>
+    /// Creates the minimal database configuration required to build the messaging model.
+    /// </summary>
+    /// <param name="connectionString">The provider-specific connection string.</param>
+    /// <returns>An in-memory configuration source for the database package.</returns>
+    private static IConfiguration BuildDatabaseConfiguration(string connectionString)
+    {
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = connectionString,
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+    }
+
+    /// <summary>
+    /// Provides a no-op logger for registration tests that only inspect metadata.
+    /// </summary>
+    /// <typeparam name="T">The log category type.</typeparam>
+    private sealed class FakeLogger<T> : ILogger<T>
+    {
+        /// <inheritdoc />
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        {
+            return null;
+        }
+
+        /// <inheritdoc />
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        {
+            return true;
+        }
+
+        /// <inheritdoc />
+        public void Log<TState>(
+            Microsoft.Extensions.Logging.LogLevel logLevel,
+            Microsoft.Extensions.Logging.EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+        }
+
+        /// <inheritdoc />
+        public void Log(Microsoft.Extensions.Logging.LogLevel logLevel, string message, Exception? exception = null, object? metadata = null)
+        {
+        }
+    }
+}

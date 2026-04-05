@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core observability composition for Raycynix applications.</Description>
-        <PackageTags>raycynix;observability;logging;metrics;tracing;dotnet</PackageTags>
+        <Description>Core observability composition for Raycynix applications, combining logging, metrics, tracing, and telemetry registration into a single infrastructure surface.</Description>
+        <PackageTags>raycynix;observability;logging;metrics;tracing;telemetry;composition;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

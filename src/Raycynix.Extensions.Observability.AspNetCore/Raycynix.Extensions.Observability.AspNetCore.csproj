@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core integration for Raycynix observability.</Description>
-        <PackageTags>raycynix;observability;aspnetcore;middleware;endpoints;httpclient;dotnet</PackageTags>
+        <Description>ASP.NET Core integration for Raycynix observability, including web pipeline instrumentation and HTTP-facing telemetry wiring.</Description>
+        <PackageTags>raycynix;observability;aspnetcore;middleware;endpoints;http;telemetry;instrumentation;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

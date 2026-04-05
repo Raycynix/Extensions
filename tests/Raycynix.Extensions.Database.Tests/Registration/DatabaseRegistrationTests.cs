@@ -39,7 +39,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -78,7 +78,7 @@ public sealed class DatabaseRegistrationTests
         services.AddRaycynixDatabase(configuration, _ =>
         {
             setupInvoked = true;
-        });
+        }, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
@@ -104,7 +104,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
@@ -131,7 +131,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
@@ -161,7 +161,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite()
             .AddPostgreSql();
 
@@ -193,7 +193,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
@@ -224,7 +224,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -254,7 +254,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
         services.AddRaycynixDatabaseAssembly(typeof(MessagingInboxEntryEntity).Assembly);
 
@@ -284,7 +284,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<ExternalConfiguredEntity>();
 

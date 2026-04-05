@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core security services for Raycynix applications.</Description>
-        <PackageTags>raycynix;security;authentication;authorization;rbac;contracts;dotnet</PackageTags>
+        <Description>Core security services, authorization primitives, shared identity context handling, and application-level security composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;security;authentication;authorization;rbac;identity;claims;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

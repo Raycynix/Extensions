@@ -8,6 +8,8 @@
 
 This package exposes `InitializeRaycynixDatabaseAsync(this WebApplication app)` and delegates the actual work to `Raycynix.Extensions.Database.Hosting`.
 
+Register the shared database services and exactly one provider package before invoking the ASP.NET Core initializer.
+
 ## appsettings.json
 
 ```json
@@ -42,8 +44,6 @@ await app.InitializeRaycynixDatabaseAsync();
 
 app.Run();
 ```
-
-Use exactly one provider package before calling the startup initializer.
 
 ## How it works
 

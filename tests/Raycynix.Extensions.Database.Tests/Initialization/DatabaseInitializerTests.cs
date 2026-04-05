@@ -23,7 +23,7 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath))
+        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
         try
@@ -52,7 +52,7 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath))
+        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
         try

@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core JWT authentication, authorization policies, and shared authorization-attribute integration for Raycynix security.</Description>
-        <PackageTags>raycynix;security;aspnetcore;jwt;authentication;authorization;rbac;policies;dotnet</PackageTags>
+        <Description>ASP.NET Core JWT authentication, authorization policies, shared authorization-attribute integration, and web security wiring for Raycynix applications.</Description>
+        <PackageTags>raycynix;security;aspnetcore;jwt;authentication;authorization;rbac;policies;web;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

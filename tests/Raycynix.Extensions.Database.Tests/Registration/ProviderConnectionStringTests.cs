@@ -37,7 +37,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddPostgreSql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -75,7 +75,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddMsSql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -109,7 +109,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddMySql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -144,7 +144,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -175,7 +175,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -205,7 +205,7 @@ public sealed class ProviderConnectionStringTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core middleware integration for Raycynix tracing.</Description>
-        <PackageTags>raycynix;tracing;aspnetcore;middleware;web;observability;dotnet</PackageTags>
+        <Description>ASP.NET Core middleware integration for Raycynix tracing and request-level distributed trace propagation.</Description>
+        <PackageTags>raycynix;tracing;aspnetcore;middleware;web;observability;propagation;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

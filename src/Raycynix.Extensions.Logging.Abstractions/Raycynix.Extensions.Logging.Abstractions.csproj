@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Abstractions for Raycynix logging services.</Description>
-        <PackageTags>raycynix;logging;abstractions;contracts;structured-logging;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix logging services, logger adapters, and shared logging primitives.</Description>
+        <PackageTags>raycynix;logging;abstractions;contracts;structured-logging;logger;primitives;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

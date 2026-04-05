@@ -11,6 +11,8 @@
 - SQL Server connection-string building
 - `UseSqlServer(...)` integration for the shared `DatabaseContext`
 
+The provider is selected by calling `.AddMsSql(...)`, not by setting a legacy provider enum in configuration.
+
 ## Usage
 
 ```csharp

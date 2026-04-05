@@ -29,7 +29,7 @@ public sealed class MsSqlRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddMsSql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

@@ -23,7 +23,9 @@
 ## Usage
 
 ```csharp
-builder.Services.AddRaycynixDatabase(builder.Configuration);
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration)
+    .AddPostgreSql();
 
 builder.Services.AddRaycynixMessaging(builder.Configuration)
     .AddDatabasePersistence(options =>
@@ -37,4 +39,6 @@ builder.Services.AddRaycynixMessaging(builder.Configuration)
 
 The package replaces the default in-memory inbox/outbox stores with database-backed implementations and registers its EF Core configurators into the shared `DatabaseContext` through `AddRaycynixDatabaseAssembly(...)`. Table creation still flows through the existing Raycynix database initialization pipeline.
 
-This package gives messaging persistence that survives process restarts, participates in the ambient shared `DatabaseContext` unit of work for outbox writes, runs retention cleanup, and works with the existing outbox recovery pipeline. It does not provide distributed transactions, but it does provide durable inbox/outbox state and database-backed recovery/dispatch leasing in the configured database.
+Inbox and outbox lease acquisition uses optimistic concurrency through EF Core model metadata, so the package stays provider-agnostic across SQLite, PostgreSQL, SQL Server, and MySQL without introducing provider-specific SQL into the messaging layer.
+
+This package gives messaging persistence that survives process restarts, participates in the ambient shared `DatabaseContext` unit of work for outbox writes, runs retention cleanup, and works with the existing outbox recovery pipeline. It does not provide distributed transactions, but it does provide durable inbox/outbox state and database-backed recovery and dispatch leasing in the configured relational database.

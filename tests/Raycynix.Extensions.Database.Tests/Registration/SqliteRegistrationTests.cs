@@ -29,7 +29,7 @@ public sealed class SqliteRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

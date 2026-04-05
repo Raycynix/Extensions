@@ -29,7 +29,7 @@ public sealed class MySqlRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddMySql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Core structured logging services and host integration for Raycynix applications.</Description>
-        <PackageTags>raycynix;logging;serilog;structured-logging;elasticsearch;generic-host;dotnet</PackageTags>
+        <Description>Core structured logging registration, logger abstractions, provider integration, and host-level logging composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;logging;structured-logging;serilog;providers;host-integration;infrastructure;dotnet</PackageTags>
         
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

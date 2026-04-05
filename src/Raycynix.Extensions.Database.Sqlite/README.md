@@ -11,6 +11,8 @@
 - SQLite connection-string building
 - `UseSqlite(...)` integration for the shared `DatabaseContext`
 
+The provider is selected by calling `.AddSqlite(...)`, not by setting a legacy provider enum in configuration.
+
 ## Usage
 
 ```csharp

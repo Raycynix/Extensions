@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core tracing services for Raycynix applications.</Description>
-        <PackageTags>raycynix;tracing;diagnostics;activitysource;observability;dotnet</PackageTags>
+        <Description>Core tracing registration, activity source composition, and distributed tracing services for Raycynix applications.</Description>
+        <PackageTags>raycynix;tracing;diagnostics;activitysource;distributed-tracing;observability;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

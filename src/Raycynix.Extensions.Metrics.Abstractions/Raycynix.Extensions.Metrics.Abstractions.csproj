@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Abstractions for Raycynix metrics services.</Description>
-        <PackageTags>raycynix;metrics;abstractions;contracts;prometheus;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix metrics services, publishers, and shared metric primitives.</Description>
+        <PackageTags>raycynix;metrics;abstractions;contracts;prometheus;instrumentation;primitives;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

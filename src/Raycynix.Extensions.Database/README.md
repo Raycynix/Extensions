@@ -72,6 +72,8 @@ Equivalent provider packages expose:
 - `AddMySql()`
 - `AddSqlite()`
 
+The provider package is selected by registration, not by a legacy `Provider` configuration key.
+
 Provider-specific settings remain nested under the same root section:
 
 ```json
@@ -97,13 +99,61 @@ builder.Services.AddRaycynixDatabase(builder.Configuration)
 
 This keeps a single shared `DatabaseContext` while allowing infrastructure packages to extend the model without creating their own context.
 
-Provider-specific packages extend the same fluent builder and the core package expects exactly one database provider registration.
+By default, `AddRaycynixDatabase(...)` also registers the caller assembly for configurator discovery. This is convenient when the application's own configurators live next to the startup code.
+
+If configurator assemblies should be controlled explicitly, disable caller-assembly registration and add the required assemblies yourself:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, registerCallerAssembly: false)
+    .AddPostgreSql()
+    .AddAssembly<IdentityModelMarker>()
+    .AddAssembly<AuditModelMarker>();
+```
+
+Use explicit assembly registration in tests, plugin-style architectures, or shared assemblies that contain configurators with optional dependencies.
+
+Provider-specific packages extend the same fluent builder, and the core package expects exactly one database provider registration.
+
+Table names can be configured in three ways, in this order:
+
+1. an explicit runtime name passed to `ConfigureEntity(modelBuilder, tableName)`
+2. `DatabaseTableAttribute` on the configurator
+3. the entity type name
 
 For static table names, configurators can declare the default mapping with `DatabaseTableAttribute` instead of calling `ToTable(...)` manually inside `Configure(...)`.
 
-For runtime overrides, `GenericConfigurator<T>` now exposes `ConfigureEntity(modelBuilder, tableName)`, so a configurator can reuse the same default mapping logic while still supplying a table name from configuration.
+For runtime overrides, prefer injecting configuration into the configurator and passing the resolved name to `ConfigureEntity(modelBuilder, tableName)`.
+
+When a configurator changes the model shape at runtime, override `GetModelShapeCacheKey()` so EF Core does not reuse an incompatible cached model.
+
+```csharp
+public sealed class OrdersDatabaseOptions
+{
+    public string TableName { get; init; } = "orders";
+}
+
+public sealed class OrderConfigurator(
+    OrdersDatabaseOptions options) : GenericConfigurator<Order>
+{
+    public override Type[] DependsOn => [];
+
+    public override void Configure(ModelBuilder modelBuilder)
+    {
+        var entity = ConfigureEntity(modelBuilder, options.TableName);
+        entity.HasKey(static current => current.Id);
+    }
+
+    protected override string? GetModelShapeCacheKey()
+    {
+        return options.TableName;
+    }
+}
+```
 
 If you want an explicit fluent call, use `modelBuilder.Entity<T>().EntityName(tableName)`.
+
+If a configurator relies on runtime-dependent mappings such as table names, schemas, or provider-conditioned model shape, keep those values stable within a given service provider and include them in `GetModelShapeCacheKey()`.
 
 If you want to run initialization during startup, use one of these packages:
 

@@ -26,16 +26,25 @@ public static class Database
         /// </summary>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
+        /// <param name="registerCallerAssembly">
+        /// When <see langword="true"/>, the caller assembly is automatically scanned for configurators.
+        /// Disable this when assemblies should be registered explicitly.
+        /// </param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public DatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseConfiguration>? setup = null,
+            bool registerCallerAssembly = true)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
             var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
             var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
-            modelAssemblyRegistry.Add(callerAssembly);
+
+            if (registerCallerAssembly)
+            {
+                modelAssemblyRegistry.Add(callerAssembly);
+            }
 
             services.AddRaycynixConfiguration<DatabaseConfiguration>(
                 configuration,

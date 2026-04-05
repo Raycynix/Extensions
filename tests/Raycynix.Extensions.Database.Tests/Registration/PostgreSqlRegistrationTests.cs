@@ -31,7 +31,7 @@ public sealed class PostgreSqlRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
             .AddPostgreSql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

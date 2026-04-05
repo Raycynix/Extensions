@@ -9,7 +9,9 @@
 - `DatabaseBuilder.AddMySql(...)`
 - `MySqlConfiguration`
 - MySQL connection-string building
-- `UseMySQL(...)` integration for the shared `DatabaseContext`
+- `UseMySql(...)` integration for the shared `DatabaseContext`
+
+The provider is selected by calling `.AddMySql(...)`, not by setting a legacy provider enum in configuration.
 
 ## Usage
 

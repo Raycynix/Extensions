@@ -555,7 +555,7 @@ public sealed class MessagingDatabaseRegistrationTests
         services.AddSingleton<ITransportMessagePublisher>(serviceProvider =>
             serviceProvider.GetRequiredService<RecordingTransportPublisher>());
 
-        services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath))
+        services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<MessagingDatabaseRegistrationTests>();
         services.AddRaycynixMessaging(BuildMessagingConfiguration(additionalConfiguration))

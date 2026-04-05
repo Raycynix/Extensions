@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core middleware and endpoint integration for Raycynix metrics.</Description>
-        <PackageTags>raycynix;metrics;aspnetcore;middleware;endpoints;prometheus;observability;dotnet</PackageTags>
+        <Description>ASP.NET Core middleware and endpoint integration for Raycynix metrics exposure and HTTP-facing metric pipelines.</Description>
+        <PackageTags>raycynix;metrics;aspnetcore;middleware;endpoints;prometheus;observability;http;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

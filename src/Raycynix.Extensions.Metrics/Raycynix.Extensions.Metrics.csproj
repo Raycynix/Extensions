@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core metrics services for Raycynix applications.</Description>
-        <PackageTags>raycynix;metrics;prometheus;observability;healthchecks;dotnet</PackageTags>
+        <Description>Core metrics registration, metric publishing services, and application-level metrics composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;metrics;observability;prometheus;publishing;instrumentation;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

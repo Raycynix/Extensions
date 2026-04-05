@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Core shared database registration, DatabaseContext infrastructure, model assembly discovery, and provider-agnostic EF Core composition for Raycynix applications.</Description>
-        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;configurators;initialization;provider-agnostic;infrastructure;dotnet</PackageTags>
+        <Description>Core shared database registration, DatabaseContext infrastructure, model assembly discovery, explicit provider-package composition, and provider-agnostic EF Core model caching for Raycynix applications.</Description>
+        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;configurators;model-cache;assembly-discovery;initialization;provider-agnostic;infrastructure;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

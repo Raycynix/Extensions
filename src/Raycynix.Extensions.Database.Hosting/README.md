@@ -8,6 +8,8 @@
 
 This package resolves `IDatabaseInitializer` from DI and runs it during application startup.
 
+Register the shared database services and exactly one provider package before invoking the host initializer.
+
 ## Available APIs
 
 - `InitializeRaycynixDatabaseAsync(this IServiceProvider serviceProvider)`
@@ -47,8 +49,6 @@ var host = builder.Build();
 await host.InitializeRaycynixDatabaseAsync();
 await host.RunAsync();
 ```
-
-Use exactly one provider package before invoking the host initializer.
 
 ## How it works
 

@@ -22,7 +22,7 @@ public sealed class DatabaseContextTests
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildConfiguration())
+        services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -43,7 +43,7 @@ public sealed class DatabaseContextTests
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildConfiguration())
+        services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<AttributedEntity>();
 
@@ -64,8 +64,8 @@ public sealed class DatabaseContextTests
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
-        RuntimeAttributedEntityConfigurator.RuntimeTableName = "runtime_attributed_entities";
-        services.AddRaycynixDatabase(BuildConfiguration())
+        services.AddSingleton(new RuntimeAttributedEntityConfiguration("runtime_attributed_entities"));
+        services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<RuntimeAttributedEntity>();
 
@@ -90,15 +90,22 @@ public sealed class DatabaseContextTests
     }
 
     [DatabaseTable("ignored_attributed_entities")]
-    private sealed class RuntimeAttributedEntityConfigurator : GenericConfigurator<RuntimeAttributedEntity>
+    private sealed class RuntimeAttributedEntityConfigurator(
+        RuntimeAttributedEntityConfiguration? configuration = null) : GenericConfigurator<RuntimeAttributedEntity>
     {
-        public static string RuntimeTableName { get; set; } = "ignored_attributed_entities";
+        private readonly RuntimeAttributedEntityConfiguration _configuration =
+            configuration ?? new RuntimeAttributedEntityConfiguration("ignored_attributed_entities");
 
         public override Type[] DependsOn => [];
 
         public override void Configure(ModelBuilder modelBuilder)
         {
-            ConfigureEntity(modelBuilder, RuntimeTableName);
+            ConfigureEntity(modelBuilder, _configuration.TableName);
+        }
+
+        protected override string? GetModelShapeCacheKey()
+        {
+            return _configuration.TableName;
         }
     }
 
@@ -106,6 +113,8 @@ public sealed class DatabaseContextTests
     {
         public int Id { get; set; }
     }
+
+    private sealed record RuntimeAttributedEntityConfiguration(string TableName);
 
     private static IConfiguration BuildConfiguration()
     {

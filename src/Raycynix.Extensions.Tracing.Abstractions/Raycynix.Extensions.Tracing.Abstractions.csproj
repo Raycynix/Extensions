@@ -5,8 +5,8 @@
 
         <IsPackable>true</IsPackable>
         
-        <Description>Abstractions for Raycynix tracing services.</Description>
-        <PackageTags>raycynix;tracing;abstractions;contracts;diagnostics;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix tracing services, activity sources, and shared tracing primitives.</Description>
+        <PackageTags>raycynix;tracing;abstractions;contracts;diagnostics;activitysource;primitives;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

@@ -149,3 +149,5 @@ The base package also includes:
 - declarative handler authorization using shared security attributes
 - background outbox recovery service for in-memory recovery scenarios
 - dispatch leasing to prevent duplicate outbox recovery publishes
+
+If you need durable inbox and outbox storage instead of the built-in in-memory implementation, add `Raycynix.Extensions.Messaging.Database` on top of the shared database infrastructure.
