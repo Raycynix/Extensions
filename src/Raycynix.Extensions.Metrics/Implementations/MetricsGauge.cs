@@ -1,10 +1,11 @@
 using Prometheus;
-using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Metrics.Implementations;
 
-/// <inheritdoc />
+/// <summary>
+/// Adapts a Prometheus gauge to the Raycynix gauge abstraction.
+/// </summary>
 public class MetricsGauge(Gauge gauge) : IMetricGauge
 {
     /// <inheritdoc />

@@ -1,10 +1,11 @@
 using Prometheus;
-using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Metrics.Implementations;
 
-/// <inheritdoc />
+/// <summary>
+/// Creates Prometheus-backed counters, gauges, and histograms for the Raycynix metrics abstractions.
+/// </summary>
 internal class MetricsService : IMetricsService
 {
     private readonly MetricFactory _metricFactory =

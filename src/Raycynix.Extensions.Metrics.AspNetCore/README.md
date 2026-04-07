@@ -9,12 +9,23 @@
 - `UseRaycynixMetrics(this IApplicationBuilder app)`
 - `MapRaycynixMetrics(this IEndpointRouteBuilder endpoints)`
 
+## appsettings.json
+
+```json
+{
+  "MetricsConfiguration": {
+    "UsePrometheus": true,
+    "MetricsEndpoint": "/metrics"
+  }
+}
+```
+
 ## Usage
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixMetrics();
+builder.Services.AddRaycynixMetrics(builder.Configuration);
 
 var app = builder.Build();
 

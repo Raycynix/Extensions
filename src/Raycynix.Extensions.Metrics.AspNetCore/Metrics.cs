@@ -10,7 +10,7 @@ namespace Raycynix.Extensions.Metrics.AspNetCore;
 public static class Metrics
 {
     /// <summary>
-    /// Adds HTTP request metrics collection to the ASP.NET Core request pipeline.
+    /// Adds the HTTP request metrics collection to the ASP.NET Core request pipeline.
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The configured application builder.</returns>
