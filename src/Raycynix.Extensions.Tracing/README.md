@@ -22,4 +22,20 @@
 builder.Services.AddRaycynixTracing();
 ```
 
+```csharp
+public sealed class OrderService(ITracer tracer)
+{
+    public void Process(string orderId)
+    {
+        using var activity = tracer.StartTrace("orders.process", new Dictionary<string, string>
+        {
+            ["order.id"] = orderId
+        });
+
+        tracer.SetBaggage("tenant", "alpha");
+        tracer.AddTag("operation.type", "command");
+    }
+}
+```
+
 For ASP.NET Core middleware integration, use `Raycynix.Extensions.Tracing.AspNetCore`.

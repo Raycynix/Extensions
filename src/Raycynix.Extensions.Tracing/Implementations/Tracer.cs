@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
-using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Tracing.Implementations;
 
-/// <inheritdoc />
+/// <summary>
+/// Implements the Raycynix tracer abstraction on top of <see cref="ActivitySource"/>.
+/// </summary>
 public class Tracer : ITracer
 {
     private readonly ActivitySource _activitySource;
@@ -57,7 +58,7 @@ public class Tracer : ITracer
     /// <returns>The baggage value, or <c>null</c> when it does not exist.</returns>
     public string? GetBaggage(string key) => Activity.Current?.GetBaggageItem(key);
 
-    private class NoopDisposable : IDisposable
+    private sealed class NoopDisposable : IDisposable
     {
         public void Dispose()
         {

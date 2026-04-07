@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core middleware integration for Raycynix tracing and request-level distributed trace propagation.</Description>
-        <PackageTags>raycynix;tracing;aspnetcore;middleware;web;observability;propagation;dotnet</PackageTags>
+        <Description>ASP.NET Core middleware integration for Raycynix tracing, request-level trace enrichment, and distributed correlation propagation.</Description>
+        <PackageTags>raycynix;tracing;aspnetcore;middleware;http;correlation;propagation;activitysource;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

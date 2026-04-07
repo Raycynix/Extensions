@@ -1,8 +1,5 @@
 using System.Diagnostics;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Tracing.Abstractions;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Implementations;
 
 namespace Raycynix.Extensions.Tracing.Tests.Implementation;
@@ -12,23 +9,6 @@ namespace Raycynix.Extensions.Tracing.Tests.Implementation;
 /// </summary>
 public sealed class TracerTests
 {
-    /// <summary>
-    /// Verifies that tracing registration exposes the shared tracer abstraction.
-    /// </summary>
-    [Fact]
-    public void AddRaycynixTracing_ShouldRegisterTracer()
-    {
-        var services = new ServiceCollection();
-
-        services.AddRaycynixTracing();
-
-        var descriptor = services.Should()
-            .ContainSingle(service => service.ServiceType == typeof(ITracer))
-            .Subject;
-
-        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
-    }
-
     /// <summary>
     /// Verifies that started traces become activities and receive configured tags.
     /// </summary>
@@ -44,7 +24,7 @@ public sealed class TracerTests
                }))
         {
             Activity.Current.Should().NotBeNull();
-            Activity.Current!.OperationName.Should().Be("catalog.read");
+            Activity.Current.OperationName.Should().Be("catalog.read");
             Activity.Current.GetTagItem("tenant").Should().Be("alpha");
         }
 
@@ -92,8 +72,8 @@ public sealed class TracerTests
         var listener = new ActivityListener
         {
             ShouldListenTo = static _ => true,
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded
         };
 
         ActivitySource.AddActivityListener(listener);

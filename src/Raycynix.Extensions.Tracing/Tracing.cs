@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Common.Helpers;
-using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Implementations;
 
@@ -16,8 +15,11 @@ public static class Tracing
     /// Registers the tracing service.
     /// </summary>
     /// <param name="services">The service collection to which the tracing services are to be added.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixTracing(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         var serviceName = AssemblyHelper.CurrentName();
 
         services.TryAddSingleton<ITracer>(new Tracer(serviceName));

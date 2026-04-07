@@ -11,3 +11,16 @@
 ## Purpose
 
 This package allows other packages to depend on Raycynix tracing contracts without depending on the tracing implementation package.
+
+## Usage
+
+```csharp
+public sealed class CheckoutWorkflow(ITracer tracer)
+{
+    public void Run()
+    {
+        using var activity = tracer.StartTrace("checkout.run");
+        tracer.AddTag("workflow", "checkout");
+    }
+}
+```
