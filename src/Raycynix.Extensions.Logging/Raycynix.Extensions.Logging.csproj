@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.3.4</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>Core structured logging registration, logger abstractions, provider integration, and host-level logging composition for Raycynix applications.</Description>
-        <PackageTags>raycynix;logging;structured-logging;serilog;providers;host-integration;infrastructure;dotnet</PackageTags>
+        <Description>Structured logging registration, Serilog-based host integration, typed logger adapters, and configurable console or Elasticsearch logging for Raycynix applications.</Description>
+        <PackageTags>raycynix;logging;serilog;structured-logging;host;console;elasticsearch;typed-logger;infrastructure;dotnet</PackageTags>
         
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -16,6 +16,8 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
       <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
       <ProjectReference Include="..\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
     </ItemGroup>

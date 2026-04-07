@@ -3,7 +3,10 @@ using Raycynix.Extensions.Logging.Internal;
 
 namespace Raycynix.Extensions.Logging.Implementations;
 
-/// <inheritdoc />
+/// <summary>
+/// Adapts the Raycynix typed logger abstraction to a Serilog-backed implementation.
+/// </summary>
+/// <typeparam name="T">The type associated with the logger category.</typeparam>
 public class Logger<T>(Serilog.ILogger logger) : Abstractions.ILogger<T>
 {
     private readonly Serilog.ILogger _logger = logger.ForContext<T>();

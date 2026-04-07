@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>Abstractions and contracts for Raycynix logging services, logger adapters, and shared logging primitives.</Description>
-        <PackageTags>raycynix;logging;abstractions;contracts;structured-logging;logger;primitives;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix typed logging services, logger adapters, and shared logging primitives.</Description>
+        <PackageTags>raycynix;logging;abstractions;contracts;typed-logger;structured-logging;primitives;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

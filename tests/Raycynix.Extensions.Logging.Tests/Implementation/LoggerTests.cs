@@ -103,6 +103,22 @@ public sealed class LoggerTests
         logger.IsEnabled(LogLevel.Error).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that the convenience fatal API maps to the Serilog fatal level.
+    /// </summary>
+    [Fact]
+    public void Fatal_ShouldWriteCriticalEvent()
+    {
+        var sink = new CollectingSink();
+        var serilog = CreateLogger(sink);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
+
+        logger.Fatal("Fatal failure");
+
+        sink.Events.Should().ContainSingle();
+        sink.Events.Single().Level.Should().Be(LogEventLevel.Fatal);
+    }
+
     private static Serilog.ILogger CreateLogger(ILogEventSink sink)
     {
         return new LoggerConfiguration()
