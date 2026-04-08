@@ -44,6 +44,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Observability\Raycynix.Extensions.Observability.csproj" />
     </ItemGroup>
 

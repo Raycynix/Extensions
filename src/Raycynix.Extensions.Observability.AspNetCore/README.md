@@ -27,3 +27,9 @@ app.Run();
 ```
 
 `AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()`, so no extra core registration is required in ASP.NET Core applications.
+
+You can also map custom paths:
+
+```csharp
+app.MapRaycynixObservabilityEndpoints("/internal/health", "/internal/metrics");
+```

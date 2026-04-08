@@ -19,6 +19,8 @@ public static class Observability
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixObservability(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         services.AddRaycynixMetrics();
         services.AddRaycynixTracing();
         services.AddRaycynixLogging();
