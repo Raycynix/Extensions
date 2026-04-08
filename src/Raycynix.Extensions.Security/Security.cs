@@ -22,6 +22,8 @@ public static class Security
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixSecurity(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         services.TryAddScoped<ISecurityContext, SecurityContext>();
 
         return services;
@@ -39,6 +41,9 @@ public static class Security
         IConfiguration configuration,
         Action<SecurityConfiguration>? setup = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         services.AddRaycynixConfiguration<SecurityConfiguration>(
             configuration,
             configurePostBind: setup);

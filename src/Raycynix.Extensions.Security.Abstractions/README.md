@@ -43,3 +43,14 @@ The secret model assumes:
 - built-in providers can target local env, GitHub Actions, and TeamCity-style injection
 
 Permissions should use a stable `resource.action` format, for example `users.read` or `orders.approve`.
+
+## Usage
+
+```csharp
+public sealed class UserProjection(ISecurityContext securityContext)
+{
+    public string? CurrentSubjectId => securityContext.IsAuthenticated
+        ? securityContext.SubjectId
+        : null;
+}
+```

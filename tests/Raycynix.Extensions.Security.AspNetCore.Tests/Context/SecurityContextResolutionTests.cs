@@ -49,10 +49,10 @@ public class SecurityContextResolutionTests
     }
 
     /// <summary>
-    /// Verifies that unauthenticated requests are rejected when resolving the scoped security context.
+    /// Verifies that unauthenticated requests resolve to an anonymous security context.
     /// </summary>
     [Fact]
-    public void AddRaycynixAspNetCoreSecurity_ShouldRejectUnauthenticatedPrincipal()
+    public void AddRaycynixAspNetCoreSecurity_ShouldResolveAnonymousSecurityContext_ForUnauthenticatedPrincipal()
     {
         var httpContextAccessor = new HttpContextAccessor
         {
@@ -68,11 +68,12 @@ public class SecurityContextResolutionTests
 
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ISecurityContext>();
 
-        var action = () => scope.ServiceProvider.GetRequiredService<ISecurityContext>();
-
-        action.Should().Throw<InvalidOperationException>()
-            .WithMessage("*The current request is not authenticated.*");
+        context.IsAuthenticated.Should().BeFalse();
+        context.SubjectId.Should().BeEmpty();
+        context.Roles.Should().BeEmpty();
+        context.Permissions.Should().BeEmpty();
     }
 
     /// <summary>

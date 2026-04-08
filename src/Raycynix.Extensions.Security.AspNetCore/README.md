@@ -33,6 +33,19 @@ app.UseRaycynixSecurity();
 app.Run();
 ```
 
+```json
+{
+  "SecurityConfiguration": {
+    "Jwt": {
+      "Authority": "https://auth.raycynix.com",
+      "Issuer": "raycynix-auth",
+      "Audience": "raycynix-services",
+      "RequireHttpsMetadata": true
+    }
+  }
+}
+```
+
 Use authorization policies with standard names:
 
 ```csharp

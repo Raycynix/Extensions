@@ -37,6 +37,9 @@ public static class Security
         IConfiguration configuration,
         Action<SecurityConfiguration>? setup = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         var config = new SecurityConfiguration();
         configuration.GetSection(nameof(SecurityConfiguration)).Bind(config);
 
@@ -82,6 +85,8 @@ public static class Security
     /// <returns>The configured application builder.</returns>
     public static IApplicationBuilder UseRaycynixSecurity(this IApplicationBuilder app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         app.UseAuthentication();
         app.UseAuthorization();
 

@@ -31,6 +31,22 @@ builder.Services.AddRaycynixSecurity(builder.Configuration, options =>
 });
 ```
 
+```json
+{
+  "SecurityConfiguration": {
+    "Jwt": {
+      "Authority": "https://auth.raycynix.com",
+      "Issuer": "raycynix-auth",
+      "Audience": "raycynix-services",
+      "AccessTokenLifetime": "00:15:00",
+      "RefreshTokenLifetime": "14.00:00:00",
+      "ClockSkew": "00:01:00",
+      "RequireHttpsMetadata": true
+    }
+  }
+}
+```
+
 The package binds settings from the `SecurityConfiguration` section and allows optional overrides in code.
 
 For ASP.NET Core request binding and web-specific integration, use `Raycynix.Extensions.Security.AspNetCore`.

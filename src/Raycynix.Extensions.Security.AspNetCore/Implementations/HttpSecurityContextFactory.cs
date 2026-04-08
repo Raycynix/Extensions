@@ -13,8 +13,7 @@ internal static class HttpSecurityContextFactory
     {
         if (principal?.Identity?.IsAuthenticated != true)
         {
-            throw new InvalidOperationException(
-                "The current request is not authenticated. Ensure JWT authentication is configured and executed before resolving ISecurityContext.");
+            return new SecurityContext();
         }
 
         var subjectId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;

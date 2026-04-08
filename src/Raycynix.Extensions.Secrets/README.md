@@ -23,6 +23,16 @@
 builder.Services.AddRaycynixSecrets();
 ```
 
+```csharp
+public sealed class GitHubTokenLoader(ISecretResolver secrets)
+{
+    public async Task<string?> LoadAsync(CancellationToken cancellationToken)
+    {
+        return await secrets.GetSecretAsync("GitHub:Token", cancellationToken);
+    }
+}
+```
+
 The package resolves secrets through a provider chain and returns the first available value.
 
 Secrets should be injected through providers and resolvers instead of being stored in `appsettings.json`.
