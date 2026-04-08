@@ -1,0 +1,132 @@
+name: Feature request
+description: Suggest an improvement or new capability for a Raycynix.Extensions package.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for proposals, API additions, ergonomic improvements, and package-level enhancements.
+
+  - type: dropdown
+    id: package_name
+    attributes:
+      label: Target package
+      description: Select the exact package this should apply to, or choose New package proposal.
+      options:
+        - Common
+        - Configuration
+        - Configuration.Abstractions
+        - Configuration.AspNetCore
+        - Contracts
+        - Contracts.AspNetCore
+        - Database
+        - Database.Abstractions
+        - Database.AspNetCore
+        - Database.Hosting
+        - Database.MsSql
+        - Database.MySql
+        - Database.PostgreSql
+        - Database.Sqlite
+        - Exceptions
+        - Exceptions.Abstractions
+        - Exceptions.AspNetCore
+        - Messaging
+        - Messaging.Abstractions
+        - Messaging.Database
+        - Messaging.Grpc
+        - Messaging.HttpJson
+        - Messaging.Kafka
+        - Messaging.RabbitMQ
+        - Observability
+        - Observability.AspNetCore
+        - Logging
+        - Logging.Abstractions
+        - Metrics
+        - Metrics.Abstractions
+        - Metrics.AspNetCore
+        - Tracing
+        - Tracing.Abstractions
+        - Tracing.AspNetCore
+        - Security
+        - Security.Abstractions
+        - Security.AspNetCore
+        - Secrets
+        - Multiple packages
+        - New package proposal
+    validations:
+      required: true
+
+  - type: input
+    id: additional_packages
+    attributes:
+      label: Additional target packages
+      description: Fill this only if the request spans multiple packages.
+      placeholder: Messaging, Observability
+    validations:
+      required: false
+
+  - type: input
+    id: proposed_package_name
+    attributes:
+      label: Proposed new package name
+      description: Fill this when the request is for a new package.
+      placeholder: Raycynix.Extensions.Caching.Redis
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to accomplish, and what is missing today?
+      placeholder: We need a way to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, behavior, or UX you want to see.
+      placeholder: Add a new extension method / option / abstraction that...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe workarounds or other approaches you considered.
+      placeholder: Today we can work around this by...
+    validations:
+      required: false
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example API or usage
+      description: If possible, show what the desired developer experience should look like.
+      render: csharp
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Explain who benefits and what this unlocks.
+      placeholder: This would simplify...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight check
+      options:
+        - label: I checked the package README and existing issues before opening this feature request.
+          required: true
+        - label: This request is specific enough to be discussed and scoped.
+          required: true
