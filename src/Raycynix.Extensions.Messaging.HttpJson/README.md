@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.HttpJson
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.HttpJson` contains the direct HTTP JSON transport for Raycynix messaging.
 
 ## What it contains
@@ -20,15 +18,22 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "HttpJsonMessagingConfiguration": {
+    "BaseAddress": "https://catalog-service",
+    "TimeoutSeconds": 30
+  }
+}
+```
+
 Register the transport:
 
 ```csharp
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddHttpJson(options =>
-    {
-        options.BaseAddress = "https://catalog-service";
-        options.TimeoutSeconds = 30;
-    });
+    .AddHttpJson(builder.Configuration);
 ```
 
 Send a direct request:

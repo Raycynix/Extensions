@@ -44,6 +44,32 @@ public sealed class HttpJsonRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that HTTP JSON transport options can be bound from configuration using the default section name.
+    /// </summary>
+    [Fact]
+    public void AddHttpJson_WithConfiguration_ShouldBindConfigurationAndRegisterDirectClient()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["HttpJsonMessagingConfiguration:BaseAddress"] = "https://catalog.service.local",
+                ["HttpJsonMessagingConfiguration:TimeoutSeconds"] = "45"
+            })
+            .Build();
+
+        services.AddRaycynixMessaging(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build())
+            .AddHttpJson(configuration);
+
+        using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<HttpJsonMessagingConfiguration>();
+        options.BaseAddress.Should().Be("https://catalog.service.local");
+        options.TimeoutSeconds.Should().Be(45);
+        provider.GetRequiredService<IDirectRequestClient>().Should().BeOfType<HttpJsonRequestClient>();
+    }
+
+    /// <summary>
     /// Verifies that HTTP JSON direct requests serialize the payload, send headers, and deserialize the response.
     /// </summary>
     [Fact]

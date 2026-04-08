@@ -6,17 +6,33 @@ namespace Raycynix.Extensions.Metrics.Configurations;
 public class MetricsConfiguration
 {
     /// <summary>
-    /// Gets a value indicating whether Prometheus integration is enabled.
+    /// Gets or sets a value indicating whether Prometheus integration is enabled.
     /// </summary>
-    public bool UsePrometheus { get; init; } = false;
+    public bool UsePrometheus { get; set; } = true;
 
     /// <summary>
-    /// Gets the endpoint path used to expose metrics.
+    /// Gets or sets the endpoint path used to expose metrics.
     /// </summary>
-    public string MetricsEndpoint { get; init; } = "/metrics";
+    public string MetricsEndpoint { get; set; } = "/metrics";
 
     /// <summary>
-    /// Gets a value indicating whether health checks are enabled.
+    /// Gets or sets a value indicating whether health checks are enabled.
     /// </summary>
-    public bool UseHealthChecks { get; init; } = true;
+    public bool UseHealthChecks { get; set; } = true;
+
+    /// <summary>
+    /// Validates the metrics configuration.
+    /// </summary>
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(MetricsEndpoint))
+        {
+            throw new InvalidOperationException("Metrics endpoint path cannot be empty.");
+        }
+
+        if (!MetricsEndpoint.StartsWith('/'))
+        {
+            throw new InvalidOperationException("Metrics endpoint path must start with '/'.");
+        }
+    }
 }

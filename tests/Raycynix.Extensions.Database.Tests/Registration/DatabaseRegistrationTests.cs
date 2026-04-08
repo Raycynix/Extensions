@@ -7,8 +7,9 @@ using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.PostgreSql;
+using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Database.Configurations;
 using Raycynix.Extensions.Messaging.Database.Models;
@@ -33,13 +34,13 @@ public sealed class DatabaseRegistrationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:EnsureCreated"] = "true",
                 ["DatabaseConfiguration:EnableSeed"] = "false"
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
@@ -50,7 +51,6 @@ public sealed class DatabaseRegistrationTests
         var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
         databaseConfiguration.ConnectionString.Should().Be("Data Source=test.db");
-        databaseConfiguration.Provider.Should().Be(DatabaseProvider.Sqlite);
         databaseConfiguration.EnableSeed.Should().BeFalse();
         accessor.Current.ConnectionString.Should().Be("Data Source=test.db");
         initializer.Should().BeOfType<DatabaseInitializer>();
@@ -71,7 +71,6 @@ public sealed class DatabaseRegistrationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DatabaseConfiguration:ConnectionString"] = "Data Source=original.db",
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:EnsureCreated"] = "true"
             })
             .Build();
@@ -79,7 +78,7 @@ public sealed class DatabaseRegistrationTests
         services.AddRaycynixDatabase(configuration, _ =>
         {
             setupInvoked = true;
-        });
+        }, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
@@ -105,13 +104,135 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
         var act = () => serviceProvider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
 
         act.Should().Throw<OptionsValidationException>();
+    }
+
+    /// <summary>
+    /// Verifies that resolving the context fails when no provider package is registered.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldFail_WhenNoProviderPackageIsRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-provider.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+
+        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        act.Should()
+            .Throw<NotSupportedException>()
+            .WithMessage("*No database provider is registered*");
+    }
+
+    /// <summary>
+    /// Verifies that resolving the context fails when multiple provider packages are registered.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldFail_WhenMultipleProviderPackagesAreRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=multiple-providers.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite()
+            .AddPostgreSql();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+
+        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Multiple database providers are registered*");
+    }
+
+    /// <summary>
+    /// Verifies that the removed legacy Provider configuration key no longer selects a provider package.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldFail_WhenOnlyLegacyProviderKeyIsConfigured()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:Provider"] = "Sqlite",
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+
+        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        act.Should()
+            .Throw<NotSupportedException>()
+            .WithMessage("*No database provider is registered*");
+    }
+
+    /// <summary>
+    /// Verifies that the removed legacy Provider configuration key does not override the explicitly registered package.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldIgnoreLegacyProviderKey_WhenProviderPackageIsExplicitlyRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:Provider"] = "PostgreSql",
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider-ignored.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        context.Should().NotBeNull();
     }
 
     /// <summary>
@@ -128,13 +249,13 @@ public sealed class DatabaseRegistrationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DatabaseConfiguration:ConnectionString"] = "Data Source=model-test.db",
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:EnsureCreated"] = "false",
                 ["DatabaseConfiguration:EnableSeed"] = "false"
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration);
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite();
         services.AddRaycynixDatabaseAssembly(typeof(MessagingInboxEntryEntity).Assembly);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -158,13 +279,13 @@ public sealed class DatabaseRegistrationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DatabaseConfiguration:ConnectionString"] = "Data Source=builder-test.db",
-                ["DatabaseConfiguration:Provider"] = nameof(DatabaseProvider.Sqlite),
                 ["DatabaseConfiguration:EnsureCreated"] = "false",
                 ["DatabaseConfiguration:EnableSeed"] = "false"
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration)
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite()
             .AddAssembly<ExternalConfiguredEntity>();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);

@@ -44,6 +44,36 @@ public sealed class KafkaRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that Kafka transport options can be bound from configuration using the default section name.
+    /// </summary>
+    [Fact]
+    public void AddKafka_WithConfiguration_ShouldBindConfigurationAndRegisterPublisher()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["KafkaMessagingConfiguration:BootstrapServers:0"] = "kafka-1:9092",
+                ["KafkaMessagingConfiguration:ClientId"] = "orders-service",
+                ["KafkaMessagingConfiguration:Consumer:Enabled"] = "true",
+                ["KafkaMessagingConfiguration:Consumer:Topics:0"] = "orders.created"
+            })
+            .Build();
+
+        services.AddRaycynixMessaging(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build())
+            .AddKafka(configuration);
+
+        using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<KafkaMessagingConfiguration>();
+        options.BootstrapServers.Should().ContainSingle().Which.Should().Be("kafka-1:9092");
+        options.ClientId.Should().Be("orders-service");
+        options.Consumer.Enabled.Should().BeTrue();
+        options.Consumer.Topics.Should().ContainSingle().Which.Should().Be("orders.created");
+        provider.GetRequiredService<ITransportMessagePublisher>().GetType().Name.Should().Be("KafkaMessagePublisher");
+    }
+
+    /// <summary>
     /// Verifies that Kafka publishing serializes the envelope and forwards it to the configured topic.
     /// </summary>
     [Fact]

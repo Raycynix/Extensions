@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.MySql.Configurations;
 
 /// <summary>
 /// Represents MySQL-specific connection settings.

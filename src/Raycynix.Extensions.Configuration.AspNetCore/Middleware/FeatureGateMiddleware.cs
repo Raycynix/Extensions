@@ -4,8 +4,16 @@ using Raycynix.Extensions.Configuration.AspNetCore.FeatureGate;
 
 namespace Raycynix.Extensions.Configuration.AspNetCore.Middleware;
 
+/// <summary>
+/// Enforces endpoint feature-gate metadata during request execution.
+/// </summary>
 internal sealed class FeatureGateMiddleware(RequestDelegate next)
 {
+    /// <summary>
+    /// Processes the current request and blocks access when a required feature is disabled.
+    /// </summary>
+    /// <param name="context">The current HTTP context.</param>
+    /// <param name="featureFlags">The feature-flag accessor used to evaluate endpoint requirements.</param>
     public async Task InvokeAsync(HttpContext context, IFeatureFlagAccessor featureFlags)
     {
         var endpoint = context.GetEndpoint();

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Contracts
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Contracts` contains reusable contract models and versioning conventions for shared .NET APIs.
 
 ## What it contains
@@ -101,6 +99,18 @@ var versioned = new VersionedContract<PagedResult<Money>>
         }
     },
     Payload = result
+};
+```
+
+## Contract Headers
+
+Use the shared header names when contracts cross transport boundaries explicitly:
+
+```csharp
+var headers = new Dictionary<string, string?>
+{
+    [ContractHeaders.ContractName] = "catalog.prices",
+    [ContractHeaders.ContractVersion] = "1.2.0"
 };
 ```
 

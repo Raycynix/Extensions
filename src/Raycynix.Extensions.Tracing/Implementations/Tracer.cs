@@ -1,10 +1,12 @@
-﻿using System.Diagnostics;
-using Raycynix.Extensions.Tracing.Abstractions;
+using System.Diagnostics;
+using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Tracing.Implementations;
 
-/// <inheritdoc />
+/// <summary>
+/// Implements the Raycynix tracer abstraction on top of <see cref="ActivitySource"/>.
+/// </summary>
 public class Tracer : ITracer
 {
     private readonly ActivitySource _activitySource;
@@ -27,9 +29,9 @@ public class Tracer : ITracer
     {
         var activity = _activitySource.StartActivity(name);
 
-        if (activity == null) return new NoopDisposable();
+        if (activity == null) return NoopDisposable.Instance;
         if (tags == null) return activity;
-        
+
         foreach (var tag in tags)
             activity.SetTag(tag.Key, tag.Value);
 
@@ -56,11 +58,4 @@ public class Tracer : ITracer
     /// <param name="key">The key of the baggage item to retrieve.</param>
     /// <returns>The baggage value, or <c>null</c> when it does not exist.</returns>
     public string? GetBaggage(string key) => Activity.Current?.GetBaggageItem(key);
-
-    private class NoopDisposable : IDisposable
-    {
-        public void Dispose()
-        {
-        }
-    }
 }

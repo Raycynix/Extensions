@@ -16,9 +16,6 @@ internal sealed class MessagingOutboxEntryConfigurator(
     public override Type[] DependsOn => [];
 
     /// <inheritdoc />
-    public override string ModelCacheKey => $"{base.ModelCacheKey}:{configuration.OutboxTableName}";
-
-    /// <inheritdoc />
     public override void Configure(ModelBuilder modelBuilder)
     {
         var entity = modelBuilder.Entity<MessagingOutboxEntryEntity>()
@@ -39,12 +36,18 @@ internal sealed class MessagingOutboxEntryConfigurator(
         
         entity.Property(static entry => entry.Status).IsRequired();
         
-        entity.Property(static entry => entry.UpdatedAt).IsRequired();
+        entity.Property(static entry => entry.UpdatedAt).IsRequired().IsConcurrencyToken();
         
         entity.Property(static entry => entry.AttemptCount).IsRequired();
         
         entity.Property(static entry => entry.NextAttemptAt).IsRequired();
         
         entity.HasIndex(static entry => new { entry.Status, entry.NextAttemptAt });
+    }
+
+    /// <inheritdoc />
+    protected override string? GetModelShapeCacheKey()
+    {
+        return configuration.OutboxTableName;
     }
 }

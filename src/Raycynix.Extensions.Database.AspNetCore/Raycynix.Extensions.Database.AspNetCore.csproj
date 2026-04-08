@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>ASP.NET Core startup integration for Raycynix database initialization.</Description>
-        <PackageTags>raycynix;database;aspnetcore;web;startup;initialization;dotnet</PackageTags>
+        <Description>ASP.NET Core startup integration for Raycynix database initialization using the shared database hosting extensions.</Description>
+        <PackageTags>raycynix;database;aspnetcore;web;startup;initialization;minimal-api;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

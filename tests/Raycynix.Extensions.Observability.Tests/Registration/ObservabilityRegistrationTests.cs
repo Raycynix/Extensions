@@ -2,9 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Observability.Tests.Registration;
@@ -61,5 +59,19 @@ public class ObservabilityRegistrationTests
 
         firstInstanceA.Should().BeSameAs(firstInstanceB);
         firstInstanceA.Should().NotBeSameAs(secondInstance);
+    }
+
+    /// <summary>
+    /// Verifies that repeated registration does not duplicate the scoped operation context descriptor.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixObservability_ShouldBeIdempotent_ForOperationContext()
+    {
+        var services = new ServiceCollection();
+
+        services.AddRaycynixObservability();
+        services.AddRaycynixObservability();
+
+        services.Count(service => service.ServiceType == typeof(IOperationContext)).Should().Be(1);
     }
 }

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>1.0.0</Version>
+
+        <IsPackable>true</IsPackable>
+
+        <Description>PostgreSQL provider integration for Raycynix.Extensions.Database with AddPostgreSql registration, Npgsql connection-string composition, and EF Core UseNpgsql configuration.</Description>
+        <PackageTags>raycynix;database;postgresql;npgsql;provider;efcore;entityframework;dotnet</PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1"/>
+    </ItemGroup>
+
+</Project>

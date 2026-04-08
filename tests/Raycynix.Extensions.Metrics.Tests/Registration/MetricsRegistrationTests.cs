@@ -1,8 +1,11 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using Raycynix.Extensions.Metrics.Configurations;
 
 namespace Raycynix.Extensions.Metrics.Tests.Registration;
 
@@ -61,6 +64,55 @@ public sealed class MetricsRegistrationTests
 
         invoked.Should().BeTrue();
         services.Any(service => service.ServiceType == typeof(HealthCheckService)).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that typed metrics configuration binds from the standard section and is exposed through DI.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixMetrics_WithConfiguration_ShouldBindMetricsConfiguration()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MetricsConfiguration:UsePrometheus"] = "false",
+                ["MetricsConfiguration:MetricsEndpoint"] = "/internal/metrics",
+                ["MetricsConfiguration:UseHealthChecks"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixMetrics(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<MetricsConfiguration>();
+
+        options.UsePrometheus.Should().BeFalse();
+        options.MetricsEndpoint.Should().Be("/internal/metrics");
+        options.UseHealthChecks.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Verifies that invalid metrics configuration is rejected by the options validation pipeline.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixMetrics_WithInvalidConfiguration_ShouldFailValidation()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MetricsConfiguration:MetricsEndpoint"] = "metrics"
+            })
+            .Build();
+
+        services.AddRaycynixMetrics(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var access = () => provider.GetRequiredService<IOptions<MetricsConfiguration>>().Value;
+
+        access.Should().Throw<OptionsValidationException>()
+            .WithMessage("*must start with '/'*");
     }
 
     private sealed class TestHealthCheck : IHealthCheck

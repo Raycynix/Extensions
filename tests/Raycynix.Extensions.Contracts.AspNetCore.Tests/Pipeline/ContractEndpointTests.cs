@@ -82,6 +82,29 @@ public sealed class ContractEndpointTests
     }
 
     /// <summary>
+    /// Verifies that HttpContext contract helpers preserve the plain payload while still using endpoint metadata.
+    /// </summary>
+    [Fact]
+    public async Task HttpContextContract_ShouldReturnPlainPayload()
+    {
+        await using var app = await CreateApp(app =>
+        {
+            app.UseRaycynixContracts();
+            app.MapGet("/prices/plain", (HttpContext httpContext) =>
+                    httpContext.Contract(new Money { Amount = 149.99m, Currency = "USD" }))
+                .WithContract("catalog.prices", "1.2.0");
+        });
+
+        var response = await app.GetTestClient().GetAsync("/prices/plain", TestContext.Current.CancellationToken);
+        var payload = await ReadPayloadAsync(response);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.GetValues("X-Contract-Name").Should().ContainSingle().Which.Should().Be("catalog.prices");
+        payload.TryGetProperty("metadata", out _).Should().BeFalse();
+        payload.GetProperty("currency").GetString().Should().Be("USD");
+    }
+
+    /// <summary>
     /// Verifies that controller helpers can resolve metadata from the current endpoint.
     /// </summary>
     [Fact]

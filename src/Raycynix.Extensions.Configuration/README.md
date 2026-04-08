@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Configuration
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Configuration` contains the core typed-configuration registration helpers for Raycynix applications.
 
 ## What it contains
@@ -68,6 +66,33 @@ builder.Services.AddRaycynixConfigurationChangeHandler<MyOptions>(
         Console.WriteLine($"Configuration changed: {context.ChangedAtUtc:O}");
         return ValueTask.CompletedTask;
     });
+```
+
+## appsettings.json
+
+Typed options bind from a section named after the options type by default:
+
+```json
+{
+  "MyOptions": {
+    "Value": "from-config",
+    "TimeoutSeconds": 30
+  },
+  "FeatureFlags": {
+    "Flags": {
+      "NewDashboard": true,
+      "UseFastCache": false
+    }
+  }
+}
+```
+
+You can override the section name explicitly when needed:
+
+```csharp
+builder.Services.AddRaycynixConfiguration<MyOptions>(
+    builder.Configuration,
+    sectionName: "MyFeatureArea:MyOptions");
 ```
 
 ## Applying Runtime Reload Rules

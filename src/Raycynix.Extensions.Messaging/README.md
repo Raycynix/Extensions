@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging` contains the transport-agnostic messaging foundation for Raycynix applications.
 
 ## What it contains
@@ -41,6 +39,27 @@
 - broker topology management beyond provider packages
 
 ## Usage
+
+Example `appsettings.json`:
+
+```json
+{
+  "MessagingConfiguration": {
+    "SourceName": "orders-service",
+    "DefaultFormat": "Json",
+    "Outbox": {
+      "Enabled": true,
+      "EnableRecovery": true,
+      "AutoDispatchOnPublish": false
+    },
+    "IncomingProcessing": {
+      "TrustedSources": [
+        "orders.service"
+      ]
+    }
+  }
+}
+```
 
 Register the base package and optional codecs:
 
@@ -149,3 +168,5 @@ The base package also includes:
 - declarative handler authorization using shared security attributes
 - background outbox recovery service for in-memory recovery scenarios
 - dispatch leasing to prevent duplicate outbox recovery publishes
+
+If you need durable inbox and outbox storage instead of the built-in in-memory implementation, add `Raycynix.Extensions.Messaging.Database` on top of the shared database infrastructure.

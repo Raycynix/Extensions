@@ -41,6 +41,29 @@ public sealed class GrpcRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that gRPC transport options can be bound from configuration using the default section name.
+    /// </summary>
+    [Fact]
+    public void AddGrpc_WithConfiguration_ShouldBindConfigurationAndRegisterDirectClient()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["GrpcDirectMessagingConfiguration:Address"] = "https://catalog.grpc.local"
+            })
+            .Build();
+
+        services.AddRaycynixMessaging(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build())
+            .AddGrpc(configuration);
+
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<GrpcDirectMessagingConfiguration>().Address.Should().Be("https://catalog.grpc.local");
+        provider.GetRequiredService<IDirectRequestClient>().Should().BeOfType<GrpcRequestClient>();
+    }
+
+    /// <summary>
     /// Verifies that gRPC direct requests resolve the registered unary operation and return its response.
     /// </summary>
     [Fact]

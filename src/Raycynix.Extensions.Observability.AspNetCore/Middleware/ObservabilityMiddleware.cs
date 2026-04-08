@@ -17,6 +17,8 @@ public static class ObservabilityMiddleware
     /// <returns>The same <see cref="IApplicationBuilder"/> instance for chaining.</returns>
     public static IApplicationBuilder UseRaycynixObservability(this IApplicationBuilder app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         app.UseRaycynixTracing();
         app.UseMiddleware<CorrelationMiddleware>();
         app.UseRaycynixMetrics();

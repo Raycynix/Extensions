@@ -29,6 +29,19 @@ public sealed class ExceptionsRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that the registration helper returns the same service collection for chaining.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixExceptions_ShouldReturnSameServiceCollection()
+    {
+        var services = new ServiceCollection();
+
+        var returned = services.AddRaycynixExceptions();
+
+        returned.Should().BeSameAs(services);
+    }
+
+    /// <summary>
     /// Verifies that custom mapping configuration is applied to the registered mapper.
     /// </summary>
     [Fact]

@@ -65,8 +65,10 @@ public sealed class TracingMiddlewareTests
             Log.Logger.Information("request handled");
             return Task.CompletedTask;
         });
-        var context = new DefaultHttpContext();
-        context.TraceIdentifier = "trace-id-from-context";
+        var context = new DefaultHttpContext
+        {
+            TraceIdentifier = "trace-id-from-context"
+        };
 
         await middleware.InvokeAsync(context);
 

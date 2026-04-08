@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Generic host startup integration for Raycynix database initialization.</Description>
-        <PackageTags>raycynix;database;hosting;generic-host;startup;initialization;dotnet</PackageTags>
+        <Description>Generic host startup integration for Raycynix database initialization through IDatabaseInitializer.</Description>
+        <PackageTags>raycynix;database;hosting;generic-host;startup;initialization;workers;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

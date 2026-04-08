@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Configuration.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Configuration.AspNetCore` adds ASP.NET Core-specific integrations for Raycynix configuration and feature flags.
 
 ## What it contains
@@ -29,6 +27,19 @@ app.MapGet("/dashboard", () => Results.Ok("enabled"))
     .RequireFeature("NewDashboard");
 
 app.Run();
+```
+
+## appsettings.json
+
+```json
+{
+  "FeatureFlags": {
+    "Flags": {
+      "NewDashboard": true,
+      "BetaApi": false
+    }
+  }
+}
 ```
 
 Use the attribute for MVC or endpoint metadata scenarios:

@@ -16,6 +16,7 @@ public sealed class DatabaseContext : DbContext
     private readonly DatabaseConfiguration _config;
     private readonly DatabaseModelAssemblyRegistry _modelAssemblyRegistry;
     private readonly DatabaseObservability _observability;
+    private readonly string _providerName;
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class DatabaseContext : DbContext
         _config = config;
         _modelAssemblyRegistry = modelAssemblyRegistry;
         _observability = serviceProvider.GetRequiredService<DatabaseObservability>();
+        _providerName = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().ProviderName;
         _serviceProvider = serviceProvider;
         
         ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
@@ -54,7 +56,7 @@ public sealed class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        using var modelCreatingScope = _observability.BeginOperation(_config.Provider, "model_creating");
+        using var modelCreatingScope = _observability.BeginOperation(_providerName, "model_creating");
 
         var configurators = GetConfigurators();
         _observability.AddTag("database.configurator.count", configurators.Count.ToString());
@@ -70,9 +72,13 @@ public sealed class DatabaseContext : DbContext
             }
         }
 
-        _observability.RecordSuccess(_config.Provider, "model_creating");
+        _observability.RecordSuccess(_providerName, "model_creating");
     }
 
+    /// <summary>
+    /// Builds the cache key fragment representing the active provider, seed mode, and applied configurators.
+    /// </summary>
+    /// <returns>The model cache key fragment for the current context instance.</returns>
     internal string GetModelCacheKey()
     {
         var configuratorKeys = GetConfigurators()
@@ -82,7 +88,7 @@ public sealed class DatabaseContext : DbContext
 
         return string.Join(
             "|",
-            new[] { _config.Provider.ToString(), _config.EnableSeed.ToString() }
+            new[] { _providerName, _config.EnableSeed.ToString() }
                 .Concat(configuratorKeys));
     }
 

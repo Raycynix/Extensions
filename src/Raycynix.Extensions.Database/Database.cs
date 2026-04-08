@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Data.SqlClient;
-using Microsoft.Data.Sqlite;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -8,14 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
-using MySql.Data.MySqlClient;
-using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
-using Raycynix.Extensions.Database.Enums;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
-using MySqlConfiguration = Raycynix.Extensions.Database.Configurations.MySqlConfiguration;
 
 namespace Raycynix.Extensions.Database;
 
@@ -28,113 +22,55 @@ public static class Database
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Registers the database context, initializer, and provider-specific EF Core configuration.
+        /// Registers the database context, initializer, and shared database infrastructure.
         /// </summary>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
-        /// <returns>A builder that can be used to extend the database model registration.</returns>
+        /// <param name="registerCallerAssembly">
+        /// When <see langword="true"/>, the caller assembly is automatically scanned for configurators.
+        /// Disable this when assemblies should be registered explicitly.
+        /// </param>
+        /// <returns>A builder that can be used to extend the database registration.</returns>
         public DatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseConfiguration>? setup = null,
+            bool registerCallerAssembly = true)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
             var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
             var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
-            modelAssemblyRegistry.Add(callerAssembly);
+
+            if (registerCallerAssembly)
+            {
+                modelAssemblyRegistry.Add(callerAssembly);
+            }
 
             services.AddRaycynixConfiguration<DatabaseConfiguration>(
                 configuration,
                 configurePostBind: setup);
-            
+
             services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
             services.AddSingleton(serviceProvider =>
                 serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
-            
+
             services.TryAddSingleton(modelAssemblyRegistry);
-            
+            services.AddSingleton(static serviceProvider => ResolveProviderDescriptor(serviceProvider));
+
             services.AddSingleton<DatabaseObservability>();
             services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
 
             services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
             {
                 var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-                var finalString = ResolveConnection(config);
+                var providerRegistration = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
+
+                var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
                 options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
-
-                switch (config.Provider)
-                {
-                    case DatabaseProvider.PostgreSql:
-                        options.UseNpgsql(finalString, npgsqlOptions =>
-                        {
-                            npgsqlOptions.EnableRetryOnFailure(
-                                config.RetryCount,
-                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                                null);
-
-                            npgsqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
-
-                            var providerConfig = config.PostgreSqlConfiguration;
-                            if (providerConfig?.CommandTimeoutSeconds is not null)
-                            {
-                                npgsqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                            }
-                        });
-                        break;
-
-                    case DatabaseProvider.MsSqlServer:
-                        options.UseSqlServer(finalString, sqlOptions =>
-                        {
-                            sqlOptions.EnableRetryOnFailure(
-                                config.RetryCount,
-                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                                null);
-
-                            sqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
-
-                            var providerConfig = config.MsSqlServerConfiguration;
-                            if (providerConfig?.CommandTimeoutSeconds is not null)
-                            {
-                                sqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                            }
-                        });
-                        break;
-
-                    case DatabaseProvider.MySql:
-                        options.UseMySQL(finalString, mySqlOptions =>
-                        {
-                            mySqlOptions.EnableRetryOnFailure(
-                                config.RetryCount,
-                                TimeSpan.FromSeconds(config.RetryDelaySeconds),
-                                null);
-
-                            mySqlOptions.MigrationsAssembly(callerAssembly.GetName().Name);
-
-                            var providerConfig = config.MySqlConfiguration;
-                            if (providerConfig?.CommandTimeoutSeconds is not null)
-                            {
-                                mySqlOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                            }
-                        });
-                        break;
-
-                    case DatabaseProvider.Sqlite:
-                    default:
-                        options.UseSqlite(finalString, sqliteOptions =>
-                        {
-                            sqliteOptions.MigrationsAssembly(callerAssembly.GetName().Name);
-
-                            var providerConfig = config.SqlliteConfiguration;
-                            if (providerConfig?.CommandTimeoutSeconds is not null)
-                            {
-                                sqliteOptions.CommandTimeout(providerConfig.CommandTimeoutSeconds.Value);
-                            }
-                        });
-                        break;
-                }
+                providerRegistration.Configure(options, connectionString, config, callerAssembly, serviceProvider);
             });
 
-            return new DatabaseBuilder(services);
+            return new DatabaseBuilder(services, configuration, callerAssembly);
         }
 
         /// <summary>
@@ -177,113 +113,21 @@ public static class Database
         return registry;
     }
 
-    private static string ResolveConnection(DatabaseConfiguration config)
+    private static DatabaseProviderDescriptor ResolveProviderDescriptor(IServiceProvider serviceProvider)
     {
-        if (!string.IsNullOrWhiteSpace(config.ConnectionString))
-        {
-            return config.ConnectionString;
-        }
+        var registrations = serviceProvider.GetServices<IDatabaseProviderRegistration>().ToArray();
 
-        var connection = config.ConnectionConfiguration
-                         ?? throw new ArgumentException("Connection configuration is missing.");
-
-        return config.Provider switch
+        return registrations.Length switch
         {
-            DatabaseProvider.PostgreSql => BuildPostgreSqlConnectionString(connection, config.PostgreSqlConfiguration),
-            DatabaseProvider.MsSqlServer => BuildSqlServerConnectionString(connection, config.MsSqlServerConfiguration),
-            DatabaseProvider.MySql => BuildMySqlConnectionString(connection, config.MySqlConfiguration),
-            DatabaseProvider.Sqlite => BuildSqliteConnectionString(connection, config.SqlliteConfiguration),
-            _ => throw new NotSupportedException($"Resolving for {config.Provider} not realised.")
+            1 => new DatabaseProviderDescriptor
+            {
+                ProviderName = registrations[0].ProviderName,
+                Registration = registrations[0]
+            },
+            0 => throw new NotSupportedException(
+                "No database provider is registered. Add exactly one matching provider package, for example AddSqlite(), AddPostgreSql(), AddMsSql(), or AddMySql()."),
+            _ => throw new InvalidOperationException(
+                $"Multiple database providers are registered ({string.Join(", ", registrations.Select(static registration => registration.ProviderName))}). Register exactly one database provider package.")
         };
-    }
-
-    private static string BuildPostgreSqlConnectionString(
-        ConnectionConfiguration connection,
-        PostgreSqlConfiguration? providerConfig)
-    {
-        var builder = new NpgsqlConnectionStringBuilder
-        {
-            Host = connection.Host,
-            Port = connection.Port ?? 5432,
-            Database = connection.Name,
-            Username = connection.Username,
-            Password = connection.Password,
-            Pooling = providerConfig?.Pooling ?? true,
-            IncludeErrorDetail = providerConfig?.IncludeErrorDetail ?? false
-        };
-
-        if (providerConfig?.MinimumPoolSize is not null)
-        {
-            builder.MinPoolSize = providerConfig.MinimumPoolSize.Value;
-        }
-
-        if (providerConfig?.MaximumPoolSize is not null)
-        {
-            builder.MaxPoolSize = providerConfig.MaximumPoolSize.Value;
-        }
-
-        if (providerConfig?.CommandTimeoutSeconds is not null)
-        {
-            builder.CommandTimeout = providerConfig.CommandTimeoutSeconds.Value;
-        }
-
-        return builder.ConnectionString;
-    }
-
-    private static string BuildSqlServerConnectionString(
-        ConnectionConfiguration connection,
-        MsSqlServerConfiguration? providerConfig)
-    {
-        var builder = new SqlConnectionStringBuilder()
-        {
-            DataSource = connection.Host,
-            InitialCatalog = connection.Name,
-            UserID = connection.Username,
-            Password = connection.Password,
-            TrustServerCertificate = providerConfig?.TrustServerCertificate ?? true,
-            MultipleActiveResultSets = providerConfig?.MultipleActiveResultSets ?? false
-        };
-
-        return builder.ConnectionString;
-    }
-
-    private static string BuildMySqlConnectionString(
-        ConnectionConfiguration connection,
-        MySqlConfiguration? providerConfig)
-    {
-        var builder = new MySqlConnectionStringBuilder
-        {
-            Server = connection.Host,
-            Port = (uint)(connection.Port ?? 3306),
-            Database = connection.Name,
-            UserID = connection.Username,
-            Password = connection.Password,
-            AllowUserVariables = providerConfig?.AllowUserVariables ?? true,
-            Pooling = providerConfig?.Pooling ?? true
-        };
-
-        return builder.ConnectionString;
-    }
-
-    private static string BuildSqliteConnectionString(
-        ConnectionConfiguration connection,
-        SqlliteConfiguration? providerConfig)
-    {
-        var builder = new SqliteConnectionStringBuilder
-        {
-            DataSource = connection.Name
-        };
-
-        if (!string.IsNullOrWhiteSpace(providerConfig?.Mode))
-        {
-            builder.Mode = Enum.Parse<SqliteOpenMode>(providerConfig.Mode, ignoreCase: true);
-        }
-
-        if (!string.IsNullOrWhiteSpace(providerConfig?.Cache))
-        {
-            builder.Cache = Enum.Parse<SqliteCacheMode>(providerConfig.Cache, ignoreCase: true);
-        }
-
-        return builder.ToString();
     }
 }

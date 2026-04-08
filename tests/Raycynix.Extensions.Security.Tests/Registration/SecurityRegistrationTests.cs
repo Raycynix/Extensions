@@ -147,4 +147,18 @@ public class SecurityRegistrationTests
         action.Should().Throw<OptionsValidationException>()
             .WithMessage("*JWT issuer must be provided.*");
     }
+
+    /// <summary>
+    /// Verifies that repeated core security registration does not duplicate the default security context descriptor.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixSecurity_ShouldBeIdempotent()
+    {
+        var services = new ServiceCollection();
+
+        services.AddRaycynixSecurity();
+        services.AddRaycynixSecurity();
+
+        services.Count(service => service.ServiceType == typeof(ISecurityContext)).Should().Be(1);
+    }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -16,6 +17,30 @@ public static class RabbitMqMessagingBuilderExtensions
     /// Enables RabbitMQ publishing for the current messaging builder.
     /// </summary>
     /// <param name="builder">The messaging builder.</param>
+    /// <param name="configuration">The application configuration source.</param>
+    /// <param name="sectionName">An optional configuration section name. Defaults to <c>RabbitMqMessagingConfiguration</c>.</param>
+    /// <param name="setup">An optional callback for adjusting the bound configuration.</param>
+    /// <returns>The same messaging builder instance.</returns>
+    public static MessagingBuilder AddRabbitMq(
+        this MessagingBuilder builder,
+        IConfiguration configuration,
+        string? sectionName = null,
+        Action<RabbitMqMessagingConfiguration>? setup = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var options = new RabbitMqMessagingConfiguration();
+        configuration.GetSection(sectionName ?? nameof(RabbitMqMessagingConfiguration)).Bind(options);
+        setup?.Invoke(options);
+
+        return builder.AddRabbitMq(options);
+    }
+
+    /// <summary>
+    /// Enables RabbitMQ publishing for the current messaging builder.
+    /// </summary>
+    /// <param name="builder">The messaging builder.</param>
     /// <param name="setup">The RabbitMQ configuration callback.</param>
     /// <returns>The same messaging builder instance.</returns>
     public static MessagingBuilder AddRabbitMq(
@@ -27,6 +52,13 @@ public static class RabbitMqMessagingBuilderExtensions
 
         var configuration = new RabbitMqMessagingConfiguration();
         setup(configuration);
+        return builder.AddRabbitMq(configuration);
+    }
+
+    private static MessagingBuilder AddRabbitMq(
+        this MessagingBuilder builder,
+        RabbitMqMessagingConfiguration configuration)
+    {
         configuration.Validate();
 
         builder.Services.TryAddSingleton(configuration);

@@ -21,6 +21,8 @@ public static class ObservabilityEndpoints
         string healthPath = "/health",
         string metricsPath = "/metrics")
     {
+        ArgumentNullException.ThrowIfNull(endpoints);
+
         endpoints.MapHealthChecks(healthPath);
         endpoints.MapRaycynixMetrics(metricsPath);
 

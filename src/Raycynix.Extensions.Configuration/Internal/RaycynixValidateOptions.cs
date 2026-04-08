@@ -3,10 +3,14 @@ using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Configuration.Internal;
 
+/// <summary>
+/// Aggregates Raycynix configuration validators into the standard options validation pipeline.
+/// </summary>
 internal sealed class RaycynixValidateOptions<TOptions>(
     IEnumerable<IConfigurationValidator<TOptions>> validators) : IValidateOptions<TOptions>
     where TOptions : class
 {
+    /// <inheritdoc />
     public ValidateOptionsResult Validate(string? name, TOptions? options)
     {
         if (options is null)

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.Abstractions
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.Abstractions` contains the transport-neutral contracts used by Raycynix messaging packages.
 
 ## What it contains

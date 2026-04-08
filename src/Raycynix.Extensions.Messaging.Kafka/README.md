@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.Kafka
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.Kafka` contains the Kafka transport integration for Raycynix messaging.
 
 ## What it contains
@@ -22,17 +20,32 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "KafkaMessagingConfiguration": {
+    "BootstrapServers": [
+      "localhost:9092"
+    ],
+    "ClientId": "orders-service",
+    "EnableIdempotence": true,
+    "Acks": "all",
+    "Consumer": {
+      "Enabled": true,
+      "Topics": [
+        "orders.created"
+      ]
+    }
+  }
+}
+```
+
 Register the transport:
 
 ```csharp
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddKafka(options =>
-    {
-        options.BootstrapServers = ["localhost:9092"];
-        options.ClientId = "orders-service";
-        options.EnableIdempotence = true;
-        options.Acks = "all";
-    });
+    .AddKafka(builder.Configuration);
 ```
 
 Publish to a Kafka topic:

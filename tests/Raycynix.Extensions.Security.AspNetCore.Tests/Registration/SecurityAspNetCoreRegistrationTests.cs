@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Conventions;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Tests.Registration;
@@ -63,6 +64,23 @@ public class SecurityAspNetCoreRegistrationTests
         var options = provider.GetRequiredService<IOptions<MvcOptions>>().Value;
 
         options.Conventions.Should().ContainSingle(convention => convention is RaycynixAuthorizationApplicationModelConvention);
+    }
+
+    /// <summary>
+    /// Verifies that ASP.NET Core security registration exposes a request security context implementation.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixAspNetCoreSecurity_ShouldRegisterScopedSecurityContext()
+    {
+        var services = new ServiceCollection();
+        services.AddRaycynixAspNetCoreSecurity(CreateValidConfiguration());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<ISecurityContext>();
+
+        context.Should().NotBeNull();
     }
 
     private static IConfiguration CreateValidConfiguration()

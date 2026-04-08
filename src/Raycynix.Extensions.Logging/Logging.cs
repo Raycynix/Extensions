@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Raycynix.Extensions.Configuration;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Configurations;
 using Raycynix.Extensions.Logging.Implementations;
@@ -19,7 +21,7 @@ namespace Raycynix.Extensions.Logging;
 public static class Logging
 {
     /// <summary>
-    /// Registers the Raycynix logger abstraction.
+    /// Registers the Raycynix typed logger abstraction.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
@@ -28,9 +30,32 @@ public static class Logging
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
         return services;
     }
+
+    /// <summary>
+    /// Registers the Raycynix typed logger abstraction together with the typed logging configuration model.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configuration">The application configuration source.</param>
+    /// <param name="setup">An optional callback for adjusting the bound logging configuration.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixLogging(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<LoggingConfiguration>? setup = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddRaycynixConfiguration<LoggingConfiguration>(configuration, configurePostBind: setup);
+        services.AddRaycynixConfigurationValidator<LoggingConfiguration, LoggingConfigurationValidator>();
+        services.AddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<LoggingConfiguration>>().Current);
+
+        return services.AddRaycynixLogging();
+    }
     
     /// <summary>
-    /// Configures Serilog using the Raycynix logging settings.
+    /// Configures Serilog using the <c>LoggingConfiguration</c> section and optional runtime overrides.
     /// </summary>
     /// <param name="hostBuilder">The host builder to configure.</param>
     /// <param name="setup">An optional callback for adjusting logging settings.</param>
@@ -50,6 +75,7 @@ public static class Logging
             }
 
             setup?.Invoke(config);
+            config.Validate();
 
             loggerConfiguration
                 .MinimumLevel.Is(LogLevelMapper.ToSerilog(config.MinimumLevel))

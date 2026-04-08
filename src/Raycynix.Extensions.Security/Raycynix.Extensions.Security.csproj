@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.3</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core security services for Raycynix applications.</Description>
-        <PackageTags>raycynix;security;authentication;authorization;rbac;contracts;dotnet</PackageTags>
+        <Description>Core security services, typed security configuration, shared identity context handling, and application-level authorization composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;security;authorization;identity;claims;jwt;configuration;rbac;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

@@ -4,8 +4,16 @@ using Raycynix.Extensions.Database.Configurations;
 
 namespace Raycynix.Extensions.Database.Internal;
 
+/// <summary>
+/// Adapts <see cref="DatabaseConfiguration.Validate"/> to the Raycynix configuration validation pipeline.
+/// </summary>
 internal sealed class DatabaseConfigurationValidator : IConfigurationValidator<DatabaseConfiguration>
 {
+    /// <summary>
+    /// Validates the bound database configuration and returns a structured validation result.
+    /// </summary>
+    /// <param name="options">The database configuration to validate.</param>
+    /// <returns>The validation result for the provided configuration.</returns>
     public ConfigurationValidationResult Validate(DatabaseConfiguration options)
     {
         try

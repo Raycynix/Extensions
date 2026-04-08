@@ -1,0 +1,160 @@
+name: Bug report
+description: Report a reproducible problem in a Raycynix.Extensions package.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for defects, regressions, and unexpected behavior in one or more packages from this repository.
+
+  - type: dropdown
+    id: package_name
+    attributes:
+      label: Affected package
+      description: Select the exact package where the problem occurs.
+      options:
+        - Common
+        - Configuration
+        - Configuration.Abstractions
+        - Configuration.AspNetCore
+        - Contracts
+        - Contracts.AspNetCore
+        - Database
+        - Database.Abstractions
+        - Database.AspNetCore
+        - Database.Hosting
+        - Database.MsSql
+        - Database.MySql
+        - Database.PostgreSql
+        - Database.Sqlite
+        - Exceptions
+        - Exceptions.Abstractions
+        - Exceptions.AspNetCore
+        - Messaging
+        - Messaging.Abstractions
+        - Messaging.Database
+        - Messaging.Grpc
+        - Messaging.HttpJson
+        - Messaging.Kafka
+        - Messaging.RabbitMQ
+        - Observability
+        - Observability.AspNetCore
+        - Logging
+        - Logging.Abstractions
+        - Metrics
+        - Metrics.Abstractions
+        - Metrics.AspNetCore
+        - Tracing
+        - Tracing.Abstractions
+        - Tracing.AspNetCore
+        - Security
+        - Security.Abstractions
+        - Security.AspNetCore
+        - Secrets
+        - Multiple packages
+    validations:
+      required: true
+
+  - type: input
+    id: additional_packages
+    attributes:
+      label: Additional affected packages
+      description: Fill this only if the issue spans multiple packages.
+      placeholder: Messaging, Observability
+    validations:
+      required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem briefly and concretely.
+      placeholder: Publishing to Kafka fails when Consumer.Enabled is false and no topics are configured.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reliable reproduction you can.
+      placeholder: |
+        1. Register services with ...
+        2. Configure appsettings.json with ...
+        3. Call ...
+        4. Observe ...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The package should register successfully and publish messages without requiring consumer topics.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Service startup fails with InvalidOperationException...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Exception, logs, or screenshots
+      description: Paste the exception, stack trace, logs, or screenshots if available.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Relevant configuration or code
+      description: Include the smallest relevant config snippet or registration code.
+      render: csharp
+    validations:
+      required: false
+
+  - type: input
+    id: package_version
+    attributes:
+      label: Package version
+      description: Exact NuGet package version, prerelease version, or commit where the issue is observed.
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: dotnet_version
+    attributes:
+      label: .NET SDK/runtime
+      placeholder: .NET 10.0.102
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, host, CI, container, cloud runtime, or anything relevant.
+      placeholder: Windows 11 / Linux container / TeamCity
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-flight check
+      options:
+        - label: I checked the package README and existing issues before opening this bug report.
+          required: true
+        - label: I can reproduce this issue with the information provided above.
+          required: true

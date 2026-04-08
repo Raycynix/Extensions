@@ -9,6 +9,7 @@ namespace Raycynix.Extensions.Observability.AspNetCore.Http;
 internal sealed class CorrelationHttpMessageHandlerBuilderFilter(IServiceProvider serviceProvider)
     : IHttpMessageHandlerBuilderFilter
 {
+    /// <inheritdoc />
     public Action<HttpMessageHandlerBuilder> Configure(Action<HttpMessageHandlerBuilder> next)
     {
         return builder =>

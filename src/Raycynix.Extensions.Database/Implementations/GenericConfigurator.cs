@@ -27,7 +27,16 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
     /// <summary>
     /// Gets the cache key fragment that identifies the model shape produced by the configurator.
     /// </summary>
-    public virtual string ModelCacheKey => Type.FullName ?? Type.Name;
+    public virtual string ModelCacheKey
+    {
+        get
+        {
+            var shapeKey = GetModelShapeCacheKey();
+            return string.IsNullOrWhiteSpace(shapeKey)
+                ? Type.FullName ?? Type.Name
+                : $"{Type.FullName ?? Type.Name}:{shapeKey}";
+        }
+    }
 
     /// <summary>
     /// Applies the default model configuration for <typeparamref name="T"/>.
@@ -78,5 +87,14 @@ public abstract class GenericConfigurator<T> : IGenericConfigurator<T> where T :
         }
 
         return GetType().GetCustomAttribute<DatabaseTableAttribute>()?.Name ?? typeof(T).Name;
+    }
+
+    /// <summary>
+    /// Returns the runtime model-shape discriminator that should participate in EF Core model caching.
+    /// </summary>
+    /// <returns>The additional cache key fragment for runtime-dependent model shape, or an empty value when not needed.</returns>
+    protected virtual string? GetModelShapeCacheKey()
+    {
+        return null;
     }
 }

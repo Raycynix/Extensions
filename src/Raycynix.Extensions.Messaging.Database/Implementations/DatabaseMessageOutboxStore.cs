@@ -44,14 +44,7 @@ internal sealed class DatabaseMessageOutboxStore(
         DateTimeOffset leaseUntil,
         CancellationToken cancellationToken = default)
     {
-        var leased = await TryBeginDispatchCoreAsync(messageId, leaseUntil, cancellationToken).ConfigureAwait(false);
-        if (!leased)
-        {
-            return false;
-        }
-
-        await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return true;
+        return await TryBeginDispatchCoreAsync(messageId, leaseUntil, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -153,6 +146,11 @@ internal sealed class DatabaseMessageOutboxStore(
         return databaseContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Adds a new outbox entry or resets an existing one back to the pending state before it is flushed.
+    /// </summary>
+    /// <param name="message">The serialized message to persist.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     private async Task EnqueueCoreAsync(SerializedMessage message, CancellationToken cancellationToken)
     {
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
@@ -195,6 +193,15 @@ internal sealed class DatabaseMessageOutboxStore(
         existing.Error = null;
     }
 
+    /// <summary>
+    /// Attempts to acquire an optimistic dispatch lease for the specified outbox entry.
+    /// </summary>
+    /// <param name="messageId">The identifier of the outbox entry to lease.</param>
+    /// <param name="leaseUntil">The timestamp until which the lease remains valid.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>
+    /// <see langword="true"/> when the current worker wins the optimistic concurrency race; otherwise, <see langword="false"/>.
+    /// </returns>
     private async Task<bool> TryBeginDispatchCoreAsync(
         string messageId,
         DateTimeOffset leaseUntil,
@@ -205,8 +212,8 @@ internal sealed class DatabaseMessageOutboxStore(
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
             await set
-            .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
-            .ConfigureAwait(false);
+                .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+                .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -236,9 +243,23 @@ internal sealed class DatabaseMessageOutboxStore(
             entry.Error = null;
         }
 
-        return true;
+        try
+        {
+            await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            databaseContext.Entry(entry).State = EntityState.Unchanged;
+            return false;
+        }
     }
 
+    /// <summary>
+    /// Marks an outbox entry as dispatched inside the current unit of work.
+    /// </summary>
+    /// <param name="messageId">The identifier of the outbox entry.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     private async Task MarkDispatchedCoreAsync(string messageId, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -260,6 +281,13 @@ internal sealed class DatabaseMessageOutboxStore(
         entry.Error = null;
     }
 
+    /// <summary>
+    /// Marks an outbox entry as failed inside the current unit of work.
+    /// </summary>
+    /// <param name="messageId">The identifier of the outbox entry.</param>
+    /// <param name="exception">The exception that caused the dispatch failure.</param>
+    /// <param name="nextAttemptAt">The next timestamp when the message may be retried.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     private async Task MarkFailedCoreAsync(
         string messageId,
         Exception exception,
@@ -286,6 +314,10 @@ internal sealed class DatabaseMessageOutboxStore(
         entry.Error = exception.Message;
     }
 
+    /// <summary>
+    /// Determines whether the current change tracker contains pending changes outside the messaging entities.
+    /// </summary>
+    /// <returns><see langword="true"/> when the caller should defer flushing to an ambient unit of work.</returns>
     private bool HasExternalPendingChanges()
     {
         return databaseContext.ChangeTracker.Entries()
@@ -293,6 +325,11 @@ internal sealed class DatabaseMessageOutboxStore(
             .Any(entry => !MessagingEntityTypes.Contains(entry.Entity.GetType()));
     }
 
+    /// <summary>
+    /// Maps a tracked outbox entity to the public outbox entry model.
+    /// </summary>
+    /// <param name="entry">The database entity to map.</param>
+    /// <returns>The public outbox entry representation.</returns>
     private static MessageOutboxEntry Map(MessagingOutboxEntryEntity entry)
     {
         return new MessageOutboxEntry

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Observability
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Observability` contains the core observability composition for Raycynix applications.
 
 ## What it contains
@@ -20,6 +18,25 @@
 
 ```csharp
 builder.Services.AddRaycynixObservability();
+```
+
+```csharp
+public sealed class CheckoutHandler(
+    IOperationContext operationContext,
+    Raycynix.Extensions.Logging.Abstractions.ILogger<CheckoutHandler> logger,
+    Raycynix.Extensions.Tracing.Abstractions.Interfaces.ITracer tracer)
+{
+    public void Handle()
+    {
+        using var activity = tracer.StartTrace("checkout.handle");
+
+        logger.Information("Handling checkout", new
+        {
+            operationContext.CorrelationId,
+            operationContext.TraceId
+        });
+    }
+}
 ```
 
 For ASP.NET Core integration, use `Raycynix.Extensions.Observability.AspNetCore`.

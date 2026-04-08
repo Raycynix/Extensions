@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -18,6 +19,28 @@ public static class GrpcMessagingBuilderExtensions
         /// <summary>
         /// Enables the gRPC direct transport for the current messaging builder.
         /// </summary>
+        /// <param name="configuration">The application configuration source.</param>
+        /// <param name="sectionName">An optional configuration section name. Defaults to <c>GrpcDirectMessagingConfiguration</c>.</param>
+        /// <param name="setup">An optional callback for adjusting the bound configuration.</param>
+        /// <returns>The same messaging builder instance.</returns>
+        public MessagingBuilder AddGrpc(
+            IConfiguration configuration,
+            string? sectionName = null,
+            Action<GrpcDirectMessagingConfiguration>? setup = null)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            var options = new GrpcDirectMessagingConfiguration();
+            configuration.GetSection(sectionName ?? nameof(GrpcDirectMessagingConfiguration)).Bind(options);
+            setup?.Invoke(options);
+
+            return builder.AddGrpc(options);
+        }
+
+        /// <summary>
+        /// Enables the gRPC direct transport for the current messaging builder.
+        /// </summary>
         /// <param name="setup">The gRPC configuration callback.</param>
         /// <returns>The same messaging builder instance.</returns>
         public MessagingBuilder AddGrpc(Action<GrpcDirectMessagingConfiguration> setup)
@@ -27,15 +50,7 @@ public static class GrpcMessagingBuilderExtensions
 
             var configuration = new GrpcDirectMessagingConfiguration();
             setup(configuration);
-            configuration.Validate();
-
-            builder.Services.TryAddSingleton(configuration);
-            builder.Services.TryAddSingleton<IGrpcClientFactory, GrpcClientFactory>();
-            builder.Services.TryAddScoped<IGrpcRequestProcessor, GrpcRequestProcessor>();
-            builder.Services.TryAddSingleton<IGrpcRequestClient, GrpcRequestClient>();
-            builder.Services.Replace(ServiceDescriptor.Singleton<IDirectRequestClient, GrpcRequestClient>());
-
-            return builder;
+            return builder.AddGrpc(configuration);
         }
 
         /// <summary>
@@ -57,6 +72,19 @@ public static class GrpcMessagingBuilderExtensions
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IGrpcRequestOperation>(
                     new GrpcRequestOperation<TGrpcClient, TRequest, TResponse>(destination, send)));
+
+            return builder;
+        }
+
+        private MessagingBuilder AddGrpc(GrpcDirectMessagingConfiguration configuration)
+        {
+            configuration.Validate();
+
+            builder.Services.TryAddSingleton(configuration);
+            builder.Services.TryAddSingleton<IGrpcClientFactory, GrpcClientFactory>();
+            builder.Services.TryAddScoped<IGrpcRequestProcessor, GrpcRequestProcessor>();
+            builder.Services.TryAddSingleton<IGrpcRequestClient, GrpcRequestClient>();
+            builder.Services.Replace(ServiceDescriptor.Singleton<IDirectRequestClient, GrpcRequestClient>());
 
             return builder;
         }

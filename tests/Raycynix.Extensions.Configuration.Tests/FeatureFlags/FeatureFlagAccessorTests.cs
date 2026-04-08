@@ -36,4 +36,28 @@ public class FeatureFlagAccessorTests
         featureFlags.GetAll().Should().ContainKey("NewDashboard").WhoseValue.Should().BeTrue();
         featureFlags.GetAll().Should().ContainKey("UseFastCache").WhoseValue.Should().BeFalse();
     }
+
+    /// <summary>
+    /// Verifies that feature flags can bind from an explicit custom section name.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixFeatureFlags_ShouldReadFlagsFromExplicitSection()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PlatformFlags:Flags:NewDashboard"] = "true",
+                ["PlatformFlags:Flags:UseFastCache"] = "false"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddRaycynixFeatureFlags(configuration, sectionName: "PlatformFlags");
+
+        using var provider = services.BuildServiceProvider();
+        var featureFlags = provider.GetRequiredService<IFeatureFlagAccessor>();
+
+        featureFlags.IsEnabled("NewDashboard").Should().BeTrue();
+        featureFlags.IsDisabled("UseFastCache").Should().BeTrue();
+    }
 }

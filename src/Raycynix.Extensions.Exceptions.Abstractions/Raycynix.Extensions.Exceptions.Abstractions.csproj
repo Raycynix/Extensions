@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.3.0</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Abstractions and contracts for Raycynix exception handling.</Description>
-        <PackageTags>raycynix;exceptions;abstractions;contracts;error-handling;retry;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix exception handling, retry execution, masking, and background failure flows.</Description>
+        <PackageTags>raycynix;exceptions;abstractions;contracts;error-handling;retry;masking;background;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

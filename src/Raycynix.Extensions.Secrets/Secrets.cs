@@ -17,6 +17,8 @@ public static class Secrets
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixSecrets(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, EnvironmentSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, GitHubSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, TeamCitySecretProvider>());

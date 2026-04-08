@@ -44,6 +44,36 @@ public sealed class RabbitMqRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that RabbitMQ transport options can be bound from configuration using the default section name.
+    /// </summary>
+    [Fact]
+    public async Task AddRabbitMq_WithConfiguration_ShouldBindConfigurationAndRegisterPublisher()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["RabbitMqMessagingConfiguration:Host"] = "rabbit.internal",
+                ["RabbitMqMessagingConfiguration:Port"] = "5673",
+                ["RabbitMqMessagingConfiguration:Exchange:Name"] = "integration.events",
+                ["RabbitMqMessagingConfiguration:Queue:Name"] = "orders.created"
+            })
+            .Build();
+
+        services.AddRaycynixMessaging(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build())
+            .AddRabbitMq(configuration);
+
+        await using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<RabbitMqMessagingConfiguration>();
+        options.Host.Should().Be("rabbit.internal");
+        options.Port.Should().Be(5673);
+        options.Exchange.Name.Should().Be("integration.events");
+        options.Queue.Name.Should().Be("orders.created");
+        provider.GetRequiredService<ITransportMessagePublisher>().GetType().Name.Should().Be("RabbitMqMessagePublisher");
+    }
+
+    /// <summary>
     /// Verifies that RabbitMQ publishing initializes topology and publishes to the configured exchange.
     /// </summary>
     [Fact]

@@ -1,3 +1,4 @@
+using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Messaging.Implementations;
@@ -188,12 +189,4 @@ public sealed class MessageObservability
         return messageType.FullName ?? messageType.Name;
     }
 
-    private sealed class NoopDisposable : IDisposable
-    {
-        public static NoopDisposable Instance { get; } = new();
-
-        public void Dispose()
-        {
-        }
-    }
 }

@@ -1,4 +1,4 @@
-using Raycynix.Extensions.Database.Enums;
+using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions;
@@ -6,18 +6,24 @@ using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Database.Internal;
 
+/// <summary>
+/// Coordinates optional tracing and metrics emission for database operations.
+/// </summary>
 internal sealed class DatabaseObservability
 {
     private readonly ITracer? _tracer;
     private readonly IMetricCounter? _operationCounter;
     private readonly IMetricHistogram? _operationDuration;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="DatabaseObservability"/>.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider used to resolve optional observability services.</param>
     public DatabaseObservability(IServiceProvider serviceProvider)
     {
         _tracer = serviceProvider.GetService(typeof(ITracer)) as ITracer;
 
-        var metricsService = serviceProvider.GetService(typeof(IMetricsService)) as IMetricsService;
-        if (metricsService is null)
+        if (serviceProvider.GetService(typeof(IMetricsService)) is not IMetricsService metricsService)
         {
             return;
         }
@@ -36,9 +42,15 @@ internal sealed class DatabaseObservability
             "operation");
     }
 
-    public IDisposable BeginOperation(DatabaseProvider provider, string operation)
+    /// <summary>
+    /// Starts timing and tracing for a database operation.
+    /// </summary>
+    /// <param name="providerName">The logical provider name.</param>
+    /// <param name="operation">The logical operation name.</param>
+    /// <returns>A disposable scope that completes the timing and tracing operation.</returns>
+    public IDisposable BeginOperation(string providerName, string operation)
     {
-        var providerName = provider.ToString().ToLowerInvariant();
+        providerName = providerName.ToLowerInvariant();
         var timer = _operationDuration?.MeasureDuration(providerName, operation) ?? NoopDisposable.Instance;
         var trace = _tracer?.StartTrace($"database.{operation}", new Dictionary<string, string>
         {
@@ -49,27 +61,42 @@ internal sealed class DatabaseObservability
         return new CompositeDisposable(timer, trace);
     }
 
-    public void RecordSuccess(DatabaseProvider provider, string operation)
+    /// <summary>
+    /// Records a successful database operation result.
+    /// </summary>
+    /// <param name="providerName">The logical provider name.</param>
+    /// <param name="operation">The logical operation name.</param>
+    public void RecordSuccess(string providerName, string operation)
     {
-        Record(provider, operation, "success");
+        Record(providerName, operation, "success");
     }
 
-    public void RecordFailure(DatabaseProvider provider, string operation)
+    /// <summary>
+    /// Records a failed database operation result.
+    /// </summary>
+    /// <param name="providerName">The logical provider name.</param>
+    /// <param name="operation">The logical operation name.</param>
+    public void RecordFailure(string providerName, string operation)
     {
-        Record(provider, operation, "failure");
+        Record(providerName, operation, "failure");
     }
 
+    /// <summary>
+    /// Adds a trace tag when tracing is enabled.
+    /// </summary>
+    /// <param name="key">The tag key.</param>
+    /// <param name="value">The tag value.</param>
     public void AddTag(string key, string value)
     {
         _tracer?.AddTag(key, value);
     }
 
-    private void Record(DatabaseProvider provider, string operation, string status)
+    private void Record(string providerName, string operation, string status)
     {
         _operationCounter?.Increment(
             labelValues:
             [
-                provider.ToString().ToLowerInvariant(),
+                providerName.ToLowerInvariant(),
                 operation,
                 status
             ]);
@@ -84,12 +111,4 @@ internal sealed class DatabaseObservability
         }
     }
 
-    private sealed class NoopDisposable : IDisposable
-    {
-        public static NoopDisposable Instance { get; } = new();
-
-        public void Dispose()
-        {
-        }
-    }
 }

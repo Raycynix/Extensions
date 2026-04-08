@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Contracts.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Contracts.AspNetCore` adds ASP.NET Core integration for the shared contract types defined in `Raycynix.Extensions.Contracts`.
 
 ## What it contains
@@ -20,6 +18,22 @@ builder.Services.AddRaycynixContractsAspNetCore();
 var app = builder.Build();
 app.UseRaycynixContracts();
 ```
+
+## Response Shape Options
+
+Use plain contract results when you want headers plus the original response body:
+
+```csharp
+app.MapGet("/catalog/prices/{id}", (HttpContext httpContext) =>
+        httpContext.Contract(new Money
+        {
+            Amount = 149.99m,
+            Currency = "USD"
+        }))
+    .WithContract("catalog.prices", "1.2.0");
+```
+
+Use `VersionedContract(...)` when you want the body wrapped into `VersionedContract<T>`.
 
 ## How It Works
 

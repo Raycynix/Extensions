@@ -35,4 +35,18 @@ public class ObservabilityRegistrationTests
         handler.Should().NotBeNull();
         filters.Should().ContainSingle(x => x.GetType().Name == "CorrelationHttpMessageHandlerBuilderFilter");
     }
+
+    /// <summary>
+    /// Verifies that the ASP.NET Core observability registration can be applied repeatedly without duplicating the HTTP builder filter.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixAspNetCoreObservability_ShouldBeIdempotent_ForHttpBuilderFilter()
+    {
+        var services = new ServiceCollection();
+
+        services.AddRaycynixAspNetCoreObservability();
+        services.AddRaycynixAspNetCoreObservability();
+
+        services.Count(service => service.ServiceType == typeof(IHttpMessageHandlerBuilderFilter)).Should().Be(1);
+    }
 }

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Exceptions.Abstractions
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Exceptions.Abstractions` contains the contracts and shared models used by the Raycynix exceptions packages.
 
 ## What it contains
@@ -14,3 +12,23 @@
 ## Purpose
 
 This package lets other packages depend on Raycynix exception contracts without taking a dependency on the full implementation package.
+
+## Example
+
+Libraries can depend only on abstractions when they need retry or masking contracts:
+
+```csharp
+public sealed class SyncService(IRetryExecutor retryExecutor)
+{
+    public Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        return retryExecutor.ExecuteAsync(
+            operation: async token =>
+            {
+                await Task.Delay(10, token);
+            },
+            operationName: "SyncService.Execute",
+            cancellationToken: cancellationToken);
+    }
+}
+```

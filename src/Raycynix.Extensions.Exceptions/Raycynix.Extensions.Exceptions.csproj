@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.3.0</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core exception handling, mapping, masking, and retry services for Raycynix applications.</Description>
-        <PackageTags>raycynix;exceptions;error-handling;retry;mapping;masking;dotnet</PackageTags>
+        <Description>Core exception handling, mapping, masking, retry execution, and background task failure helpers for Raycynix applications.</Description>
+        <PackageTags>raycynix;exceptions;error-handling;retry;mapping;masking;background;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

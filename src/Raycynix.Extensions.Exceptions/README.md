@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Exceptions
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Exceptions` is the core exception handling package.
 
 ## What it contains
@@ -29,6 +27,18 @@ builder.Services.AddRaycynixExceptions(options =>
         errorCode: "invalid_operation",
         message: "The operation is not valid.",
         statusCode: 400);
+});
+```
+
+You can also customize mappings for domain-specific exceptions:
+
+```csharp
+builder.Services.AddRaycynixExceptions(options =>
+{
+    options.Map<UnauthorizedAccessException>(
+        errorCode: "access_denied",
+        message: "You do not have permission to perform this action.",
+        statusCode: 403);
 });
 ```
 

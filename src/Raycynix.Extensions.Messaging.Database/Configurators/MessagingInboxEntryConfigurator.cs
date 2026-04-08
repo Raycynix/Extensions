@@ -16,9 +16,6 @@ internal sealed class MessagingInboxEntryConfigurator(
     public override Type[] DependsOn => [];
 
     /// <inheritdoc />
-    public override string ModelCacheKey => $"{base.ModelCacheKey}:{configuration.InboxTableName}";
-
-    /// <inheritdoc />
     public override void Configure(ModelBuilder modelBuilder)
     {
         var entity = modelBuilder.Entity<MessagingInboxEntryEntity>()
@@ -31,6 +28,12 @@ internal sealed class MessagingInboxEntryConfigurator(
         
         entity.Property(static entry => entry.Status).IsRequired();
         
-        entity.Property(static entry => entry.UpdatedAt).IsRequired();
+        entity.Property(static entry => entry.UpdatedAt).IsRequired().IsConcurrencyToken();
+    }
+
+    /// <inheritdoc />
+    protected override string? GetModelShapeCacheKey()
+    {
+        return configuration.InboxTableName;
     }
 }

@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.PostgreSql.Configurations;
 
 /// <summary>
 /// Represents PostgreSQL-specific connection settings.

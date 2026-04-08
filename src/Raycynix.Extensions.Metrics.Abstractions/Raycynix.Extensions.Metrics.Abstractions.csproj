@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.2.1</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
         
-        <Description>Abstractions for Raycynix metrics services.</Description>
-        <PackageTags>raycynix;metrics;abstractions;contracts;prometheus;dotnet</PackageTags>
+        <Description>Abstractions and contracts for Raycynix metrics services, counters, gauges, histograms, and shared instrumentation primitives.</Description>
+        <PackageTags>raycynix;metrics;abstractions;contracts;counters;gauges;histograms;instrumentation;primitives;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

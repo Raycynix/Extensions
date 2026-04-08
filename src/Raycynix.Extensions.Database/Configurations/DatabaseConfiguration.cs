@@ -1,5 +1,3 @@
-using Raycynix.Extensions.Database.Enums;
-
 namespace Raycynix.Extensions.Database.Configurations;
 
 /// <summary>
@@ -16,11 +14,6 @@ public class DatabaseConfiguration
     /// Gets the structured connection settings used when a raw connection string is not supplied.
     /// </summary>
     public ConnectionConfiguration? ConnectionConfiguration { get; init; }
-
-    /// <summary>
-    /// Gets the selected database provider.
-    /// </summary>
-    public DatabaseProvider Provider { get; init; } = DatabaseProvider.PostgreSql;
 
     /// <summary>
     /// Gets a value indicating whether EF Core migrations should be applied during initialization.
@@ -63,26 +56,6 @@ public class DatabaseConfiguration
     public int RetryDelaySeconds { get; init; } = 10;
 
     /// <summary>
-    /// Gets the PostgreSQL-specific settings.
-    /// </summary>
-    public PostgreSqlConfiguration? PostgreSqlConfiguration { get; init; }
-
-    /// <summary>
-    /// Gets the SQL Server-specific settings.
-    /// </summary>
-    public MsSqlServerConfiguration? MsSqlServerConfiguration { get; init; }
-
-    /// <summary>
-    /// Gets the MySQL-specific settings.
-    /// </summary>
-    public MySqlConfiguration? MySqlConfiguration { get; init; }
-
-    /// <summary>
-    /// Gets the SQLite-specific settings.
-    /// </summary>
-    public SqlliteConfiguration? SqlliteConfiguration { get; init; }
-
-    /// <summary>
     /// Validates the configuration and throws when incompatible or incomplete values are provided.
     /// </summary>
     public void Validate()
@@ -114,7 +87,7 @@ public class DatabaseConfiguration
 
         if (hasConnectionConfig)
         {
-            ConnectionConfiguration!.Validate(Provider.ToString());
+            ConnectionConfiguration!.Validate("Database");
         }
     }
 }
