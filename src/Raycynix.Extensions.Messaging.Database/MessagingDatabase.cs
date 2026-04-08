@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +19,30 @@ public static class MessagingDatabase
     /// Replaces the default in-memory messaging inbox and outbox stores with database-backed implementations.
     /// </summary>
     /// <param name="builder">The messaging builder to update.</param>
+    /// <param name="configuration">The application configuration source.</param>
+    /// <param name="sectionName">An optional configuration section name. Defaults to <c>MessagingDatabasePersistenceConfiguration</c>.</param>
+    /// <param name="setup">An optional callback for adjusting the persistence configuration.</param>
+    /// <returns>The same builder instance.</returns>
+    public static MessagingBuilder AddDatabasePersistence(
+        this MessagingBuilder builder,
+        IConfiguration configuration,
+        string? sectionName = null,
+        Action<MessagingDatabasePersistenceConfiguration>? setup = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var options = new MessagingDatabasePersistenceConfiguration();
+        configuration.GetSection(sectionName ?? nameof(MessagingDatabasePersistenceConfiguration)).Bind(options);
+        setup?.Invoke(options);
+
+        return builder.AddDatabasePersistence(options);
+    }
+
+    /// <summary>
+    /// Replaces the default in-memory messaging inbox and outbox stores with database-backed implementations.
+    /// </summary>
+    /// <param name="builder">The messaging builder to update.</param>
     /// <param name="setup">An optional callback for adjusting the persistence configuration.</param>
     /// <returns>The same builder instance.</returns>
     public static MessagingBuilder AddDatabasePersistence(
@@ -28,6 +53,13 @@ public static class MessagingDatabase
 
         var configuration = new MessagingDatabasePersistenceConfiguration();
         setup?.Invoke(configuration);
+        return builder.AddDatabasePersistence(configuration);
+    }
+
+    private static MessagingBuilder AddDatabasePersistence(
+        this MessagingBuilder builder,
+        MessagingDatabasePersistenceConfiguration configuration)
+    {
         configuration.Validate();
 
         builder.Services.Replace(ServiceDescriptor.Singleton(configuration));

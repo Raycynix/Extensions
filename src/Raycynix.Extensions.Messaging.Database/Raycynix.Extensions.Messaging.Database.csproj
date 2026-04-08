@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.4.0</Version>
+        <Version>1.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Database-backed messaging inbox and outbox persistence with ambient unit-of-work support, optimistic concurrency leasing, and retention cleanup built on the shared Raycynix DatabaseContext and EF Core configurators.</Description>
-        <PackageTags>raycynix;messaging;database;efcore;outbox;inbox;unitofwork;cleanup;retention;configurators;optimistic-concurrency;sqlite;postgresql;sqlserver;mysql;dotnet</PackageTags>
+        <Description>Database-backed messaging inbox and outbox persistence with ambient unit-of-work support, optimistic concurrency leasing, retention cleanup, and configuration-based setup on the shared Raycynix DatabaseContext.</Description>
+        <PackageTags>raycynix;messaging;database;efcore;outbox;inbox;unitofwork;cleanup;retention;configuration;sqlite;postgresql;sqlserver;mysql;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -16,6 +16,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
     </ItemGroup>

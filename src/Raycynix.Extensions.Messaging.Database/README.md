@@ -22,18 +22,38 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "MessagingDatabasePersistenceConfiguration": {
+    "InboxTableName": "messaging_inbox",
+    "OutboxTableName": "messaging_outbox",
+    "EnableCleanup": true,
+    "CleanupInterval": "00:05:00",
+    "CleanupBatchSize": 500,
+    "ProcessedInboxRetention": "3.00:00:00",
+    "DispatchedOutboxRetention": "3.00:00:00"
+  }
+}
+```
+
 ```csharp
 builder.Services
     .AddRaycynixDatabase(builder.Configuration)
     .AddPostgreSql();
 
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddDatabasePersistence(options =>
+    .AddDatabasePersistence(builder.Configuration);
+```
+
+You can still override specific values in code:
+
+```csharp
+builder.Services.AddRaycynixMessaging(builder.Configuration)
+    .AddDatabasePersistence(builder.Configuration, options =>
     {
-        options.InboxTableName = "messaging_inbox";
-        options.OutboxTableName = "messaging_outbox";
-        options.ProcessedInboxRetention = TimeSpan.FromDays(3);
-        options.DispatchedOutboxRetention = TimeSpan.FromDays(3);
+        options.InboxTableName = "tenant_a_messaging_inbox";
     });
 ```
 

@@ -42,6 +42,27 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "MessagingConfiguration": {
+    "SourceName": "orders-service",
+    "DefaultFormat": "Json",
+    "Outbox": {
+      "Enabled": true,
+      "EnableRecovery": true,
+      "AutoDispatchOnPublish": false
+    },
+    "IncomingProcessing": {
+      "TrustedSources": [
+        "orders.service"
+      ]
+    }
+  }
+}
+```
+
 Register the base package and optional codecs:
 
 ```csharp

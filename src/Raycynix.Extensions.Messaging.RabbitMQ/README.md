@@ -26,23 +26,36 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "RabbitMqMessagingConfiguration": {
+    "Host": "localhost",
+    "Port": 5672,
+    "Exchange": {
+      "Name": "integration.events",
+      "Type": "topic"
+    },
+    "Queue": {
+      "Name": "orders.created",
+      "PrefetchCount": 16
+    },
+    "DeadLetter": {
+      "Enabled": true,
+      "Exchange": "integration.dlx",
+      "Queue": "integration.dlq",
+      "RoutingKey": "dead-letter"
+    }
+  }
+}
+```
+
 Register the transport:
 
 ```csharp
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddRabbitMq(options =>
-    {
-        options.Host = "localhost";
-        options.Port = 5672;
-        options.Exchange.Name = "integration.events";
-        options.Exchange.Type = "topic";
-        options.Queue.Name = "orders.created";
-        options.Queue.PrefetchCount = 16;
-        options.DeadLetter.Enabled = true;
-        options.DeadLetter.Exchange = "integration.dlx";
-        options.DeadLetter.Queue = "integration.dlq";
-        options.DeadLetter.RoutingKey = "dead-letter";
-    });
+    .AddRabbitMq(builder.Configuration);
 ```
 
 Publish to RabbitMQ:

@@ -12,6 +12,7 @@ using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
+using Raycynix.Extensions.Messaging.Database.Configurations;
 using Raycynix.Extensions.Messaging.Database.Implementations;
 using Raycynix.Extensions.Messaging.Database.Models;
 
@@ -22,6 +23,43 @@ namespace Raycynix.Extensions.Messaging.Database.Tests.Registration;
 /// </summary>
 public sealed class MessagingDatabaseRegistrationTests
 {
+    /// <summary>
+    /// Verifies that database persistence options can be bound from configuration using the default section name.
+    /// </summary>
+    [Fact]
+    public void AddDatabasePersistence_WithConfiguration_ShouldBindPersistenceConfiguration()
+    {
+        var services = new ServiceCollection();
+        var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+
+        try
+        {
+            services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+            services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
+            services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
+                .AddSqlite();
+            services.AddRaycynixMessaging(BuildMessagingConfiguration())
+                .AddDatabasePersistence(new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["MessagingDatabasePersistenceConfiguration:InboxTableName"] = "custom_inbox",
+                        ["MessagingDatabasePersistenceConfiguration:OutboxTableName"] = "custom_outbox",
+                        ["MessagingDatabasePersistenceConfiguration:CleanupBatchSize"] = "250"
+                    })
+                    .Build());
+
+            using var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<MessagingDatabasePersistenceConfiguration>();
+            options.InboxTableName.Should().Be("custom_inbox");
+            options.OutboxTableName.Should().Be("custom_outbox");
+            options.CleanupBatchSize.Should().Be(250);
+        }
+        finally
+        {
+            TryDelete(databasePath);
+        }
+    }
+
     /// <summary>
     /// Verifies that database-backed messaging persistence survives service-provider recreation for outbox entries.
     /// </summary>

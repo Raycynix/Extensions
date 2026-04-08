@@ -14,14 +14,21 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "GrpcDirectMessagingConfiguration": {
+    "Address": "https://catalog-service"
+  }
+}
+```
+
 Register the transport and map logical destinations to unary gRPC calls:
 
 ```csharp
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddGrpc(options =>
-    {
-        options.Address = "https://catalog-service";
-    })
+    .AddGrpc(builder.Configuration)
     .AddGrpcUnary<Catalog.CatalogClient, GetCatalogItemRequest, CatalogItemReply>(
         "catalog/get-item",
         static async (client, request, cancellationToken) =>

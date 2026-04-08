@@ -20,15 +20,22 @@
 
 ## Usage
 
+Example `appsettings.json`:
+
+```json
+{
+  "HttpJsonMessagingConfiguration": {
+    "BaseAddress": "https://catalog-service",
+    "TimeoutSeconds": 30
+  }
+}
+```
+
 Register the transport:
 
 ```csharp
 builder.Services.AddRaycynixMessaging(builder.Configuration)
-    .AddHttpJson(options =>
-    {
-        options.BaseAddress = "https://catalog-service";
-        options.TimeoutSeconds = 30;
-    });
+    .AddHttpJson(builder.Configuration);
 ```
 
 Send a direct request:
