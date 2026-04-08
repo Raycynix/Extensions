@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Secrets
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Secrets` contains the core secret resolution services for Raycynix applications.
 
 ## What it contains

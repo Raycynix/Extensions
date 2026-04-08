@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.Database
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.Database` adds persistent inbox and outbox storage for Raycynix messaging on top of `Raycynix.Extensions.Database`.
 
 ## What it contains

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Security
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Security` contains the core, host-agnostic security implementation for Raycynix applications.
 
 ## What it contains

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging` contains the transport-agnostic messaging foundation for Raycynix applications.
 
 ## What it contains

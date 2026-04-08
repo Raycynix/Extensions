@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Database.Hosting
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Database.Hosting` adds startup integration for generic-host based applications.
 
 ## What it does

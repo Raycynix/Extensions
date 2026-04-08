@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Contracts.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Contracts.AspNetCore` adds ASP.NET Core integration for the shared contract types defined in `Raycynix.Extensions.Contracts`.
 
 ## What it contains

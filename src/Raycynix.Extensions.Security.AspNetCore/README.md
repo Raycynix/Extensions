@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Security.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Security.AspNetCore` adds ASP.NET Core JWT authentication, dynamic authorization policies, and shared authorization-attribute integration for Raycynix security.
 
 ## What it contains

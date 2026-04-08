@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Database.MySql
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Database.MySql` adds MySQL support to `Raycynix.Extensions.Database`.
 
 ## What it contains

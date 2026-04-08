@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Configuration
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Configuration` contains the core typed-configuration registration helpers for Raycynix applications.
 
 ## What it contains

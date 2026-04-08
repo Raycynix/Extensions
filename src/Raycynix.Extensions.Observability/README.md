@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Observability
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Observability` contains the core observability composition for Raycynix applications.
 
 ## What it contains

@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Observability.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Observability.AspNetCore` adds ASP.NET Core integration for Raycynix observability and includes the core observability registration.
 
 ## What it contains

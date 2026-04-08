@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Security.Abstractions
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Security.Abstractions` contains the transport-neutral contracts used by the Raycynix security and secrets packages.
 
 ## What it contains

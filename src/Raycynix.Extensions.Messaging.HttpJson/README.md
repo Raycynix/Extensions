@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.HttpJson
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.HttpJson` contains the direct HTTP JSON transport for Raycynix messaging.
 
 ## What it contains

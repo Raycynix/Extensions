@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Metrics.AspNetCore
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Metrics.AspNetCore` adds ASP.NET Core middleware and endpoint integration for Raycynix metrics.
 
 ## What it contains

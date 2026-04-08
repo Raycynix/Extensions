@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Configuration.Abstractions
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Configuration.Abstractions` contains the contracts used by the Raycynix configuration packages.
 
 ## What it contains

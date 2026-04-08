@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.RabbitMQ
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.RabbitMQ` contains the RabbitMQ transport integration for Raycynix messaging.
 
 ## What it contains

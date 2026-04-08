@@ -1,7 +1,5 @@
 # Raycynix.Extensions.Messaging.Kafka
 
-![TeamCity build status](https://ci.raycynix.com/app/rest/builds/buildType:id:RSX_Extensions_Building/statusIcon.svg)
-
 `Raycynix.Extensions.Messaging.Kafka` contains the Kafka transport integration for Raycynix messaging.
 
 ## What it contains
