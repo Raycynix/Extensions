@@ -8,7 +8,7 @@
 
 - `IOperationContext` and `OperationContext`
 - assembly metadata helpers
-- environment helpers
+- reusable disposable helpers
 
 ## Usage
 
@@ -16,5 +16,7 @@
 services.TryAddScoped<IOperationContext, OperationContext>();
 
 var serviceName = AssemblyHelper.CurrentName();
-var environment = EnvironmentHelper.CurrentEnvironment();
+var serviceVersion = AssemblyHelper.CurrentVersion();
+
+using var _ = NoopDisposable.Instance;
 ```

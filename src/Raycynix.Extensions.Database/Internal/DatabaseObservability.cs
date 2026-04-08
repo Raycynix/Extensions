@@ -1,3 +1,4 @@
+using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions;
@@ -110,12 +111,4 @@ internal sealed class DatabaseObservability
         }
     }
 
-    private sealed class NoopDisposable : IDisposable
-    {
-        public static NoopDisposable Instance { get; } = new();
-
-        public void Dispose()
-        {
-        }
-    }
 }

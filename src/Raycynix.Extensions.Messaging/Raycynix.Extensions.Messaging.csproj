@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Messaging.Abstractions\Raycynix.Extensions.Messaging.Abstractions.csproj" />
