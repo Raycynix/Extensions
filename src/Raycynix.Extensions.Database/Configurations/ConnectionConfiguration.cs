@@ -3,7 +3,7 @@ namespace Raycynix.Extensions.Database.Configurations;
 /// <summary>
 /// Represents the base connection settings used to build a database connection string.
 /// </summary>
-public abstract class ConnectionConfiguration
+public class ConnectionConfiguration
 {
     /// <summary>
     /// Gets the host name or IP address of the database server.

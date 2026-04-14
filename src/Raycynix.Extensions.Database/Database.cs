@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +9,7 @@ using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Configurations;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
+using Raycynix.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database;
 
@@ -45,6 +45,8 @@ public static class Database
             {
                 modelAssemblyRegistry.Add(callerAssembly);
             }
+
+            services.AddRaycynixLogging(configuration);
 
             services.AddRaycynixConfiguration<DatabaseConfiguration>(
                 configuration,
