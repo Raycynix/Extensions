@@ -7,7 +7,12 @@
         <IsPackable>false</IsPackable>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
-        <Version>1.0.0</Version>
+        <Version>1.0.0-example</Version>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Contracts\Raycynix.Extensions.Contracts.csproj" />
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Contracts.AspNetCore\Raycynix.Extensions.Contracts.AspNetCore.csproj" />
+    </ItemGroup>
 
 </Project>
