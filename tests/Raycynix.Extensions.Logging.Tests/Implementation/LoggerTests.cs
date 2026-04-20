@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Raycynix.Extensions.Common.Context;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -21,7 +22,7 @@ public sealed class LoggerTests
         var serilog = CreateLogger(sink);
         var logger = new Implementations.Logger<TestCategory>(serilog);
 
-        logger.Log(LogLevel.Warning, "Price recalculated", metadata: new { ProductId = "sku-1" });
+        logger.Log(LogLevel.Warning, "Price recalculated");
 
         sink.Events.Should().ContainSingle();
         var entry = sink.Events.Single();
@@ -45,6 +46,50 @@ public sealed class LoggerTests
 
         sink.Events.Should().ContainSingle();
         sink.Events.Single().Exception.Should().BeSameAs(exception);
+    }
+
+    /// <summary>
+    /// Verifies that correlation id is taken from the ambient operation context when available.
+    /// </summary>
+    [Fact]
+    public void Log_ShouldAttachCorrelationId_FromOperationContext()
+    {
+        var sink = new CollectingSink();
+        var serilog = CreateLogger(sink);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
+        var previous = OperationContext.Current;
+        OperationContext.Current = new OperationContext
+        {
+            CorrelationId = "corr-123"
+        };
+
+        try
+        {
+            logger.Information("Correlated message");
+        }
+        finally
+        {
+            OperationContext.Current = previous;
+        }
+
+        sink.Events.Should().ContainSingle();
+        sink.Events.Single().Properties["CorrelationId"].ToString().Should().Be("\"corr-123\"");
+    }
+
+    /// <summary>
+    /// Verifies that metadata is omitted when no metadata payload is supplied.
+    /// </summary>
+    [Fact]
+    public void Log_ShouldNotWriteMetadataProperty_WhenMetadataIsNull()
+    {
+        var sink = new CollectingSink();
+        var serilog = CreateLogger(sink);
+        var logger = new Implementations.Logger<TestCategory>(serilog);
+
+        logger.Information("Message without metadata");
+
+        sink.Events.Should().ContainSingle();
+        sink.Events.Single().Properties.Should().NotContainKey("Metadata");
     }
 
     /// <summary>

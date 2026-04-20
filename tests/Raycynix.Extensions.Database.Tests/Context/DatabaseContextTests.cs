@@ -2,10 +2,10 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Context;
 
@@ -21,7 +21,7 @@ public sealed class DatabaseContextTests
     public void Constructor_ShouldApplyChangeTrackerSettingsFromConfiguration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -42,7 +42,7 @@ public sealed class DatabaseContextTests
     public void GenericConfigurator_ShouldUseConfiguredTableNameAttribute()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<AttributedEntity>();
@@ -63,7 +63,7 @@ public sealed class DatabaseContextTests
     public void GenericConfigurator_ShouldUseRuntimeTableNameOverride()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new RuntimeAttributedEntityConfiguration("runtime_attributed_entities"));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
@@ -131,7 +131,7 @@ public sealed class DatabaseContextTests
             .Build();
     }
 
-    private sealed class FakeLogger<T> : ILogger<T>
+    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
@@ -152,9 +152,9 @@ public sealed class DatabaseContextTests
         {
         }
 
-        public void Log(Microsoft.Extensions.Logging.LogLevel logLevel, string message, Exception? exception = null,
-            object? metadata = null)
+        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
+            throw new NotImplementedException();
         }
     }
 }

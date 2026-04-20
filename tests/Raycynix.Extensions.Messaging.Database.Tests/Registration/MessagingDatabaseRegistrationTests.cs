@@ -2,13 +2,13 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Messaging.Abstractions.Attributes;
-using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -34,7 +34,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
         try
         {
-            services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+            services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
             services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
             services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
                 .AddSqlite();
@@ -587,7 +587,7 @@ public sealed class MessagingDatabaseRegistrationTests
         params IEnumerable<KeyValuePair<string, string?>>[] additionalConfiguration)
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton<InboxHandlerState>();
         services.AddSingleton<RecordingTransportPublisher>();
         services.AddSingleton<ITransportMessagePublisher>(serviceProvider =>
@@ -738,7 +738,7 @@ public sealed class MessagingDatabaseRegistrationTests
         }
     }
 
-    private sealed class FakeLogger<T> : ILogger<T>
+    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
@@ -759,8 +759,9 @@ public sealed class MessagingDatabaseRegistrationTests
         {
         }
 
-        public void Log(Microsoft.Extensions.Logging.LogLevel logLevel, string message, Exception? exception = null, object? metadata = null)
+        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
+            throw new NotImplementedException();
         }
     }
 }

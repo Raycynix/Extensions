@@ -15,7 +15,7 @@ internal sealed class LoggingExampleWorker(
     {
         var configuration = loggingConfiguration.Value;
 
-        logger.Information("Logging example started", new
+        logger.Information("Logging example started with environment {Environment}", new
         {
             configuration.ServiceName,
             configuration.Environment,
@@ -28,13 +28,13 @@ internal sealed class LoggingExampleWorker(
                    ["CorrelationId"] = Guid.NewGuid()
                }))
         {
-            logger.Trace("Trace log with structured metadata", new
+            logger.Trace("Trace log with structured metadata {@Metadata}", new
             {
                 Step = "Bootstrap",
                 Timestamp = DateTimeOffset.UtcNow
             });
 
-            logger.Debug("Debug log with startup details", new
+            logger.Debug("Debug log with startup details {@Metadata}", new
             {
                 Environment.MachineName,
                 Environment.ProcessId
