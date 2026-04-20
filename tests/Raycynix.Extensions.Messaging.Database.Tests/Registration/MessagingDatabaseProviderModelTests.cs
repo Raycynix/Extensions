@@ -162,7 +162,6 @@ public sealed class MessagingDatabaseProviderModelTests
         /// <inheritdoc />
         public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
-            throw new NotImplementedException();
         }
     }
 }

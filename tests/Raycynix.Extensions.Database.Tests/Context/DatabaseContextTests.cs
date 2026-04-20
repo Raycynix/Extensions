@@ -154,7 +154,6 @@ public sealed class DatabaseContextTests
 
         public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
-            throw new NotImplementedException();
         }
     }
 }

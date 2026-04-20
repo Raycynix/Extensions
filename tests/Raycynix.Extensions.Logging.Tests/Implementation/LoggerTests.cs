@@ -13,22 +13,22 @@ namespace Raycynix.Extensions.Logging.Tests.Implementation;
 public sealed class LoggerTests
 {
     /// <summary>
-    /// Verifies that log entries preserve the message, metadata, and mapped severity.
+    /// Verifies that log entries preserve the mapped severity and structured template arguments.
     /// </summary>
     [Fact]
-    public void Log_ShouldWriteStructuredEvent_WithMappedLevelAndMetadata()
+    public void Log_ShouldWriteStructuredEvent_WithMappedLevel()
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
         var logger = new Implementations.Logger<TestCategory>(serilog);
 
-        logger.Log(LogLevel.Warning, "Price recalculated");
+        logger.Log(LogLevel.Warning, null, "Price recalculated for {ProductId}", "sku-1");
 
         sink.Events.Should().ContainSingle();
         var entry = sink.Events.Single();
         entry.Level.Should().Be(LogEventLevel.Warning);
-        entry.Properties["Message"].ToString().Should().Be("\"Price recalculated\"");
-        entry.Properties["Metadata"].ToString().Should().Contain("sku-1");
+        entry.MessageTemplate.Text.Should().Be("Price recalculated for {ProductId}");
+        entry.Properties["ProductId"].ToString().Should().Be("\"sku-1\"");
     }
 
     /// <summary>
@@ -41,11 +41,14 @@ public sealed class LoggerTests
         var serilog = CreateLogger(sink);
         var logger = new Implementations.Logger<TestCategory>(serilog);
         var exception = new InvalidOperationException("boom");
-        
-        logger.Error("Failure", exception, new { Operation = "checkout" });
+
+        logger.Error(exception, "Failure during {Operation}", "checkout");
 
         sink.Events.Should().ContainSingle();
-        sink.Events.Single().Exception.Should().BeSameAs(exception);
+        var entry = sink.Events.Single();
+        entry.Exception.Should().BeSameAs(exception);
+        entry.MessageTemplate.Text.Should().Be("Failure during {Operation}");
+        entry.Properties["Operation"].ToString().Should().Be("\"checkout\"");
     }
 
     /// <summary>
@@ -77,10 +80,10 @@ public sealed class LoggerTests
     }
 
     /// <summary>
-    /// Verifies that metadata is omitted when no metadata payload is supplied.
+    /// Verifies that plain messages without template arguments do not create unrelated structured properties.
     /// </summary>
     [Fact]
-    public void Log_ShouldNotWriteMetadataProperty_WhenMetadataIsNull()
+    public void Log_ShouldNotWriteStructuredProperties_WhenTemplateHasNoArguments()
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
@@ -90,13 +93,14 @@ public sealed class LoggerTests
 
         sink.Events.Should().ContainSingle();
         sink.Events.Single().Properties.Should().NotContainKey("Metadata");
+        sink.Events.Single().Properties.Should().NotContainKey("ProductId");
     }
 
     /// <summary>
-    /// Verifies that the Microsoft logger interface path uses the formatter result and state as metadata.
+    /// Verifies that the Microsoft logger interface path emits the formatter result as the final message.
     /// </summary>
     [Fact]
-    public void MicrosoftLoggerLog_ShouldUseFormatterOutput_AndStateMetadata()
+    public void MicrosoftLoggerLog_ShouldUseFormatterOutput()
     {
         var sink = new CollectingSink();
         var serilog = CreateLogger(sink);
@@ -104,12 +108,13 @@ public sealed class LoggerTests
             new Implementations.Logger<TestCategory>(serilog);
         var state = new Dictionary<string, object?> { ["ProductId"] = "sku-1" };
 
-        logger.Log(LogLevel.Information, new EventId(42, "PriceRead"), state, null, static (current, _) => $"Read {current["ProductId"]}");
+        logger.Log(LogLevel.Information, new EventId(42, "PriceRead"), state, null,
+            static (current, _) => $"Read {current["ProductId"]}");
 
         sink.Events.Should().ContainSingle();
         var entry = sink.Events.Single();
-        entry.Properties["Message"].ToString().Should().Be("\"Read sku-1\"");
-        entry.Properties["Metadata"].ToString().Should().Contain("sku-1");
+        entry.RenderMessage().Should().Be("Read sku-1");
+        entry.Exception.Should().BeNull();
     }
 
     /// <summary>
