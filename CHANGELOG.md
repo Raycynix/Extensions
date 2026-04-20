@@ -1,51 +1,42 @@
-# Changelog
+# Changelogs
 
-All notable changes to this repository will be documented in this file.
+Per-package changelogs live next to each package under `src/<PackageName>/CHANGELOG.md`.
 
-The format is based on Keep a Changelog, adapted for this multi-package repository.
-
-## [Unreleased]
-
-### Added
-
-- Placeholder for upcoming changes before the next published release.
-
-## [1.0.0] - 2026-04-08
-
-### Added
-
-- Established `v1` package baselines across the repository with aligned metadata, README files, XML documentation, and package-level tests.
-- Added GitHub issue forms for bug reports and feature requests.
-- Added a shared root release-notes flow through `Directory.Build.props`.
-- Added a root repository changelog for future package and release tracking.
-
-### Changed
-
-- Split database provider implementations into separate packages and removed provider selection through `DatabaseProvider`.
-- Standardized configuration binding and validation patterns across package families.
-- Aligned messaging transport and persistence packages around configuration-based registration and package-level binding coverage.
-- Consolidated shared no-op disposable behavior into `Raycynix.Extensions.Common`.
-- Removed package-level TeamCity badges from package README files and kept repository-level status only in the root README.
-
-### Fixed
-
-- Restored PostgreSQL provider option binding from the nested database configuration section.
-- Ignored empty SQLite `Mode` and `Cache` values during provider binding instead of throwing on startup.
-- Fixed EF Core model cache behavior for runtime table name overrides in database configurators.
-- Fixed database outbox dispatch leasing to avoid duplicate concurrent leases.
-- Allowed anonymous ASP.NET Core security context resolution without throwing for unauthenticated requests.
-- Fixed Kafka packaging so native `librdkafka.redist` assets are not duplicated during pack.
-
-### Package Notes
-
-- `Common`: shared operation context, assembly helpers, and reusable disposable utilities with dedicated tests.
-- `Configuration`: typed configuration, feature flags, validation, reload handling, and ASP.NET Core integration aligned for `v1`.
-- `Contracts`: core contracts and ASP.NET Core integration documented and covered for versioned and plain contract flows.
-- `Database`: core, abstractions, hosting, ASP.NET Core, and all relational provider packages stabilized for `v1`.
-- `Exceptions`: core and ASP.NET Core exception handling packages aligned with docs, coverage, and structured error behavior.
-- `Logging`: logging packages aligned for `v1`, including configuration validation.
-- `Messaging`: core, abstractions, database persistence, Kafka, RabbitMQ, HTTP JSON, and gRPC packages aligned for `v1`.
-- `Metrics`: metrics packages aligned for `v1`, including configuration validation and ASP.NET Core coverage.
-- `Observability`: shared and ASP.NET Core observability packages aligned for `v1`.
-- `Security` and `Secrets`: packages aligned for `v1`, including provider-specific secret tests and safe anonymous security context behavior.
-- `Tracing`: tracing packages aligned for `v1` with docs, metadata, and coverage.
+- [Raycynix.Extensions.Common](src/Raycynix.Extensions.Common/CHANGELOG.md)
+- [Raycynix.Extensions.Configuration](src/Raycynix.Extensions.Configuration/CHANGELOG.md)
+- [Raycynix.Extensions.Configuration.Abstractions](src/Raycynix.Extensions.Configuration.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Configuration.AspNetCore](src/Raycynix.Extensions.Configuration.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Contracts](src/Raycynix.Extensions.Contracts/CHANGELOG.md)
+- [Raycynix.Extensions.Contracts.AspNetCore](src/Raycynix.Extensions.Contracts.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Database](src/Raycynix.Extensions.Database/CHANGELOG.md)
+- [Raycynix.Extensions.Database.Abstractions](src/Raycynix.Extensions.Database.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Database.AspNetCore](src/Raycynix.Extensions.Database.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Database.Hosting](src/Raycynix.Extensions.Database.Hosting/CHANGELOG.md)
+- [Raycynix.Extensions.Database.MsSql](src/Raycynix.Extensions.Database.MsSql/CHANGELOG.md)
+- [Raycynix.Extensions.Database.MySql](src/Raycynix.Extensions.Database.MySql/CHANGELOG.md)
+- [Raycynix.Extensions.Database.PostgreSql](src/Raycynix.Extensions.Database.PostgreSql/CHANGELOG.md)
+- [Raycynix.Extensions.Database.Sqlite](src/Raycynix.Extensions.Database.Sqlite/CHANGELOG.md)
+- [Raycynix.Extensions.Exceptions](src/Raycynix.Extensions.Exceptions/CHANGELOG.md)
+- [Raycynix.Extensions.Exceptions.Abstractions](src/Raycynix.Extensions.Exceptions.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Exceptions.AspNetCore](src/Raycynix.Extensions.Exceptions.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Logging](src/Raycynix.Extensions.Logging/CHANGELOG.md)
+- [Raycynix.Extensions.Logging.Abstractions](src/Raycynix.Extensions.Logging.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging](src/Raycynix.Extensions.Messaging/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.Abstractions](src/Raycynix.Extensions.Messaging.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.Database](src/Raycynix.Extensions.Messaging.Database/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.Grpc](src/Raycynix.Extensions.Messaging.Grpc/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.HttpJson](src/Raycynix.Extensions.Messaging.HttpJson/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.Kafka](src/Raycynix.Extensions.Messaging.Kafka/CHANGELOG.md)
+- [Raycynix.Extensions.Messaging.RabbitMQ](src/Raycynix.Extensions.Messaging.RabbitMQ/CHANGELOG.md)
+- [Raycynix.Extensions.Metrics](src/Raycynix.Extensions.Metrics/CHANGELOG.md)
+- [Raycynix.Extensions.Metrics.Abstractions](src/Raycynix.Extensions.Metrics.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Metrics.AspNetCore](src/Raycynix.Extensions.Metrics.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Observability](src/Raycynix.Extensions.Observability/CHANGELOG.md)
+- [Raycynix.Extensions.Observability.AspNetCore](src/Raycynix.Extensions.Observability.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Secrets](src/Raycynix.Extensions.Secrets/CHANGELOG.md)
+- [Raycynix.Extensions.Security](src/Raycynix.Extensions.Security/CHANGELOG.md)
+- [Raycynix.Extensions.Security.Abstractions](src/Raycynix.Extensions.Security.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Security.AspNetCore](src/Raycynix.Extensions.Security.AspNetCore/CHANGELOG.md)
+- [Raycynix.Extensions.Tracing](src/Raycynix.Extensions.Tracing/CHANGELOG.md)
+- [Raycynix.Extensions.Tracing.Abstractions](src/Raycynix.Extensions.Tracing.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Tracing.AspNetCore](src/Raycynix.Extensions.Tracing.AspNetCore/CHANGELOG.md)

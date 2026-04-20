@@ -4,6 +4,7 @@
         <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>BREAKING CHANGE: logging APIs now use message-template arguments instead of metadata payload objects. Fixed correlation id enrichment and null suffixes in rendered log output.</PackageReleaseNotes>
         
         <Description>Structured logging registration, Serilog-based host integration, typed logger adapters, and configurable console or Elasticsearch logging for Raycynix applications.</Description>
         <PackageTags>raycynix;logging;serilog;structured-logging;host;console;elasticsearch;typed-logger;infrastructure;dotnet</PackageTags>

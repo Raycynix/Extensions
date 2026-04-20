@@ -4,6 +4,7 @@
         <Version>1.0.2</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Updated package examples and test compatibility for the current logging abstractions.</PackageReleaseNotes>
 
         <Description>Core shared database registration, DatabaseContext infrastructure, model assembly discovery, explicit provider-package composition, and provider-agnostic EF Core model caching for Raycynix applications.</Description>
         <PackageTags>raycynix;database;efcore;entityframework;dbcontext;configurators;model-cache;assembly-discovery;initialization;provider-agnostic;infrastructure;dotnet</PackageTags>

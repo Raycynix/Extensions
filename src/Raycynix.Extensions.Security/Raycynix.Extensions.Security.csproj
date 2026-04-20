@@ -4,6 +4,7 @@
         <Version>1.0.1</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Added a host-agnostic Security example focused on SecurityConfiguration binding and core service registration.</PackageReleaseNotes>
 
         <Description>Core security services, typed security configuration, shared identity context handling, and application-level authorization composition for Raycynix applications.</Description>
         <PackageTags>raycynix;security;authorization;identity;claims;jwt;configuration;rbac;dotnet</PackageTags>
