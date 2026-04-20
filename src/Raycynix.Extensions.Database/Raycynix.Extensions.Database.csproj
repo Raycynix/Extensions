@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
 
         <IsPackable>true</IsPackable>
-        
+        <PackageReleaseNotes>Updated package examples and test compatibility for the current logging abstractions.</PackageReleaseNotes>
+
         <Description>Core shared database registration, DatabaseContext infrastructure, model assembly discovery, explicit provider-package composition, and provider-agnostic EF Core model caching for Raycynix applications.</Description>
         <PackageTags>raycynix;database;efcore;entityframework;dbcontext;configurators;model-cache;assembly-discovery;initialization;provider-agnostic;infrastructure;dotnet</PackageTags>
 
@@ -16,21 +17,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj"/>
     </ItemGroup>
 
 </Project>

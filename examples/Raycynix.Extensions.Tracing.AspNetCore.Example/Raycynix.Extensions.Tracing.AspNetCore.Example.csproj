@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+        <Version>1.0.0-example</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj" />
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Tracing.AspNetCore\Raycynix.Extensions.Tracing.AspNetCore.csproj" />
+    </ItemGroup>
+
+</Project>

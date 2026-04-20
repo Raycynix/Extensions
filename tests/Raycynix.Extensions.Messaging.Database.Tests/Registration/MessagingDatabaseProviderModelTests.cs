@@ -2,13 +2,13 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.MsSql;
 using Raycynix.Extensions.Database.MySql;
 using Raycynix.Extensions.Database.PostgreSql;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Messaging.Database.Configurations;
 using Raycynix.Extensions.Messaging.Database.Models;
 
@@ -102,7 +102,7 @@ public sealed class MessagingDatabaseProviderModelTests
         Func<DatabaseBuilder, DatabaseBuilder> registerProvider)
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
 
         var builder = services.AddRaycynixDatabase(
@@ -135,7 +135,7 @@ public sealed class MessagingDatabaseProviderModelTests
     /// Provides a no-op logger for registration tests that only inspect metadata.
     /// </summary>
     /// <typeparam name="T">The log category type.</typeparam>
-    private sealed class FakeLogger<T> : ILogger<T>
+    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
     {
         /// <inheritdoc />
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
@@ -160,7 +160,7 @@ public sealed class MessagingDatabaseProviderModelTests
         }
 
         /// <inheritdoc />
-        public void Log(Microsoft.Extensions.Logging.LogLevel logLevel, string message, Exception? exception = null, object? metadata = null)
+        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
         }
     }

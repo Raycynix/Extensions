@@ -10,7 +10,7 @@
     <PropertyGroup>
         <PackageIcon>logo.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageReleaseNotes>See the repository changelog and release history for package-specific changes and breaking updates.</PackageReleaseNotes>
+        <PackageReleaseNotes>See the package-local CHANGELOG.md for the full change history. Override PackageReleaseNotes in the package project file for major release-specific notes.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

@@ -1,10 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Initialization;
 
@@ -22,7 +22,7 @@ public sealed class DatabaseInitializerTests
         var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
 
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -51,7 +51,7 @@ public sealed class DatabaseInitializerTests
         var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
 
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -102,7 +102,7 @@ public sealed class DatabaseInitializerTests
         }
     }
 
-    private sealed class FakeLogger<T> : ILogger<T>
+    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
@@ -123,8 +123,7 @@ public sealed class DatabaseInitializerTests
         {
         }
 
-        public void Log(Microsoft.Extensions.Logging.LogLevel logLevel, string message, Exception? exception = null,
-            object? metadata = null)
+        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
         }
     }
