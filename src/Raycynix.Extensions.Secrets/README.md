@@ -55,7 +55,7 @@ public sealed class GitHubTokenLoader(ISecretResolver secrets)
 }
 ```
 
-See the runnable example in [examples/Raycynix.Extensions.Secrets.Example/Program.cs](../../examples/Raycynix.Extensions.Secrets.Example/Program.cs) for a complete walkthrough of:
+See the runnable example in [examples/Raycynix.Extensions.Secrets.Example/Program.cs](https://github.com/Raycynix/Extensions/blob/main/examples/Raycynix.Extensions.Secrets.Example/Program.cs) for a complete walkthrough of:
 
 - default provider precedence
 - custom provider precedence through `SecretOptions`
