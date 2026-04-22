@@ -1,11 +1,13 @@
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
+using Raycynix.Extensions.Security.Abstractions.Records;
 
 namespace Raycynix.Extensions.Secrets.Implementations;
 
 /// <summary>
 /// Resolves secrets by querying registered providers in order and returning the first available value.
 /// </summary>
-public sealed class CompositeSecretResolver : ISecretResolver
+public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
 {
     private readonly IReadOnlyCollection<ISecretProvider> _providers;
 
@@ -13,25 +15,99 @@ public sealed class CompositeSecretResolver : ISecretResolver
     /// Initializes a new instance of the <see cref="CompositeSecretResolver"/> class.
     /// </summary>
     /// <param name="providers">The ordered list of secret providers to query.</param>
-    public CompositeSecretResolver(IEnumerable<ISecretProvider> providers)
+    /// <param name="options">The secret-resolution options.</param>
+    public CompositeSecretResolver(
+        IEnumerable<ISecretProvider> providers,
+        IOptions<SecretOptions>? options = null)
     {
-        _providers = providers.ToArray();
+        _providers = OrderProviders(providers, options?.Value).ToArray();
     }
 
     /// <inheritdoc />
     public async ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
     {
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Result.Value;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<SecretResolutionResult> ResolveSecretAsync(
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Result;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IReadOnlyList<SecretResolutionAttempt>> ExplainSecretResolutionAsync(
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Attempts;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<SecretResolutionDiagnostics> DiagnoseSecretResolutionAsync(
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var attempts = new List<SecretResolutionAttempt>(_providers.Count);
         foreach (var provider in _providers)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var value = await provider.GetSecretAsync(key, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(value))
+            var succeeded = !string.IsNullOrWhiteSpace(value);
+            attempts.Add(new SecretResolutionAttempt(
+                ProviderName: provider.GetType().Name,
+                Succeeded: succeeded));
+
+            if (succeeded)
             {
-                return value;
+                return new SecretResolutionDiagnostics(
+                    new SecretResolutionResult(
+                        Key: key,
+                        Value: value,
+                        ProviderName: provider.GetType().Name),
+                    attempts);
             }
         }
 
-        return null;
+        return new SecretResolutionDiagnostics(
+            new SecretResolutionResult(key, Value: null, ProviderName: null),
+            attempts);
+    }
+
+    private static IEnumerable<ISecretProvider> OrderProviders(
+        IEnumerable<ISecretProvider> providers,
+        SecretOptions? options)
+    {
+        var providerList = providers.ToList();
+        if (options?.ProviderOrder.Count is not > 0)
+        {
+            return providerList;
+        }
+
+        var providerRanks = options.ProviderOrder
+            .Select((providerType, index) => new { providerType, index })
+            .GroupBy(item => item.providerType)
+            .ToDictionary(group => group.Key, group => group.First().index);
+
+        return providerList
+            .Select((provider, index) => new
+            {
+                Provider = provider,
+                RegistrationOrder = index,
+                Rank = providerRanks.TryGetValue(provider.GetType(), out var rank)
+                    ? rank
+                    : int.MaxValue
+            })
+            .OrderBy(item => item.Rank)
+            .ThenBy(item => item.RegistrationOrder)
+            .Select(item => item.Provider);
     }
 }

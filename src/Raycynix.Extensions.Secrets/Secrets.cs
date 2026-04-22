@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Secrets.Implementations;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -14,16 +14,40 @@ public static class Secrets
     /// Registers the default secret providers and the composite secret resolver.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
+    /// <param name="setup">An optional callback for adjusting secret resolution behavior.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixSecrets(this IServiceCollection services)
+    public static IServiceCollection AddRaycynixSecrets(
+        this IServiceCollection services,
+        Action<SecretOptions>? setup)
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddOptions<SecretOptions>();
+        if (setup is not null)
+        {
+            services.Configure(setup);
+        }
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, ConfigurationSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, EnvironmentSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, GitHubSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, TeamCitySecretProvider>());
-        services.TryAddSingleton<ISecretResolver, CompositeSecretResolver>();
+        services.TryAddSingleton<CompositeSecretResolver>();
+        services.TryAddSingleton<ISecretResolver>(serviceProvider =>
+            serviceProvider.GetRequiredService<CompositeSecretResolver>());
+        services.TryAddSingleton<ISecretDiagnosticsResolver>(serviceProvider =>
+            serviceProvider.GetRequiredService<CompositeSecretResolver>());
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers the default secret providers and the composite secret resolver.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixSecrets(this IServiceCollection services)
+    {
+        return services.AddRaycynixSecrets(setup: null);
     }
 }
