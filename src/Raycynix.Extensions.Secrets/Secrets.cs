@@ -32,7 +32,11 @@ public static class Secrets
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, EnvironmentSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, GitHubSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, TeamCitySecretProvider>());
-        services.TryAddSingleton<ISecretResolver, CompositeSecretResolver>();
+        services.TryAddSingleton<CompositeSecretResolver>();
+        services.TryAddSingleton<ISecretResolver>(serviceProvider =>
+            serviceProvider.GetRequiredService<CompositeSecretResolver>());
+        services.TryAddSingleton<ISecretDiagnosticsResolver>(serviceProvider =>
+            serviceProvider.GetRequiredService<CompositeSecretResolver>());
 
         return services;
     }

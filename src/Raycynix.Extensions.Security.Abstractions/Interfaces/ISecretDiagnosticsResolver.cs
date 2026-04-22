@@ -8,6 +8,16 @@ namespace Raycynix.Extensions.Security.Abstractions.Interfaces;
 public interface ISecretDiagnosticsResolver : ISecretResolver
 {
     /// <summary>
+    /// Resolves a secret value and returns the provider attempts evaluated in the same pass.
+    /// </summary>
+    /// <param name="key">The secret key to resolve.</param>
+    /// <param name="cancellationToken">A token for cancelling the operation.</param>
+    /// <returns>The full diagnostic output for the resolution operation.</returns>
+    ValueTask<SecretResolutionDiagnostics> DiagnoseSecretResolutionAsync(
+        string key,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Resolves a secret value and returns provider metadata about the result.
     /// </summary>
     /// <param name="key">The secret key to resolve.</param>

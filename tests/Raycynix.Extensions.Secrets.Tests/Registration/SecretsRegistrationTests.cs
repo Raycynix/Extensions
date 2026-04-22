@@ -23,6 +23,7 @@ public sealed class SecretsRegistrationTests
 
         services.Count(service => service.ServiceType == typeof(ISecretProvider)).Should().Be(4);
         services.Should().ContainSingle(service => service.ServiceType == typeof(ISecretResolver));
+        services.Should().ContainSingle(service => service.ServiceType == typeof(ISecretDiagnosticsResolver));
     }
 
     /// <summary>
@@ -39,5 +40,24 @@ public sealed class SecretsRegistrationTests
 
         services.Count(service => service.ServiceType == typeof(ISecretProvider)).Should().Be(4);
         services.Count(service => service.ServiceType == typeof(ISecretResolver)).Should().Be(1);
+        services.Count(service => service.ServiceType == typeof(ISecretDiagnosticsResolver)).Should().Be(1);
+    }
+
+    /// <summary>
+    /// Verifies that the diagnostics and standard resolver interfaces point to the same singleton instance.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixSecrets_ShouldResolveSameInstance_ForResolverAndDiagnosticsResolver()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddRaycynixSecrets();
+
+        using var serviceProvider = services.BuildServiceProvider();
+
+        var resolver = serviceProvider.GetRequiredService<ISecretResolver>();
+        var diagnosticsResolver = serviceProvider.GetRequiredService<ISecretDiagnosticsResolver>();
+
+        resolver.Should().BeSameAs(diagnosticsResolver);
     }
 }

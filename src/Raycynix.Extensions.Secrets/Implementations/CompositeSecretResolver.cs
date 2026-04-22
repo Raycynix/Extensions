@@ -26,8 +26,8 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
     /// <inheritdoc />
     public async ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
     {
-        var result = await ResolveSecretAsync(key, cancellationToken);
-        return result.Value;
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Result.Value;
     }
 
     /// <inheritdoc />
@@ -35,27 +35,21 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
         string key,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
-
-        foreach (var provider in _providers)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var value = await provider.GetSecretAsync(key, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                return new SecretResolutionResult(
-                    Key: key,
-                    Value: value,
-                    ProviderName: provider.GetType().Name);
-            }
-        }
-
-        return new SecretResolutionResult(key, Value: null, ProviderName: null);
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Result;
     }
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<SecretResolutionAttempt>> ExplainSecretResolutionAsync(
+        string key,
+        CancellationToken cancellationToken = default)
+    {
+        var diagnostics = await DiagnoseSecretResolutionAsync(key, cancellationToken);
+        return diagnostics.Attempts;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<SecretResolutionDiagnostics> DiagnoseSecretResolutionAsync(
         string key,
         CancellationToken cancellationToken = default)
     {
@@ -67,17 +61,25 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
             cancellationToken.ThrowIfCancellationRequested();
 
             var value = await provider.GetSecretAsync(key, cancellationToken);
+            var succeeded = !string.IsNullOrWhiteSpace(value);
             attempts.Add(new SecretResolutionAttempt(
                 ProviderName: provider.GetType().Name,
-                Succeeded: !string.IsNullOrWhiteSpace(value)));
+                Succeeded: succeeded));
 
-            if (!string.IsNullOrWhiteSpace(value))
+            if (succeeded)
             {
-                break;
+                return new SecretResolutionDiagnostics(
+                    new SecretResolutionResult(
+                        Key: key,
+                        Value: value,
+                        ProviderName: provider.GetType().Name),
+                    attempts);
             }
         }
 
-        return attempts;
+        return new SecretResolutionDiagnostics(
+            new SecretResolutionResult(key, Value: null, ProviderName: null),
+            attempts);
     }
 
     private static IEnumerable<ISecretProvider> OrderProviders(

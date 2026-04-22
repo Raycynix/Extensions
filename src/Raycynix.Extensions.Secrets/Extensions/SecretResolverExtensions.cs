@@ -27,14 +27,15 @@ public static class SecretResolverExtensions
 
             if (resolver is ISecretDiagnosticsResolver diagnosticsResolver)
             {
-                var result = await diagnosticsResolver.ResolveSecretAsync(key, cancellationToken);
-                if (result.Succeeded)
+                var diagnostics = await diagnosticsResolver.DiagnoseSecretResolutionAsync(key, cancellationToken);
+                if (diagnostics.Result.Succeeded)
                 {
-                    return result.Value!;
+                    return diagnostics.Result.Value!;
                 }
 
-                var attempts = await diagnosticsResolver.ExplainSecretResolutionAsync(key, cancellationToken);
-                throw new SecretNotFoundException(key, attempts.Select(attempt => attempt.ProviderName).ToList());
+                throw new SecretNotFoundException(
+                    key,
+                    diagnostics.Attempts.Select(attempt => attempt.ProviderName).ToList());
             }
 
             var value = await resolver.GetSecretAsync(key, cancellationToken);
