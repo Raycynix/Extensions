@@ -10,6 +10,10 @@ It allows application code to ask for secrets through `ISecretResolver` while th
 - `SecretOptions`
 - `ISecretProvider` registrations
 - `ISecretResolver`
+- `ISecretDiagnosticsResolver`
+- `GetRequiredSecretAsync(...)`
+- `ResolveWithSourceAsync(...)`
+- `ExplainSecretResolutionAsync(...)`
 - configuration, environment, GitHub Actions, and TeamCity-style secret providers
 
 ## What it does not contain
@@ -51,6 +55,14 @@ public sealed class GitHubTokenLoader(ISecretResolver secrets)
 }
 ```
 
+See the runnable example in [examples/Raycynix.Extensions.Secrets.Example/Program.cs](../../examples/Raycynix.Extensions.Secrets.Example/Program.cs) for a complete walkthrough of:
+
+- default provider precedence
+- custom provider precedence through `SecretOptions`
+- required-secret resolution
+- provider-aware resolution results
+- explain output that shows the evaluated provider chain
+
 The package resolves secrets through a provider chain and returns the first available value.
 
 By default, the provider chain checks sources in this order:
@@ -83,3 +95,37 @@ Examples:
 - or from the exact environment variable `ConnectionStrings:Main`
 - or from `CONNECTIONSTRINGS_MAIN` in GitHub Actions-style environments
 - or from `env.ConnectionStrings.Main` in TeamCity-style environments
+
+You can also use the convenience APIs for required secrets and diagnostics:
+
+```csharp
+var token = await secrets.GetRequiredSecretAsync("Api:Token", cancellationToken);
+
+var resolved = await secrets.ResolveWithSourceAsync("ConnectionStrings:Main", cancellationToken);
+Console.WriteLine(resolved.ProviderName);
+
+var attempts = await secrets.ExplainSecretResolutionAsync("ConnectionStrings:Main", cancellationToken);
+foreach (var attempt in attempts)
+{
+    Console.WriteLine($"{attempt.ProviderName}: {attempt.Succeeded}");
+}
+```
+
+Typical output looks like this:
+
+```text
+Default provider order
+Configuration -> Environment -> GitHub -> TeamCity
+GetSecretAsync: Server=config;Database=main;
+ResolveWithSourceAsync.ProviderName: ConfigurationSecretProvider
+GetRequiredSecretAsync(Api:Token): config-token
+ExplainSecretResolutionAsync:
+- ConfigurationSecretProvider: True
+
+Custom provider order
+GitHub -> Configuration -> Environment -> TeamCity
+ResolveWithSourceAsync.Value: Server=github;Database=main;
+ResolveWithSourceAsync.ProviderName: GitHubSecretProvider
+ExplainSecretResolutionAsync:
+- GitHubSecretProvider: True
+```

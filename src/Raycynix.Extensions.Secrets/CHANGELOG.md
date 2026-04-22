@@ -4,6 +4,7 @@
 ### Added
 - Added configuration-backed secret resolution through `IConfiguration`.
 - Added `SecretOptions` for customizing provider precedence.
+- Added required-secret and diagnostic APIs for provider-aware resolution and explain output.
 - Added tests covering configuration-provider resolution and provider precedence.
 
 ### Changed
