@@ -1,27 +1,47 @@
 # Raycynix.Extensions.Secrets
 
-`Raycynix.Extensions.Secrets` contains the core secret resolution services for Raycynix applications.
+`Raycynix.Extensions.Secrets` provides a unified secret-resolution layer for Raycynix applications.
+
+It allows application code to ask for secrets through `ISecretResolver` while the actual values can come from the standard configuration pipeline or environment-specific fallback providers.
 
 ## What it contains
 
 - `AddRaycynixSecrets(...)`
+- `SecretOptions`
 - `ISecretProvider` registrations
 - `ISecretResolver`
-- environment, GitHub Actions, and TeamCity-style secret providers
+- configuration, environment, GitHub Actions, and TeamCity-style secret providers
 
 ## What it does not contain
 
 - cloud-specific secret storage integrations
 - UI or interactive secret management
-- secret values in configuration files
+- a custom secret file format
+
+## Why use it
+
+`IConfiguration` is still the place where configuration is assembled, but `Raycynix.Extensions.Secrets` gives applications a separate API for secret access.
+
+That separation is useful when you want to:
+
+- consume secrets through a dedicated abstraction instead of injecting raw `IConfiguration`
+- support multiple secret sources without changing application code
+- keep CI/CD-oriented environment variable resolution as a fallback when configuration does not contain a value
 
 ## Usage
 
 ```csharp
-builder.Services.AddRaycynixSecrets();
-```
+var builder = Host.CreateApplicationBuilder(args);
 
-```csharp
+builder.Configuration.UseRaycynixConfigurationSources(options =>
+{
+    options.BaseFileName = "appsettings";
+    options.EnvironmentName = builder.Environment.EnvironmentName;
+    options.IncludeUserSecrets = builder.Environment.IsDevelopment();
+});
+
+builder.Services.AddRaycynixSecrets();
+
 public sealed class GitHubTokenLoader(ISecretResolver secrets)
 {
     public async Task<string?> LoadAsync(CancellationToken cancellationToken)
@@ -33,4 +53,33 @@ public sealed class GitHubTokenLoader(ISecretResolver secrets)
 
 The package resolves secrets through a provider chain and returns the first available value.
 
-Secrets should be injected through providers and resolvers instead of being stored in `appsettings.json`.
+By default, the provider chain checks sources in this order:
+
+1. `IConfiguration`
+2. exact environment variable key
+3. GitHub Actions-style normalized environment variable
+4. TeamCity-style normalized environment variable
+
+This allows applications to keep using the standard configuration pipeline, including `.NET User Secrets`, while still consuming secrets through a dedicated `ISecretResolver`.
+
+You can customize the provider order when the default precedence is not appropriate:
+
+```csharp
+builder.Services.AddRaycynixSecrets(options =>
+{
+    options.ProviderOrder.Clear();
+    options.ProviderOrder.Add(typeof(GitHubSecretProvider));
+    options.ProviderOrder.Add(typeof(ConfigurationSecretProvider));
+    options.ProviderOrder.Add(typeof(EnvironmentSecretProvider));
+    options.ProviderOrder.Add(typeof(TeamCitySecretProvider));
+});
+```
+
+Providers not listed in `SecretOptions.ProviderOrder` are still evaluated afterward in their registration order.
+
+Examples:
+
+- `ConnectionStrings:Main` can be resolved from `IConfiguration["ConnectionStrings:Main"]`
+- or from the exact environment variable `ConnectionStrings:Main`
+- or from `CONNECTIONSTRINGS_MAIN` in GitHub Actions-style environments
+- or from `env.ConnectionStrings.Main` in TeamCity-style environments

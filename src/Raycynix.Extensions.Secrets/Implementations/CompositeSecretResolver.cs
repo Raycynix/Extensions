@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Secrets.Implementations;
@@ -13,9 +14,12 @@ public sealed class CompositeSecretResolver : ISecretResolver
     /// Initializes a new instance of the <see cref="CompositeSecretResolver"/> class.
     /// </summary>
     /// <param name="providers">The ordered list of secret providers to query.</param>
-    public CompositeSecretResolver(IEnumerable<ISecretProvider> providers)
+    /// <param name="options">The secret-resolution options.</param>
+    public CompositeSecretResolver(
+        IEnumerable<ISecretProvider> providers,
+        IOptions<SecretOptions>? options = null)
     {
-        _providers = providers.ToArray();
+        _providers = OrderProviders(providers, options?.Value).ToArray();
     }
 
     /// <inheritdoc />
@@ -33,5 +37,34 @@ public sealed class CompositeSecretResolver : ISecretResolver
         }
 
         return null;
+    }
+
+    private static IEnumerable<ISecretProvider> OrderProviders(
+        IEnumerable<ISecretProvider> providers,
+        SecretOptions? options)
+    {
+        var providerList = providers.ToList();
+        if (options?.ProviderOrder.Count is not > 0)
+        {
+            return providerList;
+        }
+
+        var providerRanks = options.ProviderOrder
+            .Select((providerType, index) => new { providerType, index })
+            .GroupBy(item => item.providerType)
+            .ToDictionary(group => group.Key, group => group.First().index);
+
+        return providerList
+            .Select((provider, index) => new
+            {
+                Provider = provider,
+                RegistrationOrder = index,
+                Rank = providerRanks.TryGetValue(provider.GetType(), out var rank)
+                    ? rank
+                    : int.MaxValue
+            })
+            .OrderBy(item => item.Rank)
+            .ThenBy(item => item.RegistrationOrder)
+            .Select(item => item.Provider);
     }
 }
