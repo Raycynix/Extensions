@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0
+### Added
+- Added `LoggingBuilder` for optional logging integrations.
+- Added support for external Serilog configurators through `IRaycynixLoggingConfigurator`.
+- Added a no-configuration `AddRaycynixLogging()` overload for default logging registration.
+
+### Changed
+- Moved shared logging configuration types to `Raycynix.Extensions.Logging.Abstractions`.
+- Removed Elasticsearch sink setup from the base logging package; use `Raycynix.Extensions.Logging.Elastic` when Elasticsearch output is required.
+- `UseRaycynixLogging(...)` now uses the `LoggingConfiguration` registered in DI so runtime overrides and optional integrations see the same configuration instance.
+
 ## 2.0.0
 ### Added
 - Added updated package examples and test coverage for the structured logging API.

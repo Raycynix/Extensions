@@ -1,14 +1,11 @@
-﻿using Elastic.CommonSchema.Serilog;
-using Elastic.Ingest.Elasticsearch.DataStreams;
-using Elastic.Serilog.Sinks;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Configurations;
 using Raycynix.Extensions.Logging.Implementations;
 using Raycynix.Extensions.Logging.Internal;
 using Serilog;
@@ -21,39 +18,48 @@ namespace Raycynix.Extensions.Logging;
 public static class Logging
 {
     /// <summary>
-    /// Registers the Raycynix typed logger abstraction.
+    /// Provides extension methods for registering Raycynix logging services.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixLogging(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
-        return services;
+        /// <summary>
+        /// Registers the Raycynix typed logger abstraction with the default logging configuration.
+        /// </summary>
+        /// <returns>A builder that can be used to register optional logging integrations.</returns>
+        public LoggingBuilder AddRaycynixLogging()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            services.TryAddSingleton(new LoggingConfiguration());
+
+            return new LoggingBuilder(services);
+        }
+        
+        /// <summary>
+        /// Registers the Raycynix typed logger abstraction and the base logging configuration model.
+        /// </summary>
+        /// <param name="configuration">The application configuration source.</param>
+        /// <param name="setup">An optional callback for adjusting the bound logging configuration.</param>
+        /// <returns>A builder that can be used to register optional logging integrations.</returns>
+        public LoggingBuilder AddRaycynixLogging(IConfiguration configuration,
+            Action<LoggingConfiguration>? setup = null)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            services.AddRaycynixConfiguration<LoggingConfiguration>(configuration, configurePostBind: setup);
+            services.AddRaycynixConfigurationValidator<LoggingConfiguration, LoggingConfigurationValidator>();
+            services.AddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IConfigurationAccessor<LoggingConfiguration>>().Current);
+
+            services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
+
+            return new LoggingBuilder(services, configuration);
+        }
     }
 
-    /// <summary>
-    /// Registers the Raycynix typed logger abstraction together with the typed logging configuration model.
-    /// </summary>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration source.</param>
-    /// <param name="setup">An optional callback for adjusting the bound logging configuration.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixLogging(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        Action<LoggingConfiguration>? setup = null)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        services.AddRaycynixConfiguration<LoggingConfiguration>(configuration, configurePostBind: setup);
-        services.AddRaycynixConfigurationValidator<LoggingConfiguration, LoggingConfigurationValidator>();
-        services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<LoggingConfiguration>>().Current);
-
-        return services.AddRaycynixLogging();
-    }
-    
     /// <summary>
     /// Configures Serilog using the <c>LoggingConfiguration</c> section and optional runtime overrides.
     /// </summary>
@@ -64,10 +70,14 @@ public static class Logging
         this IHostBuilder hostBuilder,
         Action<LoggingConfiguration>? setup = null)
     {
-        return hostBuilder.UseSerilog((context, _, loggerConfiguration) =>
+        return hostBuilder.UseSerilog((context, services, loggerConfiguration) =>
         {
-            var config = context.Configuration.GetSection(nameof(LoggingConfiguration)).Get<LoggingConfiguration>() ??
-                         new LoggingConfiguration();
+            var config = services.GetService<LoggingConfiguration>();
+            if (config is null)
+            {
+                throw new InvalidOperationException(
+                    "Raycynix logging services are not registered. Call services.AddRaycynixLogging() before UseRaycynixLogging().");
+            }
 
             if (string.IsNullOrWhiteSpace(config.Environment))
             {
@@ -85,17 +95,9 @@ public static class Logging
                 .Enrich.WithProperty("Environment", config.Environment)
                 .WriteTo.Console(outputTemplate: config.OutputTemplate);
 
-            if (config.UseElastic)
+            foreach (var configurator in services.GetServices<IRaycynixLoggingConfigurator>())
             {
-                loggerConfiguration.WriteTo.Elasticsearch([new Uri(config.ElasticUrl)], options =>
-                {
-                    options.DataStream = new DataStreamName(
-                        "logs",
-                        config.ServiceName.ToLowerInvariant(),
-                        config.Environment.ToLowerInvariant()
-                    );
-                    options.TextFormatting = new EcsTextFormatterConfiguration<LogEventEcsDocument>();
-                });
+                configurator.Configure(context, services, loggerConfiguration, config);
             }
         });
     }

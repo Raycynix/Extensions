@@ -21,6 +21,7 @@ Per-package changelogs live next to each package under `src/<PackageName>/CHANGE
 - [Raycynix.Extensions.Exceptions.AspNetCore](src/Raycynix.Extensions.Exceptions.AspNetCore/CHANGELOG.md)
 - [Raycynix.Extensions.Logging](src/Raycynix.Extensions.Logging/CHANGELOG.md)
 - [Raycynix.Extensions.Logging.Abstractions](src/Raycynix.Extensions.Logging.Abstractions/CHANGELOG.md)
+- [Raycynix.Extensions.Logging.Elastic](src/Raycynix.Extensions.Logging.Elastic/CHANGELOG.md)
 - [Raycynix.Extensions.Messaging](src/Raycynix.Extensions.Messaging/CHANGELOG.md)
 - [Raycynix.Extensions.Messaging.Abstractions](src/Raycynix.Extensions.Messaging.Abstractions/CHANGELOG.md)
 - [Raycynix.Extensions.Messaging.Database](src/Raycynix.Extensions.Messaging.Database/CHANGELOG.md)
