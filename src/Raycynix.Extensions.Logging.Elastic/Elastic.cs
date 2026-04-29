@@ -7,6 +7,7 @@ using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Abstractions.Configurations;
 using Raycynix.Extensions.Logging.Elastic.Configurations;
 using Raycynix.Extensions.Logging.Elastic.Configurators;
+using Raycynix.Extensions.Logging.Elastic.Internal;
 
 namespace Raycynix.Extensions.Logging.Elastic;
 
@@ -49,6 +50,8 @@ public static class Elastic
             configuration,
             $"{nameof(LoggingConfiguration)}:{nameof(ElasticConfiguration)}",
             configurePostBind: configure);
+
+        builder.Services.AddRaycynixConfigurationValidator<ElasticConfiguration, ElasticConfigurationValidator>();
 
         builder.Services.AddSingleton(serviceProvider =>
             serviceProvider.GetRequiredService<IConfigurationAccessor<ElasticConfiguration>>().Current);

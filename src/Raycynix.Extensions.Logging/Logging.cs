@@ -72,12 +72,9 @@ public static class Logging
     {
         return hostBuilder.UseSerilog((context, services, loggerConfiguration) =>
         {
-            var config = services.GetService<LoggingConfiguration>();
-            if (config is null)
-            {
-                throw new InvalidOperationException(
-                    "Raycynix logging services are not registered. Call services.AddRaycynixLogging() before UseRaycynixLogging().");
-            }
+            var config = services.GetService<LoggingConfiguration>()
+                         ?? context.Configuration.GetSection(nameof(LoggingConfiguration)).Get<LoggingConfiguration>()
+                         ?? new LoggingConfiguration();
 
             if (string.IsNullOrWhiteSpace(config.Environment))
             {

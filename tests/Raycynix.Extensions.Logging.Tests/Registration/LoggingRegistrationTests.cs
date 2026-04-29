@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Logging.Abstractions.Configurations;
@@ -115,6 +116,32 @@ public sealed class LoggingRegistrationTests
 
         access.Should().Throw<OptionsValidationException>()
             .WithMessage("*output template*");
+    }
+
+    /// <summary>
+    /// Verifies that host logging can still be configured directly from host configuration without DI registration.
+    /// </summary>
+    [Fact]
+    public void UseRaycynixLogging_WithoutServiceRegistration_ShouldUseConfigurationFallback()
+    {
+        var hostBuilder = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["LoggingConfiguration:ServiceName"] = "fallback-api",
+                    ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
+                    ["LoggingConfiguration:MinimumLevel"] = "Debug"
+                });
+            })
+            .UseRaycynixLogging();
+
+        var build = () =>
+        {
+            using var host = hostBuilder.Build();
+        };
+
+        build.Should().NotThrow();
     }
 
     private sealed class TestCategory;

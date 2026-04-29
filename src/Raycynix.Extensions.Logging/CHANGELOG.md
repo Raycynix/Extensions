@@ -9,7 +9,7 @@
 ### Changed
 - Moved shared logging configuration types to `Raycynix.Extensions.Logging.Abstractions`.
 - Removed Elasticsearch sink setup from the base logging package; use `Raycynix.Extensions.Logging.Elastic` when Elasticsearch output is required.
-- `UseRaycynixLogging(...)` now uses the `LoggingConfiguration` registered in DI so runtime overrides and optional integrations see the same configuration instance.
+- `UseRaycynixLogging(...)` now prefers the `LoggingConfiguration` registered in DI, while preserving the previous fallback to host configuration and defaults when logging services are not registered.
 
 ## 2.0.0
 ### Added

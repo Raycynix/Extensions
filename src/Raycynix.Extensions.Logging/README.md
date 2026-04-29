@@ -89,6 +89,7 @@ Host.CreateDefaultBuilder(args)
 ```
 
 `UseRaycynixLogging()` must still be called on the host builder because it connects Serilog to the generic host.
+If `AddRaycynixLogging(...)` is not registered, `UseRaycynixLogging()` falls back to the host `LoggingConfiguration` section and default values.
 
 ## Injecting the typed logger
 
