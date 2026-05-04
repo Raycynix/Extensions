@@ -14,7 +14,11 @@
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
+    </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.7" />
@@ -24,10 +28,7 @@
         <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.7" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.7" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.7" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7"/>
     </ItemGroup>
 
 </Project>
