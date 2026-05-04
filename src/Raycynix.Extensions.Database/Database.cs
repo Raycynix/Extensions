@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Logging;
@@ -22,8 +22,9 @@ public static class Database
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Registers the database context, initializer, and shared database infrastructure.
+        /// Registers the Raycynix database infrastructure using a custom context type.
         /// </summary>
+        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <param name="registerCallerAssembly">
@@ -31,19 +32,25 @@ public static class Database
         /// Disable this when assemblies should be registered explicitly.
         /// </param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
-        public DatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
+        public DatabaseBuilder AddRaycynixDatabase<TContext>(IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null,
-            bool registerCallerAssembly = true)
+            bool registerCallerAssembly = true) where TContext : RaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
             var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            EnsureContextRegistrationIsCompatible<TContext>(services);
             var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
 
             if (registerCallerAssembly)
             {
                 modelAssemblyRegistry.Add(callerAssembly);
+            }
+
+            if (IsContextRegistered<TContext>(services))
+            {
+                return new DatabaseBuilder(services, configuration, callerAssembly);
             }
 
             services.AddRaycynixLogging(configuration);
@@ -53,26 +60,56 @@ public static class Database
                 configurePostBind: setup);
 
             services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
-            services.AddSingleton(serviceProvider =>
+            services.TryAddSingleton(serviceProvider =>
                 serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
 
-            services.TryAddSingleton(modelAssemblyRegistry);
-            services.AddSingleton(static serviceProvider => ResolveProviderDescriptor(serviceProvider));
+            services.TryAddSingleton<IDatabaseModelAssemblyRegistry>(modelAssemblyRegistry);
+            services.TryAddSingleton(static serviceProvider => ResolveProviderDescriptor(serviceProvider));
 
-            services.AddSingleton<DatabaseObservability>();
-            services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
+            services.TryAddSingleton<IDatabaseObservability, NoOpDatabaseObservability>();
+            services.TryAddSingleton<IDatabaseInitializer, DatabaseInitializer>();
 
-            services.AddDbContextPool<DatabaseContext>((serviceProvider, options) =>
+            if (services.All(static descriptor => descriptor.ServiceType != typeof(TContext)))
             {
-                var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-                var providerRegistration = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
+                services.AddDbContextPool<TContext>((serviceProvider, options) =>
+                {
+                    var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+                    var providerRegistration =
+                        serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
 
-                var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
-                options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
-                providerRegistration.Configure(options, connectionString, config, callerAssembly, serviceProvider);
+                    var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
+                    options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
+                    providerRegistration.Configure(options, connectionString, config, callerAssembly, serviceProvider);
+                });
+            }
+
+            services.TryAddScoped<RaycynixDatabaseContext>(provider =>
+                provider.GetRequiredService<TContext>());
+            services.TryAddSingleton(new DatabaseContextDescriptor
+            {
+                ContextType = typeof(TContext)
             });
 
             return new DatabaseBuilder(services, configuration, callerAssembly);
+        }
+
+        /// <summary>
+        /// Registers the Raycynix database infrastructure using the default <see cref="DatabaseContext"/>.
+        /// </summary>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
+        /// <param name="registerCallerAssembly">
+        /// When <see langword="true"/>, the caller assembly is automatically scanned for configurators.
+        /// Disable this when assemblies should be registered explicitly.
+        /// </param>
+        /// <returns>A builder that can be used to extend the database registration.</returns>
+        public DatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
+            Action<DatabaseConfiguration>? setup = null, bool registerCallerAssembly = true)
+        {
+            return services.AddRaycynixDatabase<DatabaseContext>(
+                configuration,
+                setup,
+                registerCallerAssembly);
         }
 
         /// <summary>
@@ -131,5 +168,34 @@ public static class Database
             _ => throw new InvalidOperationException(
                 $"Multiple database providers are registered ({string.Join(", ", registrations.Select(static registration => registration.ProviderName))}). Register exactly one database provider package.")
         };
+    }
+
+    private static void EnsureContextRegistrationIsCompatible<TContext>(IServiceCollection services)
+        where TContext : RaycynixDatabaseContext
+    {
+        var registeredContextType = GetRegisteredContextType(services);
+        if (registeredContextType is null || registeredContextType == typeof(TContext))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Raycynix database is already registered with context type {registeredContextType.FullName}. " +
+            $"It cannot be registered again with context type {typeof(TContext).FullName}.");
+    }
+
+    private static bool IsContextRegistered<TContext>(IServiceCollection services)
+        where TContext : RaycynixDatabaseContext
+    {
+        return GetRegisteredContextType(services) == typeof(TContext);
+    }
+
+    private static Type? GetRegisteredContextType(IServiceCollection services)
+    {
+        return services
+            .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseContextDescriptor))
+            ?.ImplementationInstance is DatabaseContextDescriptor descriptor
+            ? descriptor.ContextType
+            : null;
     }
 }

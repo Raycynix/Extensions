@@ -1,15 +1,14 @@
 using Raycynix.Extensions.Common.Disposables;
-using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
-namespace Raycynix.Extensions.Database.Internal;
+namespace Raycynix.Extensions.Database.Observability;
 
 /// <summary>
 /// Coordinates optional tracing and metrics emission for database operations.
 /// </summary>
-internal sealed class DatabaseObservability
+internal sealed class DatabaseObservability : IDatabaseObservability
 {
     private readonly ITracer? _tracer;
     private readonly IMetricCounter? _operationCounter;

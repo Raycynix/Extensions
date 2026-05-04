@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Database.Configurations;
 using Raycynix.Extensions.Messaging.Database.Models;
@@ -50,7 +50,7 @@ public sealed class MessagingDatabaseCleanupProcessor(
         }
 
         var entries = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .Where(entry => expiredIds.Contains(entry.MessageId))
+            .Where(entry => expiredIds.AsEnumerable().Contains(entry.MessageId))
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -83,7 +83,7 @@ public sealed class MessagingDatabaseCleanupProcessor(
         }
 
         var entries = await databaseContext.Set<MessagingOutboxEntryEntity>()
-            .Where(entry => expiredIds.Contains(entry.MessageId))
+            .Where(entry => expiredIds.AsEnumerable().Contains(entry.MessageId))
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 

@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.Abstractions.Configurations;
 
 /// <summary>
 /// Represents the base connection settings used to build a database connection string.
@@ -21,7 +21,7 @@ public class ConnectionConfiguration
     public string? Name { get; init; }
 
     /// <summary>
-    /// Gets the user name used to authenticate the connection.
+    /// Gets the username used to authenticate the connection.
     /// </summary>
     public string? Username { get; init; }
 

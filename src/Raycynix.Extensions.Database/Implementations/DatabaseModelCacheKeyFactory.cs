@@ -11,7 +11,7 @@ internal sealed class DatabaseModelCacheKeyFactory : IModelCacheKeyFactory
     /// <inheritdoc />
     public object Create(DbContext context, bool designTime)
     {
-        if (context is not DatabaseContext databaseContext)
+        if (context is not RaycynixDatabaseContext databaseContext)
         {
             return (context.GetType(), designTime);
         }

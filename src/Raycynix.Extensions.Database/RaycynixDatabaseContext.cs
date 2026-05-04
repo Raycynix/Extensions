@@ -1,52 +1,52 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Abstractions.Configurators;
+using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Logging.Abstractions;
 
-namespace Raycynix.Extensions.Database.Implementations;
+namespace Raycynix.Extensions.Database;
 
 /// <summary>
-/// Represents the EF Core database context used by the Raycynix database extensions.
+/// Provides the extensible EF Core database context used by the Raycynix database infrastructure.
 /// </summary>
-public sealed class DatabaseContext : DbContext
+public abstract class RaycynixDatabaseContext : DbContext
 {
-    private readonly ILogger<DatabaseContext> _logger;
+    private readonly ILogger<RaycynixDatabaseContext> _logger;
     private readonly DatabaseConfiguration _config;
-    private readonly DatabaseModelAssemblyRegistry _modelAssemblyRegistry;
-    private readonly DatabaseObservability _observability;
+    private readonly IDatabaseModelAssemblyRegistry _modelAssemblyRegistry;
+    private readonly IDatabaseObservability _observability;
     private readonly string _providerName;
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="DatabaseContext"/>.
+    /// Initializes a new instance of <see cref="RaycynixDatabaseContext"/>.
     /// </summary>
     /// <param name="options">The EF Core options for the context.</param>
     /// <param name="config">The database configuration.</param>
     /// <param name="modelAssemblyRegistry">The registry of assemblies that contain entity configurators.</param>
+    /// <param name="observability">The observability hooks used during model creation.</param>
     /// <param name="logger">The logger used during model creation and seeding.</param>
-    /// <param name="serviceProvider">The service provider used to resolve optional observability integrations.</param>
-    public DatabaseContext(
+    /// <param name="serviceProvider">The service provider used to activate configurators and resolve database infrastructure services.</param>
+    protected RaycynixDatabaseContext(
         DbContextOptions options,
         DatabaseConfiguration config,
-        DatabaseModelAssemblyRegistry modelAssemblyRegistry,
-        ILogger<DatabaseContext> logger,
+        IDatabaseModelAssemblyRegistry modelAssemblyRegistry,
+        IDatabaseObservability observability,
+        ILogger<RaycynixDatabaseContext> logger,
         IServiceProvider serviceProvider)
         : base(options)
     {
         _logger = logger;
         _config = config;
         _modelAssemblyRegistry = modelAssemblyRegistry;
-        _observability = serviceProvider.GetRequiredService<DatabaseObservability>();
+        _observability = observability;
         _providerName = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().ProviderName;
         _serviceProvider = serviceProvider;
         
-        ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
-        ChangeTracker.AutoDetectChangesEnabled = config.EnableAutoDetectChanges;
-        ChangeTracker.QueryTrackingBehavior = config.UseQueryTrackingByDefault
-            ? QueryTrackingBehavior.TrackAll
-            : QueryTrackingBehavior.NoTracking;
+        ConfigureChangeTracker();
     }
 
     /// <summary>
@@ -95,5 +95,14 @@ public sealed class DatabaseContext : DbContext
     private List<IConfigurator> GetConfigurators()
     {
         return ConfiguratorProvider.Provide(_serviceProvider, _modelAssemblyRegistry.GetAll());
+    }
+
+    private void ConfigureChangeTracker()
+    {
+        ChangeTracker.LazyLoadingEnabled = _config.EnableLazyLoading;
+        ChangeTracker.AutoDetectChangesEnabled = _config.EnableAutoDetectChanges;
+        ChangeTracker.QueryTrackingBehavior = _config.UseQueryTrackingByDefault
+            ? QueryTrackingBehavior.TrackAll
+            : QueryTrackingBehavior.NoTracking;
     }
 }

@@ -5,9 +5,15 @@
 ## What it contains
 
 - `IDatabaseInitializer`
+- `IDatabaseProviderRegistration`
+- `IDatabaseBuilder`
+- `IDatabaseModelAssemblyRegistry`
+- `IDatabaseObservability`
 - `IConfigurator`
 - `IGenericConfigurator<T>`
 - `DatabaseTableAttribute`
+- `DatabaseConfiguration`
+- `ConnectionConfiguration`
 
 `IConfigurator` describes both model configuration and the cache key fragment that identifies the model shape produced by that configurator. This allows reusable packages to contribute EF Core mappings without breaking shared model caching.
 
@@ -15,7 +21,7 @@ When a configurator changes the EF Core model shape dynamically, its `ModelCache
 
 ## Purpose
 
-This package exists so database-related contracts can be shared without depending on the full database implementation package.
+This package exists so database-related contracts, provider registrations, configuration models, and observability hooks can be shared without depending on the full database implementation package.
 
 ## Example
 
@@ -76,3 +82,7 @@ public sealed class OrderConfigurator : IGenericConfigurator<Order>
 ```
 
 The application can then register the assembly containing that configurator through `AddRaycynixDatabase(...).AddAssembly<TMarker>()`.
+
+Provider packages can implement `IDatabaseProviderRegistration` to contribute connection-string resolution and EF Core provider options without depending on the core runtime package.
+
+Optional feature packages can extend `IDatabaseBuilder` and replace contracts such as `IDatabaseObservability` while keeping their implementation dependencies out of the core database package.

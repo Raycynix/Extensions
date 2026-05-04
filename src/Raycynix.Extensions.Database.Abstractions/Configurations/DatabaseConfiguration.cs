@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.Abstractions.Configurations;
 
 /// <summary>
 /// Represents the database settings used by the Raycynix database extensions.

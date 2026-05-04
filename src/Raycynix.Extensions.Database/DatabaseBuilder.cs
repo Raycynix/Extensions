@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database;
 
@@ -10,21 +11,15 @@ namespace Raycynix.Extensions.Database;
 public class DatabaseBuilder(
     IServiceCollection services,
     IConfiguration configuration,
-    Assembly callerAssembly)
+    Assembly callerAssembly) : IDatabaseBuilder
 {
-    /// <summary>
-    /// Gets the underlying service collection.
-    /// </summary>
+    /// <inheritdoc />
     public IServiceCollection Services { get; } = services ?? throw new ArgumentNullException(nameof(services));
 
-    /// <summary>
-    /// Gets the application configuration used for database registrations.
-    /// </summary>
+    /// <inheritdoc />
     public IConfiguration Configuration { get; } = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-    /// <summary>
-    /// Gets the assembly that initiated the database registration.
-    /// </summary>
+    /// <inheritdoc />
     public Assembly CallerAssembly { get; } = callerAssembly ?? throw new ArgumentNullException(nameof(callerAssembly));
 
     /// <summary>

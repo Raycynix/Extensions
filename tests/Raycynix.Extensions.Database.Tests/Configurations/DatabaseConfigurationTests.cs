@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 

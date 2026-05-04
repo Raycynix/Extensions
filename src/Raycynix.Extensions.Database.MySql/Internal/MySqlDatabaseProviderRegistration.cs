@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using MySqlConfiguration = Raycynix.Extensions.Database.MySql.Configurations.MySqlConfiguration;
 
 namespace Raycynix.Extensions.Database.MySql.Internal;

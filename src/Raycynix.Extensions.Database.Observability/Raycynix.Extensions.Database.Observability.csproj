@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Version>2.0.0</Version>
+
+        <IsPackable>true</IsPackable>
+
+        <PackageReleaseNotes>Initial package release with database tracing and metrics observability integration for the Raycynix database builder.</PackageReleaseNotes>
+
+        <Description>Optional Raycynix database observability integration that records database initialization and model-building operations through tracing and metrics abstractions.</Description>
+        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;initialization;model-building;dotnet</PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
+      <ProjectReference Include="..\Raycynix.Extensions.Tracing.Abstractions\Raycynix.Extensions.Tracing.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

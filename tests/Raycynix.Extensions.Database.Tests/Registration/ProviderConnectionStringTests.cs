@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.MsSql;
 using Raycynix.Extensions.Database.MySql;
 using Raycynix.Extensions.Database.PostgreSql;

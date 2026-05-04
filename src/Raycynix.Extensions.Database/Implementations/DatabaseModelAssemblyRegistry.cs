@@ -1,11 +1,12 @@
 using System.Reflection;
+using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
 /// <summary>
 /// Stores assemblies that contribute EF Core configurators to the shared database context.
 /// </summary>
-public sealed class DatabaseModelAssemblyRegistry
+public sealed class DatabaseModelAssemblyRegistry : IDatabaseModelAssemblyRegistry
 {
     private readonly HashSet<Assembly> _assemblies = [];
 

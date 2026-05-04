@@ -5,13 +5,17 @@
 ## What it contains
 
 - `AddRaycynixDatabase(...)`
+- `AddRaycynixDatabase<TContext>(...)`
 - `AddRaycynixDatabaseAssembly(...)`
 - `DatabaseBuilder.AddAssembly(...)`
+- `RaycynixDatabaseContext`
 - `DatabaseContext`
-- `DatabaseConfiguration`
 - provider registration infrastructure
 - `IDatabaseInitializer`
 - `DatabaseInitializer`
+- default no-op database observability
+
+Shared configuration and contracts such as `DatabaseConfiguration`, `IDatabaseProviderRegistration`, and `IDatabaseObservability` live in `Raycynix.Extensions.Database.Abstractions`.
 
 ## What it does not contain
 
@@ -22,6 +26,7 @@
 - `WebApplication` extensions
 - ASP.NET Core startup integration
 - generic-host startup integration
+- tracing and metrics database observability
 
 ## Usage
 
@@ -50,6 +55,36 @@ Core settings stay under `DatabaseConfiguration`:
     "RetryDelaySeconds": 10
   }
 }
+```
+
+The default registration uses `DatabaseContext`:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration)
+    .AddPostgreSql();
+```
+
+Use `AddRaycynixDatabase<TContext>(...)` when an application needs a custom context while keeping the Raycynix database infrastructure:
+
+```csharp
+public sealed class AppDatabaseContext : RaycynixDatabaseContext
+{
+    public AppDatabaseContext(
+        DbContextOptions<AppDatabaseContext> options,
+        DatabaseConfiguration config,
+        IDatabaseModelAssemblyRegistry modelAssemblyRegistry,
+        IDatabaseObservability observability,
+        ILogger<RaycynixDatabaseContext> logger,
+        IServiceProvider serviceProvider)
+        : base(options, config, modelAssemblyRegistry, observability, logger, serviceProvider)
+    {
+    }
+}
+
+builder.Services
+    .AddRaycynixDatabase<AppDatabaseContext>(builder.Configuration)
+    .AddPostgreSql();
 ```
 
 Then add exactly one provider package and extend the registration:
@@ -157,3 +192,12 @@ If you want to run initialization during startup, use one of these packages:
 
 - `Raycynix.Extensions.Database.Hosting`
 - `Raycynix.Extensions.Database.AspNetCore`
+
+If you want database infrastructure tracing and metrics, add `Raycynix.Extensions.Database.Observability`:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration)
+    .AddPostgreSql()
+    .AddObservability();
+```

@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Raycynix.Extensions.Database.Configurations;
 using Raycynix.Extensions.Database.MsSql.Configurations;
 using Raycynix.Extensions.Database.MySql.Configurations;
 using Raycynix.Extensions.Database.PostgreSql.Configurations;

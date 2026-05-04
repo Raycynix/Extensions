@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.PostgreSql;
 using Raycynix.Extensions.Database.Sqlite;
