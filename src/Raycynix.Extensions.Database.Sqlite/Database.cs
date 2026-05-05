@@ -20,8 +20,8 @@ public static class Database
     /// <param name="builder">The shared database builder.</param>
     /// <param name="configure">An optional callback for adjusting SQLite-specific settings.</param>
     /// <returns>The same builder instance for chaining.</returns>
-    public static DatabaseBuilder AddSqlite(
-        this DatabaseBuilder builder,
+    public static IDatabaseBuilder AddSqlite(
+        this IDatabaseBuilder builder,
         Action<SqliteConfiguration>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);

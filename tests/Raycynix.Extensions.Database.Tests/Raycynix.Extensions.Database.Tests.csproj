@@ -44,6 +44,7 @@
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.MsSql\Raycynix.Extensions.Database.MsSql.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.MySql\Raycynix.Extensions.Database.MySql.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Observability\Raycynix.Extensions.Database.Observability.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.PostgreSql\Raycynix.Extensions.Database.PostgreSql.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Sqlite\Raycynix.Extensions.Database.Sqlite.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />

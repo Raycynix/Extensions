@@ -5,10 +5,10 @@
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>Moved shared database configuration, provider, builder, model assembly registry, and observability contracts into the abstractions package for lightweight integrations.</PackageReleaseNotes>
+        <PackageReleaseNotes>Added provider-specific validation contracts and shared database configuration, provider, builder, model assembly registry, configurator, and observability abstractions.</PackageReleaseNotes>
 
-        <Description>Lightweight contracts and configuration models for Raycynix database providers, EF Core configurators, initialization, model assembly registration, and observability integration.</Description>
-        <PackageTags>raycynix;database;abstractions;contracts;efcore;configurators;providers;configuration;observability;initialization;dotnet</PackageTags>
+        <Description>Lightweight contracts and configuration models for Raycynix database providers, provider validation, EF Core configurators, initialization, model assembly registration, and observability integration.</Description>
+        <PackageTags>raycynix;database;abstractions;contracts;efcore;configurators;providers;provider-validation;configuration;observability;initialization;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

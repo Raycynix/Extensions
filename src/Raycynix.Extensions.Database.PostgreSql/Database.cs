@@ -20,8 +20,8 @@ public static class Database
     /// <param name="builder">The shared database builder.</param>
     /// <param name="configure">An optional callback for adjusting PostgreSQL-specific settings.</param>
     /// <returns>The same builder instance for chaining.</returns>
-    public static DatabaseBuilder AddPostgreSql(
-        this DatabaseBuilder builder,
+    public static IDatabaseBuilder AddPostgreSql(
+        this IDatabaseBuilder builder,
         Action<PostgreSqlConfiguration>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);

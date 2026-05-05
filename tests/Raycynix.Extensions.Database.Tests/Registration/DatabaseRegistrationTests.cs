@@ -88,6 +88,35 @@ public sealed class DatabaseRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that configuration setup cannot be supplied after the database context has already been registered.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldFail_WhenSetupIsProvidedAfterInitialRegistration()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=repeat-setup.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
+
+        var act = () => services.AddRaycynixDatabase(
+            configuration,
+            _ => { },
+            registerCallerAssembly: false);
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Configure DatabaseConfiguration only on the first AddRaycynixDatabase call*");
+    }
+
+    /// <summary>
     /// Verifies that invalid database configuration fails during option validation.
     /// </summary>
     [Fact]
@@ -295,6 +324,57 @@ public sealed class DatabaseRegistrationTests
 
         entityType.Should().NotBeNull();
         entityType.GetTableName().Should().Be("external_configured_entities");
+    }
+
+    /// <summary>
+    /// Verifies that disabling caller assembly registration prevents local configurators from being scanned implicitly.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_ShouldNotScanCallerAssembly_WhenCallerAssemblyRegistrationIsDisabled()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-caller-scan.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+
+        services.AddRaycynixDatabase(configuration, registerCallerAssembly: false)
+            .AddSqlite();
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        context.Model.FindEntityType(typeof(ExternalConfiguredEntity)).Should().BeNull();
+    }
+
+    /// <summary>
+    /// Verifies that the single-marker overload uses the marker assembly as the primary registration assembly.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixDatabase_WithMarker_ShouldExposeMarkerAssemblyAsPrimaryAssembly()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DatabaseConfiguration:ConnectionString"] = "Data Source=marker-assembly.db",
+                ["DatabaseConfiguration:EnsureCreated"] = "false",
+                ["DatabaseConfiguration:EnableSeed"] = "false"
+            })
+            .Build();
+
+        var builder = services.AddRaycynixDatabase<DatabaseContext, DatabaseRegistrationTests>(configuration);
+
+        builder.CallerAssembly.GetName().Name.Should().Be(typeof(DatabaseRegistrationTests).Assembly.GetName().Name);
     }
 
     [DatabaseTable("external_configured_entities")]

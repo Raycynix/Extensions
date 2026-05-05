@@ -20,7 +20,8 @@ public interface IDatabaseBuilder
     public IConfiguration Configuration { get; }
 
     /// <summary>
-    /// Gets the assembly that initiated the database registration.
+    /// Gets the primary assembly selected during database registration.
+    /// This assembly is used as the default EF Core migrations assembly.
     /// </summary>
     public Assembly CallerAssembly { get; }
 }

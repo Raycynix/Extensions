@@ -1,15 +1,16 @@
 # Raycynix.Extensions.Database.PostgreSql
 
-`Raycynix.Extensions.Database.PostgreSql` adds PostgreSQL support to `Raycynix.Extensions.Database`.
+PostgreSQL provider integration for `Raycynix.Extensions.Database`.
 
-## What it contains
+## What It Provides
 
-- `DatabaseBuilder.AddPostgreSql(...)`
+- `AddPostgreSql(...)`
 - `PostgreSqlConfiguration`
-- PostgreSQL connection-string building
-- `UseNpgsql(...)` integration for the shared `DatabaseContext`
+- PostgreSQL structured connection-string composition
+- PostgreSQL provider-specific validation
+- EF Core `UseNpgsql(...)` configuration with retries, command timeout, pooling, and migrations assembly support
 
-The provider is selected by calling `.AddPostgreSql(...)`, not by setting a legacy provider enum in configuration.
+The provider is selected by calling `.AddPostgreSql(...)`.
 
 ## Usage
 
@@ -18,15 +19,16 @@ builder.Services
     .AddRaycynixDatabase(builder.Configuration, options =>
     {
         options.UseMigrations = true;
+        options.EnsureCreated = false;
     })
     .AddPostgreSql(postgreSql =>
     {
-        postgreSql.IncludeErrorDetail = true;
+        postgreSql.IncludeErrorDetail = false;
         postgreSql.CommandTimeoutSeconds = 30;
     });
 ```
 
-## appsettings.json
+## Configuration
 
 ```json
 {
@@ -39,6 +41,7 @@ builder.Services
       "Password": "secret"
     },
     "UseMigrations": true,
+    "EnsureCreated": false,
     "PostgreSqlConfiguration": {
       "Pooling": true,
       "MinimumPoolSize": 5,
@@ -50,4 +53,4 @@ builder.Services
 }
 ```
 
-This package keeps the shared `DatabaseContext` from the core package and only adds PostgreSQL-specific registration on top of it.
+When a raw `ConnectionString` is not supplied, structured PostgreSQL configuration requires `Host`, `Name`, and `Username`.

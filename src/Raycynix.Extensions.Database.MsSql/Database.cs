@@ -20,8 +20,8 @@ public static class Database
     /// <param name="builder">The shared database builder.</param>
     /// <param name="configure">An optional callback for adjusting SQL Server-specific settings.</param>
     /// <returns>The same builder instance for chaining.</returns>
-    public static DatabaseBuilder AddMsSql(
-        this DatabaseBuilder builder,
+    public static IDatabaseBuilder AddMsSql(
+        this IDatabaseBuilder builder,
         Action<MsSqlServerConfiguration>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);

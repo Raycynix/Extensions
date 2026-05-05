@@ -20,8 +20,8 @@ public static class Database
     /// <param name="builder">The shared database builder.</param>
     /// <param name="configure">An optional callback for adjusting MySQL-specific settings.</param>
     /// <returns>The same builder instance for chaining.</returns>
-    public static DatabaseBuilder AddMySql(
-        this DatabaseBuilder builder,
+    public static IDatabaseBuilder AddMySql(
+        this IDatabaseBuilder builder,
         Action<MySqlConfiguration>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);

@@ -1,14 +1,36 @@
 # Raycynix.Extensions.Database.AspNetCore
 
-`Raycynix.Extensions.Database.AspNetCore` adds ASP.NET Core startup integration.
+ASP.NET Core startup integration for Raycynix database initialization.
 
-## What it does
+## What It Provides
 
-This package exposes `InitializeRaycynixDatabaseAsync(this WebApplication app)` and delegates the actual work to `Raycynix.Extensions.Database.Hosting`.
+- `InitializeRaycynixDatabaseAsync(this WebApplication app)`
 
-Register the shared database services and exactly one provider package before invoking the ASP.NET Core initializer.
+The package delegates initialization to `Raycynix.Extensions.Database.Hosting` and returns the same `WebApplication` instance for chaining.
 
-## appsettings.json
+## Usage
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+        options.EnsureCreated = false;
+    })
+    .AddPostgreSql();
+
+var app = builder.Build();
+
+await app.InitializeRaycynixDatabaseAsync();
+
+app.Run();
+```
+
+Register `Raycynix.Extensions.Database`, exactly one provider package, and any required model assemblies before calling the initializer.
+
+## Configuration
 
 ```json
 {
@@ -22,31 +44,4 @@ Register the shared database services and exactly one provider package before in
     }
   }
 }
-```
-
-## Usage
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services
-    .AddRaycynixDatabase(builder.Configuration, options =>
-    {
-        options.UseMigrations = true;
-    })
-    .AddPostgreSql();
-
-var app = builder.Build();
-
-await app.InitializeRaycynixDatabaseAsync();
-
-app.Run();
-```
-
-## How it works
-
-The web extension is a thin wrapper:
-
-```csharp
-await app.Services.InitializeRaycynixDatabaseAsync(cancellationToken);
 ```

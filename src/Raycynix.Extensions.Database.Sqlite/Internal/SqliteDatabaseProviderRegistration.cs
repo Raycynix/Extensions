@@ -27,8 +27,10 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
         var connection = configuration.ConnectionConfiguration
                          ?? throw new ArgumentException("Connection configuration is missing.");
 
-        var providerConfig = serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as IConfigurationAccessor<SqliteConfiguration>;
-        
+        var providerConfig =
+            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as
+                IConfigurationAccessor<SqliteConfiguration>;
+
         var settings = providerConfig?.Current;
         var builder = new SqliteConnectionStringBuilder
         {
@@ -56,8 +58,10 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
-        var providerConfig = serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as IConfigurationAccessor<SqliteConfiguration>;
-        
+        var providerConfig =
+            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as
+                IConfigurationAccessor<SqliteConfiguration>;
+
         options.UseSqlite(connectionString, sqliteOptions =>
         {
             sqliteOptions.MigrationsAssembly(migrationsAssembly.GetName().Name);
@@ -68,5 +72,22 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
                 sqliteOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+    }
+
+    /// <inheritdoc />
+    public void Validate(DatabaseConfiguration configuration)
+    {
+        if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
+        {
+            return;
+        }
+
+        var connection = configuration.ConnectionConfiguration
+                         ?? throw new InvalidOperationException("SQLite connection configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(connection.Name))
+        {
+            throw new InvalidOperationException("SQLite connection requires a data source name.");
+        }
     }
 }

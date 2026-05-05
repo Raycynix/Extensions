@@ -31,7 +31,8 @@ public class ConnectionConfiguration
     public string? Password { get; init; }
 
     /// <summary>
-    /// Validates that the configuration contains the minimum required values.
+    /// Validates provider-agnostic minimum connection values.
+    /// Provider-specific requirements are validated by the selected database provider.
     /// </summary>
     /// <param name="providerName">The logical provider name.</param>
     public virtual void Validate(string providerName)

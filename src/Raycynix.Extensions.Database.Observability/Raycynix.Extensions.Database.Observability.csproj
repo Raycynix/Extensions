@@ -5,10 +5,10 @@
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>Initial package release with database tracing and metrics observability integration for the Raycynix database builder.</PackageReleaseNotes>
+        <PackageReleaseNotes>Added optional database tracing and metrics observability integration for initialization, creation, migration, and model-building operations.</PackageReleaseNotes>
 
-        <Description>Optional Raycynix database observability integration that records database initialization and model-building operations through tracing and metrics abstractions.</Description>
-        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;initialization;model-building;dotnet</PackageTags>
+        <Description>Optional Raycynix database observability integration that records initialization, creation, migration, and model-building operations through tracing and metrics abstractions.</Description>
+        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;initialization;migrations;model-building;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

@@ -1,15 +1,16 @@
 # Raycynix.Extensions.Database.Sqlite
 
-`Raycynix.Extensions.Database.Sqlite` adds SQLite support to `Raycynix.Extensions.Database`.
+SQLite provider integration for `Raycynix.Extensions.Database`.
 
-## What it contains
+## What It Provides
 
-- `DatabaseBuilder.AddSqlite(...)`
+- `AddSqlite(...)`
 - `SqliteConfiguration`
-- SQLite connection-string building
-- `UseSqlite(...)` integration for the shared `DatabaseContext`
+- SQLite structured connection-string composition
+- SQLite provider-specific validation
+- EF Core `UseSqlite(...)` configuration with command timeout and migrations assembly support
 
-The provider is selected by calling `.AddSqlite(...)`, not by setting a legacy provider enum in configuration.
+The provider is selected by calling `.AddSqlite(...)`.
 
 ## Usage
 
@@ -18,6 +19,7 @@ builder.Services
     .AddRaycynixDatabase(builder.Configuration, options =>
     {
         options.EnsureCreated = true;
+        options.UseMigrations = false;
     })
     .AddSqlite(sqlite =>
     {
@@ -25,7 +27,7 @@ builder.Services
     });
 ```
 
-## appsettings.json
+## Configuration
 
 ```json
 {
@@ -44,4 +46,4 @@ builder.Services
 }
 ```
 
-This package keeps the shared `DatabaseContext` from the core package and only adds SQLite-specific registration on top of it.
+When a raw `ConnectionString` is not supplied, structured SQLite configuration requires only `Name`, which becomes the SQLite data source.

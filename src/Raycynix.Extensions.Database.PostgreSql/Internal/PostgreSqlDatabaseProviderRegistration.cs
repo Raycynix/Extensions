@@ -87,4 +87,31 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
             }
         });
     }
+
+    /// <inheritdoc />
+    public void Validate(DatabaseConfiguration configuration)
+    {
+        if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
+        {
+            return;
+        }
+
+        var connection = configuration.ConnectionConfiguration
+                         ?? throw new InvalidOperationException("PostgreSQL connection configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(connection.Host))
+        {
+            throw new InvalidOperationException("PostgreSQL connection requires a host.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Name))
+        {
+            throw new InvalidOperationException("PostgreSQL connection requires a database name.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Username))
+        {
+            throw new InvalidOperationException("PostgreSQL connection requires a username.");
+        }
+    }
 }

@@ -72,4 +72,31 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
             }
         });
     }
+
+    /// <inheritdoc />
+    public void Validate(DatabaseConfiguration configuration)
+    {
+        if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
+        {
+            return;
+        }
+
+        var connection = configuration.ConnectionConfiguration
+                         ?? throw new InvalidOperationException("MySQL connection configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(connection.Host))
+        {
+            throw new InvalidOperationException("MySQL connection requires a host.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Name))
+        {
+            throw new InvalidOperationException("MySQL connection requires a database name.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Username))
+        {
+            throw new InvalidOperationException("MySQL connection requires a username.");
+        }
+    }
 }

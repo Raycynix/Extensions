@@ -1,17 +1,18 @@
 # Raycynix.Extensions.Database.Observability
 
-`Raycynix.Extensions.Database.Observability` adds optional tracing and metrics integration for the Raycynix database infrastructure.
+Optional tracing and metrics integration for Raycynix database infrastructure operations.
 
-## What It Contains
+## What It Provides
 
 - `AddObservability()`
-- `IDatabaseObservability` implementation backed by Raycynix tracing and metrics abstractions
-- metrics for database infrastructure operation counts and durations
-- tracing tags for database provider and operation names
+- an `IDatabaseObservability` implementation backed by Raycynix tracing and metrics abstractions
+- operation counters with provider, operation, and status labels
+- duration histograms for observed database operations
+- trace tags for provider and operation names
+
+Without this package, `Raycynix.Extensions.Database` uses a no-op observability implementation.
 
 ## Usage
-
-Register the core database package, exactly one provider package, and then enable observability:
 
 ```csharp
 builder.Services
@@ -20,10 +21,15 @@ builder.Services
     .AddObservability();
 ```
 
-Without this package, `Raycynix.Extensions.Database` uses a no-op observability implementation.
+Register the core database package and exactly one provider before enabling observability.
 
-## Emitted Operations
+## Observed Operations
 
-The package observes database infrastructure operations such as initialization, database creation, migrations, and EF Core model creation.
+The package observes infrastructure operations such as:
 
-Metrics use the `raycynix_database_*` prefix and include provider, operation, and status labels where applicable.
+- database initialization
+- `EnsureCreated`
+- EF Core migrations
+- model creation
+
+Metrics use the `raycynix_database_*` prefix.

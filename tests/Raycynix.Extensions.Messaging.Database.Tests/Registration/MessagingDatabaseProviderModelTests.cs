@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database;
-using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.MsSql;
 using Raycynix.Extensions.Database.MySql;
 using Raycynix.Extensions.Database.PostgreSql;
@@ -99,7 +99,7 @@ public sealed class MessagingDatabaseProviderModelTests
     /// <returns>A fully built service provider for model inspection.</returns>
     private static ServiceProvider BuildProvider(
         string connectionString,
-        Func<DatabaseBuilder, DatabaseBuilder> registerProvider)
+        Func<IDatabaseBuilder, IDatabaseBuilder> registerProvider)
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
@@ -144,15 +144,15 @@ public sealed class MessagingDatabaseProviderModelTests
         }
 
         /// <inheritdoc />
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         /// <inheritdoc />
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)

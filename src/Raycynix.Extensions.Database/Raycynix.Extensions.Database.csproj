@@ -4,10 +4,10 @@
         <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added custom Raycynix database context registration, default no-op database observability, and lighter core dependencies with observability moved to a dedicated package.</PackageReleaseNotes>
+        <PackageReleaseNotes>Added explicit model and migrations assembly registration, provider-specific validation hooks, safer DbContext registration, improved configurator dependency diagnostics, and default no-op database observability.</PackageReleaseNotes>
 
-        <Description>Core Raycynix EF Core database infrastructure with shared context registration, custom context support, model assembly discovery, initialization, and provider-agnostic model caching.</Description>
-        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;assembly-discovery;initialization;provider-agnostic;dotnet</PackageTags>
+        <Description>Core Raycynix EF Core database infrastructure with shared DbContext registration, custom context support, model assembly discovery, provider validation, initialization, and model-cache integration.</Description>
+        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

@@ -218,11 +218,103 @@ public sealed class ProviderConnectionStringTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Verifies that SQL Server structured configuration validates provider-required fields.
+    /// </summary>
+    [Fact]
+    public void MsSqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    {
+        var registration = CreateProviderRegistration(static builder => builder.AddMsSql(), "sqlserver");
+
+        var act = () => registration.Validate(CreateConnectionConfiguration(null, null, "orders", "sa", "secret"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*SQL Server connection requires a host*");
+    }
+
+    /// <summary>
+    /// Verifies that MySQL structured configuration validates provider-required fields.
+    /// </summary>
+    [Fact]
+    public void MySqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    {
+        var registration = CreateProviderRegistration(static builder => builder.AddMySql(), "mysql");
+
+        var act = () => registration.Validate(CreateConnectionConfiguration("mysql.local", null, "orders", null, "secret"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*MySQL connection requires a username*");
+    }
+
+    /// <summary>
+    /// Verifies that PostgreSQL structured configuration validates provider-required fields.
+    /// </summary>
+    [Fact]
+    public void PostgreSqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    {
+        var registration = CreateProviderRegistration(static builder => builder.AddPostgreSql(), "postgresql");
+
+        var act = () => registration.Validate(CreateConnectionConfiguration("pg.local", null, "orders", null, "secret"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*PostgreSQL connection requires a username*");
+    }
+
+    /// <summary>
+    /// Verifies that SQLite structured configuration validates provider-required fields.
+    /// </summary>
+    [Fact]
+    public void SqliteRegistration_ShouldValidateStructuredConnectionConfiguration()
+    {
+        var registration = CreateProviderRegistration(static builder => builder.AddSqlite(), "sqlite");
+
+        var act = () => registration.Validate(CreateConnectionConfiguration(null, null, null, null, null));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*SQLite connection requires a data source name*");
+    }
+
+    /// <summary>
+    /// Verifies that provider validation is skipped when a raw connection string is provided.
+    /// </summary>
+    [Fact]
+    public void ProviderRegistration_ShouldSkipStructuredValidation_WhenConnectionStringIsProvided()
+    {
+        var registration = CreateProviderRegistration(static builder => builder.AddPostgreSql(), "postgresql");
+        var configuration = new DatabaseConfiguration
+        {
+            ConnectionString = "Host=pg.local;Database=orders;",
+            ConnectionConfiguration = new TestConnectionConfiguration()
+        };
+
+        var act = () => registration.Validate(configuration);
+
+        act.Should().NotThrow();
+    }
+
     private static IDatabaseProviderRegistration GetProviderRegistration(IServiceProvider serviceProvider, string providerName)
     {
         return serviceProvider
             .GetRequiredService<IEnumerable<IDatabaseProviderRegistration>>()
             .Single(registration => registration.ProviderName == providerName);
+    }
+
+    private static IDatabaseProviderRegistration CreateProviderRegistration(
+        Func<IDatabaseBuilder, IDatabaseBuilder> registerProvider,
+        string providerName)
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+
+        var builder = services.AddRaycynixDatabase(configuration, registerCallerAssembly: false);
+        registerProvider(builder);
+
+        using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
+        return GetProviderRegistration(serviceProvider, providerName);
     }
 
     private static DatabaseConfiguration CreateConnectionConfiguration(

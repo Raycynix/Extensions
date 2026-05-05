@@ -1,15 +1,16 @@
 # Raycynix.Extensions.Database.MsSql
 
-`Raycynix.Extensions.Database.MsSql` adds SQL Server support to `Raycynix.Extensions.Database`.
+SQL Server provider integration for `Raycynix.Extensions.Database`.
 
-## What it contains
+## What It Provides
 
-- `DatabaseBuilder.AddMsSql(...)`
+- `AddMsSql(...)`
 - `MsSqlServerConfiguration`
-- SQL Server connection-string building
-- `UseSqlServer(...)` integration for the shared `DatabaseContext`
+- SQL Server structured connection-string composition
+- SQL Server provider-specific validation
+- EF Core `UseSqlServer(...)` configuration with retries, command timeout, and migrations assembly support
 
-The provider is selected by calling `.AddMsSql(...)`, not by setting a legacy provider enum in configuration.
+The provider is selected by calling `.AddMsSql(...)`.
 
 ## Usage
 
@@ -18,15 +19,16 @@ builder.Services
     .AddRaycynixDatabase(builder.Configuration, options =>
     {
         options.UseMigrations = true;
+        options.EnsureCreated = false;
     })
     .AddMsSql(sqlServer =>
     {
-        sqlServer.TrustServerCertificate = true;
+        sqlServer.TrustServerCertificate = false;
         sqlServer.CommandTimeoutSeconds = 30;
     });
 ```
 
-## appsettings.json
+## Configuration
 
 ```json
 {
@@ -38,8 +40,9 @@ builder.Services
       "Password": "secret"
     },
     "UseMigrations": true,
+    "EnsureCreated": false,
     "MsSqlServerConfiguration": {
-      "TrustServerCertificate": true,
+      "TrustServerCertificate": false,
       "MultipleActiveResultSets": false,
       "CommandTimeoutSeconds": 30
     }
@@ -47,4 +50,4 @@ builder.Services
 }
 ```
 
-This package keeps the shared `DatabaseContext` from the core package and only adds SQL Server-specific registration on top of it.
+When a raw `ConnectionString` is not supplied, structured SQL Server configuration requires `Host` and `Name`. Username and password are passed through when provided.

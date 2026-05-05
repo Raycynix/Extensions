@@ -34,7 +34,7 @@ public sealed class ProviderConfigurationDefaultsTests
     {
         var configuration = new MsSqlServerConfiguration();
 
-        configuration.TrustServerCertificate.Should().BeTrue();
+        configuration.TrustServerCertificate.Should().BeFalse();
         configuration.MultipleActiveResultSets.Should().BeFalse();
         configuration.CommandTimeoutSeconds.Should().BeNull();
     }
