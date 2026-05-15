@@ -60,4 +60,45 @@ public class FeatureFlagAccessorTests
         featureFlags.IsEnabled("NewDashboard").Should().BeTrue();
         featureFlags.IsDisabled("UseFastCache").Should().BeTrue();
     }
+
+    /// <summary>
+    /// Verifies that missing feature flag sections are rejected when section presence is required.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixFeatureFlags_ShouldThrow_WhenRequiredSectionIsMissing()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+        var services = new ServiceCollection();
+
+        var action = () => services.AddRaycynixFeatureFlags(
+            configuration,
+            requireSection: true);
+
+        action.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Required configuration feature flag section 'FeatureFlags'*");
+    }
+
+    /// <summary>
+    /// Verifies that existing feature flag sections are accepted when section presence is required.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixFeatureFlags_ShouldSucceed_WhenRequiredSectionExists()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["FeatureFlags:Flags:NewDashboard"] = "true"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        services.AddRaycynixFeatureFlags(configuration, requireSection: true);
+
+        using var provider = services.BuildServiceProvider();
+        var featureFlags = provider.GetRequiredService<IFeatureFlagAccessor>();
+
+        featureFlags.IsEnabled("NewDashboard").Should().BeTrue();
+    }
 }

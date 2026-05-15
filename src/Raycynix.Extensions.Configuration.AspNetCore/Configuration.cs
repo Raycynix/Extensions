@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration.AspNetCore.FeatureGate;
 using Raycynix.Extensions.Configuration.AspNetCore.Middleware;
@@ -12,6 +13,27 @@ namespace Raycynix.Extensions.Configuration.AspNetCore;
 public static class Configuration
 {
     /// <summary>
+    /// Registers options used by the Raycynix ASP.NET Core feature gate middleware.
+    /// </summary>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configure">An optional callback for customizing feature gate responses.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixFeatureGateOptions(
+        this IServiceCollection services,
+        Action<FeatureGateOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddOptions<FeatureGateOptions>();
+
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Applies the standard Raycynix ASP.NET Core configuration conventions to the web application builder.
     /// </summary>
     /// <param name="builder">The web application builder to update.</param>
@@ -22,6 +44,8 @@ public static class Configuration
         Action<ConfigurationSourcesConfiguration>? setup = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddRaycynixFeatureGateOptions();
 
         builder.Configuration.UseRaycynixConfigurationSources(options =>
         {

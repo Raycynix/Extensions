@@ -1,18 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Abstractions for Raycynix typed configuration access, feature flags, validation, reload governance, change handling, and environment contracts.</Description>
-        <PackageTags>raycynix;configuration;abstractions;options;accessor;feature-flags;validation;reload;environment;contracts;dotnet</PackageTags>
+        <Description>Abstractions for Raycynix typed configuration access, named options, diagnostics, redaction, feature flags, validation, reload governance, change handling, and environment contracts.</Description>
+        <PackageTags>raycynix;configuration;abstractions;options;named-options;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;contracts;dotnet</PackageTags>
+        <PackageReleaseNotes>v2.0.0 adds named options contracts, configuration diagnostics, redacted snapshot contracts, expanded reload decisions, required-section metadata, and feature flag accessor snapshot support.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -19,9 +19,10 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
 });
 
 builder.Services.AddRaycynixEnvironment();
-builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration, requireSection: true);
 builder.Services.AddRaycynixConfiguration<MessagingOptions>(
     builder.Configuration,
+    requireSection: true,
     configureDefaults: options =>
     {
         options.ConsumerName = "default-consumer";

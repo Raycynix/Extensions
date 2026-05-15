@@ -41,4 +41,24 @@ public sealed class ConfigurationReloadResult
     {
         return new ConfigurationReloadResult(ConfigurationReloadBehavior.Reject, reason);
     }
+
+    /// <summary>
+    /// Creates a result that ignores the configuration change without treating it as an error.
+    /// </summary>
+    /// <param name="reason">The optional reason for ignoring the change.</param>
+    /// <returns>An ignored reload result.</returns>
+    public static ConfigurationReloadResult Ignore(string? reason = null)
+    {
+        return new ConfigurationReloadResult(ConfigurationReloadBehavior.Ignore, reason);
+    }
+
+    /// <summary>
+    /// Creates a result that marks the configuration change as requiring an application restart.
+    /// </summary>
+    /// <param name="reason">The optional reason why a restart is required.</param>
+    /// <returns>A restart-required reload result.</returns>
+    public static ConfigurationReloadResult RestartRequired(string? reason = null)
+    {
+        return new ConfigurationReloadResult(ConfigurationReloadBehavior.RestartRequired, reason);
+    }
 }

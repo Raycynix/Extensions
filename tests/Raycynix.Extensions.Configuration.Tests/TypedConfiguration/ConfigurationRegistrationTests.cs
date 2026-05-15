@@ -89,6 +89,49 @@ public class ConfigurationRegistrationTests
         accessor.Current.TimeoutSeconds.Should().Be(12);
     }
 
+    /// <summary>
+    /// Verifies that missing sections are rejected when section presence is required.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixConfiguration_ShouldThrow_WhenRequiredSectionIsMissing()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+        var services = new ServiceCollection();
+
+        var action = () => services.AddRaycynixConfiguration<SampleOptions>(
+            configuration,
+            requireSection: true);
+
+        action.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Required configuration section 'SampleOptions'*");
+    }
+
+    /// <summary>
+    /// Verifies that existing sections are accepted when section presence is required.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixConfiguration_ShouldSucceed_WhenRequiredSectionExists()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["SampleOptions:Value"] = "from-required-section"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        services.AddRaycynixConfiguration<SampleOptions>(
+            configuration,
+            requireSection: true);
+
+        using var provider = services.BuildServiceProvider();
+        var accessor = provider.GetRequiredService<IConfigurationAccessor<SampleOptions>>();
+
+        accessor.Current.Value.Should().Be("from-required-section");
+    }
+
     private class SampleOptions
     {
         public string Value { get; set; } = string.Empty;

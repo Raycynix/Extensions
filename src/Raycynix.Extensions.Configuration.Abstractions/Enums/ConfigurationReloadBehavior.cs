@@ -13,5 +13,15 @@ public enum ConfigurationReloadBehavior
     /// <summary>
     /// Rejects the change and does not notify registered handlers.
     /// </summary>
-    Reject = 1
+    Reject = 1,
+
+    /// <summary>
+    /// Ignores the change without replacing the approved snapshot or notifying registered handlers.
+    /// </summary>
+    Ignore = 2,
+
+    /// <summary>
+    /// Keeps the current approved snapshot and indicates that the change requires an application restart.
+    /// </summary>
+    RestartRequired = 3
 }

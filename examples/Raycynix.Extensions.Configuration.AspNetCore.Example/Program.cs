@@ -8,8 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddRaycynixAspNetCoreConfiguration();
 
-builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
-builder.Services.AddRaycynixConfiguration<DashboardOptions>(builder.Configuration);
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration, requireSection: true);
+builder.Services.AddRaycynixConfiguration<DashboardOptions>(
+    builder.Configuration,
+    requireSection: true);
 builder.Services.AddRaycynixConfigurationValidator<DashboardOptions>(
     options => options.RefreshIntervalSeconds > 0,
     "DashboardOptions.RefreshIntervalSeconds must be greater than zero.");

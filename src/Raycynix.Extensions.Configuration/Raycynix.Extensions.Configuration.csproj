@@ -1,20 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core typed-configuration registration, feature flags, validation, reload governance, change handling, and environment-aware source composition for Raycynix applications.</Description>
-        <PackageTags>raycynix;configuration;options;binding;accessor;feature-flags;validation;reload;environment;appsettings;dotnet</PackageTags>
+        <Description>Core typed-configuration registration, named options, diagnostics with redacted snapshots, feature flags, validation, reload governance, change handling, and environment-aware source composition for Raycynix applications.</Description>
+        <PackageTags>raycynix;configuration;options;named-options;binding;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;appsettings;dotnet</PackageTags>
+        <PackageReleaseNotes>v2.0.0 adds required configuration sections, named options, approved runtime snapshots, expanded reload behavior, diagnostics with redacted snapshots, configurable reload history, and custom redactor registration.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
     </ItemGroup>

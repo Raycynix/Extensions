@@ -10,6 +10,9 @@
 - `UseRaycynixConfigurationSources(...)`
 - `AddRaycynixFeatureFlags(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
+- `ConfigureRaycynixConfigurationDiagnostics(...)`
+- `AddRaycynixConfigurationRedactor<TRedactor>()`
+- `AddRaycynixConfigurationRedactor(...)`
 - `AddRaycynixConfigurationAccessor<TOptions>()`
 - `AddRaycynixConfigurationValidator<TOptions, TValidator>()`
 - `AddRaycynixConfigurationValidator<TOptions>(...)`
@@ -21,11 +24,15 @@
 - standard environment abstraction based on `IHostEnvironment`
 - standard configuration source ordering
 - feature flag access through `IFeatureFlagAccessor`
+- named options registration through `optionsName`
+- required-section validation through `requireSection`
 - support for default values through delegates and `IConfigurationDefaults<TOptions>`
 - startup validation through standard `IValidateOptions<TOptions>` integration
 - unified typed access through `IConfigurationAccessor<TOptions>`
 - reload governance through `IConfigurationReloadPolicy<TOptions>`
 - typed change notifications through `IOptionsMonitor<TOptions>`
+- diagnostics through `IConfigurationDiagnostics`
+- redacted configuration snapshots through `IConfigurationRedactor`
 
 ## What it does not contain
 
@@ -48,6 +55,7 @@ builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
 
 builder.Services.AddRaycynixConfiguration<MyOptions>(
     builder.Configuration,
+    requireSection: true,
     configureDefaults: options =>
     {
         options.TimeoutSeconds = 30;
@@ -65,7 +73,12 @@ builder.Services.AddRaycynixConfigurationChangeHandler<MyOptions>(
     {
         Console.WriteLine($"Configuration changed: {context.ChangedAtUtc:O}");
         return ValueTask.CompletedTask;
-    });
+});
+
+builder.Services.ConfigureRaycynixConfigurationDiagnostics(options =>
+{
+    options.MaxReloadHistoryPerOptions = 10;
+});
 ```
 
 ## appsettings.json
@@ -94,6 +107,17 @@ builder.Services.AddRaycynixConfiguration<MyOptions>(
     builder.Configuration,
     sectionName: "MyFeatureArea:MyOptions");
 ```
+
+Named options can be registered by passing `optionsName`:
+
+```csharp
+builder.Services.AddRaycynixConfiguration<MyOptions>(
+    builder.Configuration,
+    sectionName: "Tenants:Primary",
+    optionsName: "Primary");
+```
+
+`IConfigurationAccessor<TOptions>.Get("Primary")` returns the current approved snapshot for that named options instance.
 
 ## Applying Runtime Reload Rules
 
@@ -157,7 +181,7 @@ public class MyService(IConfigurationAccessor<MyOptions> configurationAccessor)
 }
 ```
 
-Reload policies are evaluated before change handlers are notified. A policy can apply or reject a runtime change.
+Reload policies are evaluated before change handlers are notified. A policy can apply, reject, ignore, or mark a runtime change as requiring restart.
 
 When a runtime change is rejected, `IConfigurationAccessor<TOptions>` continues to expose the last approved configuration snapshot.
 
@@ -176,6 +200,38 @@ public class CacheOptions
 ```
 
 When a property marked with `Reject` changes, the runtime update is rejected automatically before handlers are called.
+
+## Diagnostics and Redaction
+
+`IConfigurationDiagnostics` exposes registered options, retained reload decisions, and redacted snapshots:
+
+```csharp
+var diagnostics = app.Services.GetRequiredService<IConfigurationDiagnostics>();
+var registrations = diagnostics.GetRegistrations();
+var reloads = diagnostics.GetReloads();
+var snapshot = diagnostics.GetRedactedSnapshot<MyOptions>();
+```
+
+Diagnostics behavior can be configured globally:
+
+```csharp
+builder.Services.ConfigureRaycynixConfigurationDiagnostics(options =>
+{
+    options.EnableSnapshots = true;
+    options.MaxReloadHistoryPerOptions = 10;
+});
+```
+
+The default redactor hides common sensitive keys such as passwords, tokens, API keys, private keys, authorization values, and connection strings. Applications can replace it with a custom implementation:
+
+```csharp
+builder.Services.AddRaycynixConfigurationRedactor((key, value) =>
+{
+    return key.Contains("license", StringComparison.OrdinalIgnoreCase)
+        ? "***"
+        : value;
+});
+```
 
 ## Feature Flags
 
