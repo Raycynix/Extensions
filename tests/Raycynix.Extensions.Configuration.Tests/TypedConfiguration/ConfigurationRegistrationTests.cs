@@ -90,6 +90,37 @@ public class ConfigurationRegistrationTests
     }
 
     /// <summary>
+    /// Verifies that a typed configuration model can be registered as a named options instance.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixConfiguration_ShouldBindNamedOptionsInstance()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Tenants:Primary:Value"] = "from-primary",
+                ["Tenants:Secondary:Value"] = "from-secondary"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddRaycynixConfiguration<SampleOptions>(
+            configuration,
+            sectionName: "Tenants:Primary",
+            optionsName: "Primary");
+        services.AddRaycynixConfiguration<SampleOptions>(
+            configuration,
+            sectionName: "Tenants:Secondary",
+            optionsName: "Secondary");
+
+        using var provider = services.BuildServiceProvider();
+        var accessor = provider.GetRequiredService<IConfigurationAccessor<SampleOptions>>();
+
+        accessor.Get("Primary").Value.Should().Be("from-primary");
+        accessor.Get("Secondary").Value.Should().Be("from-secondary");
+    }
+
+    /// <summary>
     /// Verifies that missing sections are rejected when section presence is required.
     /// </summary>
     [Fact]

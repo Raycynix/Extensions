@@ -38,6 +38,32 @@ public class FeatureFlagAccessorTests
     }
 
     /// <summary>
+    /// Verifies that <c>GetAll</c> returns a defensive copy of the current feature flag snapshot.
+    /// </summary>
+    [Fact]
+    public void GetAll_ShouldReturnDefensiveCopy()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["FeatureFlags:Flags:NewDashboard"] = "true"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddRaycynixFeatureFlags(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var featureFlags = provider.GetRequiredService<IFeatureFlagAccessor>();
+
+        var firstSnapshot = featureFlags.GetAll().Should().BeAssignableTo<Dictionary<string, bool>>().Subject;
+        firstSnapshot["NewDashboard"] = false;
+
+        featureFlags.IsEnabled("NewDashboard").Should().BeTrue();
+        featureFlags.GetAll()["NewDashboard"].Should().BeTrue();
+    }
+
+    /// <summary>
     /// Verifies that feature flags can bind from an explicit custom section name.
     /// </summary>
     [Fact]

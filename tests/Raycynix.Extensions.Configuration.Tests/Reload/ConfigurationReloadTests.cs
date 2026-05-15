@@ -100,6 +100,100 @@ public class ConfigurationReloadTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ignored runtime changes keep the approved snapshot and are recorded in diagnostics.
+    /// </summary>
+    [Fact]
+    public async Task AddRaycynixConfiguration_ShouldKeepLastApprovedSnapshotWhenReloadIsIgnored()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["CacheOptions:ConnectionString"] = "Host=primary;",
+                ["CacheOptions:DefaultTtlSeconds"] = "30"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddRaycynixConfiguration<CacheOptions>(configuration);
+        services.AddRaycynixConfigurationReloadPolicy<CacheOptions>(_ =>
+            ConfigurationReloadResult.Ignore("The change is intentionally ignored."));
+
+        using var provider = services.BuildServiceProvider();
+        await StartHostedServicesAsync(provider, TestContext.Current.CancellationToken);
+
+        try
+        {
+            var accessor = provider.GetRequiredService<IConfigurationAccessor<CacheOptions>>();
+            var diagnostics = provider.GetRequiredService<IConfigurationDiagnostics>();
+
+            configuration["CacheOptions:DefaultTtlSeconds"] = "60";
+            configuration.Reload();
+
+            await Task.Delay(100, TestContext.Current.CancellationToken);
+
+            accessor.Current.DefaultTtlSeconds.Should().Be(30);
+            diagnostics.GetReloads()
+                .Should()
+                .ContainSingle(reload =>
+                    reload.OptionsType == typeof(CacheOptions) &&
+                    reload.Behavior == ConfigurationReloadBehavior.Ignore &&
+                    reload.Reason == "The change is intentionally ignored.");
+        }
+        finally
+        {
+            await StopHostedServicesAsync(provider, TestContext.Current.CancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that restart-required runtime changes keep the approved snapshot and are recorded in diagnostics.
+    /// </summary>
+    [Fact]
+    public async Task AddRaycynixConfiguration_ShouldKeepLastApprovedSnapshotWhenReloadRequiresRestart()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["CacheOptions:ConnectionString"] = "Host=primary;",
+                ["CacheOptions:DefaultTtlSeconds"] = "30"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddRaycynixConfiguration<CacheOptions>(configuration);
+        services.AddRaycynixConfigurationReloadPolicy<CacheOptions>(_ =>
+            ConfigurationReloadResult.RestartRequired("Restart is required."));
+
+        using var provider = services.BuildServiceProvider();
+        await StartHostedServicesAsync(provider, TestContext.Current.CancellationToken);
+
+        try
+        {
+            var accessor = provider.GetRequiredService<IConfigurationAccessor<CacheOptions>>();
+            var diagnostics = provider.GetRequiredService<IConfigurationDiagnostics>();
+
+            configuration["CacheOptions:DefaultTtlSeconds"] = "60";
+            configuration.Reload();
+
+            await Task.Delay(100, TestContext.Current.CancellationToken);
+
+            accessor.Current.DefaultTtlSeconds.Should().Be(30);
+            diagnostics.GetReloads()
+                .Should()
+                .ContainSingle(reload =>
+                    reload.OptionsType == typeof(CacheOptions) &&
+                    reload.Behavior == ConfigurationReloadBehavior.RestartRequired &&
+                    reload.Reason == "Restart is required.");
+        }
+        finally
+        {
+            await StopHostedServicesAsync(provider, TestContext.Current.CancellationToken);
+        }
+    }
+
     private static async Task StartHostedServicesAsync(IServiceProvider provider, CancellationToken cancellationToken)
     {
         foreach (var hostedService in provider.GetServices<IHostedService>())

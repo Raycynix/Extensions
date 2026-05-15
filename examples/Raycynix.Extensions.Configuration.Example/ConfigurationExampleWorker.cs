@@ -5,6 +5,7 @@ namespace Raycynix.Extensions.Configuration.Example;
 
 internal sealed class ConfigurationExampleWorker(
     IConfigurationAccessor<MessagingOptions> messagingOptionsAccessor,
+    IConfigurationDiagnostics configurationDiagnostics,
     IFeatureFlagAccessor featureFlags,
     IApplicationEnvironment applicationEnvironment,
     IHostApplicationLifetime applicationLifetime) : BackgroundService
@@ -20,13 +21,20 @@ internal sealed class ConfigurationExampleWorker(
         Console.WriteLine($"BatchSize: {options.BatchSize}");
         Console.WriteLine($"PrefetchCount: {options.PrefetchCount}");
         Console.WriteLine($"UseInboxProcessing: {options.UseInboxProcessing}");
+        
+        Console.WriteLine("Configuration diagnostics:");
+
+        foreach (var registration in configurationDiagnostics.GetRegistrations())
+        {
+            Console.WriteLine($"  {registration.OptionsType.Name} -> {registration.SectionName}");
+        }
         Console.WriteLine("Feature flags:");
 
         foreach (var pair in featureFlags.GetAll().OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
             Console.WriteLine($"  {pair.Key} = {pair.Value}");
         }
-
+        
         applicationLifetime.StopApplication();
         return Task.CompletedTask;
     }

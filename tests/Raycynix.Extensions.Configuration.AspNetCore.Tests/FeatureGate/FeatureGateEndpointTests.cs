@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Raycynix.Extensions.Configuration.AspNetCore.Tests.FeatureGate;
 
@@ -109,14 +110,95 @@ public class FeatureGateEndpointTests
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that ungated endpoints do not require feature flag services.
+    /// </summary>
+    [Fact]
+    public async Task UngatedEndpoint_ShouldAllowRequestWithoutFeatureFlagAccessor()
+    {
+        await using var app = await BuildFeatureGateAppWithoutFeatureFlagsAsync(_ => { });
+
+        var response = await app.GetTestClient().GetAsync("/feature", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+    }
+
+    /// <summary>
+    /// Verifies that gated endpoints use the configured status code when the feature flag accessor is missing.
+    /// </summary>
+    [Fact]
+    public async Task GatedEndpoint_ShouldUseConfiguredStatusCodeWhenFeatureFlagAccessorIsMissing()
+    {
+        await using var app = await BuildFeatureGateAppWithoutFeatureFlagsAsync(endpoint =>
+        {
+            endpoint.RequireFeature("NewDashboard");
+        }, services =>
+        {
+            services.AddRaycynixFeatureGateOptions(options =>
+            {
+                options.MissingFeatureFlagAccessorStatusCode = StatusCodes.Status503ServiceUnavailable;
+            });
+        });
+
+        var response = await app.GetTestClient().GetAsync("/feature", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.ServiceUnavailable);
+    }
+
+    /// <summary>
+    /// Verifies that disabled feature gates use the configured status code.
+    /// </summary>
+    [Fact]
+    public async Task GatedEndpoint_ShouldUseConfiguredStatusCodeWhenFeatureIsDisabled()
+    {
+        await using var app = await BuildFeatureGateAppAsync(new Dictionary<string, string?>
+        {
+            ["FeatureFlags:Flags:NewDashboard"] = "false"
+        }, endpoint =>
+        {
+            endpoint.RequireFeature("NewDashboard");
+        }, services =>
+        {
+            services.AddRaycynixFeatureGateOptions(options =>
+            {
+                options.DisabledStatusCode = StatusCodes.Status403Forbidden;
+            });
+        });
+
+        var response = await app.GetTestClient().GetAsync("/feature", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+    }
+
     private static async Task<WebApplication> BuildFeatureGateAppAsync(
         IDictionary<string, string?> flags,
-        Action<RouteHandlerBuilder> configureEndpoint)
+        Action<RouteHandlerBuilder> configureEndpoint,
+        Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Configuration.AddInMemoryCollection(flags);
+        configureServices?.Invoke(builder.Services);
         builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
+
+        var app = builder.Build();
+        app.UseRaycynixAspNetCoreConfiguration();
+
+        var endpoint = app.MapGet("/feature", () => Results.Ok("enabled"));
+        configureEndpoint(endpoint);
+
+        await app.StartAsync(TestContext.Current.CancellationToken);
+
+        return app;
+    }
+
+    private static async Task<WebApplication> BuildFeatureGateAppWithoutFeatureFlagsAsync(
+        Action<RouteHandlerBuilder> configureEndpoint,
+        Action<IServiceCollection>? configureServices = null)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        configureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
         app.UseRaycynixAspNetCoreConfiguration();
