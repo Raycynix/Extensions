@@ -1,43 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>SQL Server provider integration for Raycynix.Extensions.Database with AddMsSql registration, SQL Server connection-string composition, and EF Core UseSqlServer configuration.</Description>
-        <PackageTags>raycynix;database;sqlserver;mssql;provider;efcore;entityframework;dotnet</PackageTags>
+        <PackageReleaseNotes>Added SQL Server provider registration with provider-specific validation, safer TrustServerCertificate defaults, connection-string composition, retries, command timeout, and migrations assembly support.</PackageReleaseNotes>
+
+        <Description>SQL Server provider integration for Raycynix.Extensions.Database with AddMsSql registration, provider-specific validation, connection-string composition, and EF Core UseSqlServer configuration.</Description>
+        <PackageTags>raycynix;database;sqlserver;mssql;provider;provider-validation;efcore;entityframework;migrations;connection-string;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
         <PackageReference Include="Microsoft.Identity.Client" Version="4.83.3"/>
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.3"/>
         <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.17.0"/>
         <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.17.0"/>
         <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.17.0"/>
         <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.17.0"/>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.6"/>
-        <PackageReference Include="System.Memory.Data" Version="10.0.6"/>
-        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.6"/>
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.6"/>
-        <PackageReference Include="Azure.Core" Version="1.53.0"/>
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.7"/>
+        <PackageReference Include="System.Memory.Data" Version="10.0.7"/>
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.7"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7"/>
+        <PackageReference Include="Azure.Core" Version="1.54.0" />
         <PackageReference Include="Azure.Identity" Version="1.21.0"/>
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.6"/>
-        <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.6"/>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.6"/>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7"/>
+        <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.7"/>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj"/>
-        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

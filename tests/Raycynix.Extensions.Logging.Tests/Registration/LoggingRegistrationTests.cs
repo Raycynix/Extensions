@@ -1,9 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Configurations;
 using Raycynix.Extensions.Logging.Implementations;
 using Serilog;
 
@@ -21,7 +22,7 @@ public sealed class LoggingRegistrationTests
     public void AddRaycynixLogging_ShouldRegisterTypedLoggerAbstraction()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<Serilog.ILogger>(_ => Log.Logger);
+        services.AddSingleton<ILogger>(_ => Log.Logger);
 
         services.AddRaycynixLogging();
 
@@ -40,7 +41,7 @@ public sealed class LoggingRegistrationTests
     public void AddRaycynixLogging_ShouldBeIdempotent()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<Serilog.ILogger>(_ => Log.Logger);
+        services.AddSingleton<ILogger>(_ => Log.Logger);
 
         services.AddRaycynixLogging();
         services.AddRaycynixLogging();
@@ -55,7 +56,7 @@ public sealed class LoggingRegistrationTests
     public void AddRaycynixLogging_ShouldResolveTypedLogger()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<Serilog.ILogger>(_ => new LoggerConfiguration().CreateLogger());
+        services.AddSingleton<ILogger>(_ => new LoggerConfiguration().CreateLogger());
         services.AddRaycynixLogging();
 
         using var provider = services.BuildServiceProvider();
@@ -71,7 +72,7 @@ public sealed class LoggingRegistrationTests
     public void AddRaycynixLogging_WithConfiguration_ShouldBindLoggingConfiguration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<Serilog.ILogger>(_ => new LoggerConfiguration().CreateLogger());
+        services.AddSingleton<ILogger>(_ => new LoggerConfiguration().CreateLogger());
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -92,30 +93,55 @@ public sealed class LoggingRegistrationTests
     }
 
     /// <summary>
-    /// Verifies that invalid typed logging configuration is rejected by the options validation pipeline.
+    /// Verifies that invalid typed logging configuration is rejected by the option validation pipeline.
     /// </summary>
     [Fact]
     public void AddRaycynixLogging_WithInvalidConfiguration_ShouldFailValidation()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<Serilog.ILogger>(_ => new LoggerConfiguration().CreateLogger());
+        services.AddSingleton<ILogger>(_ => new LoggerConfiguration().CreateLogger());
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["LoggingConfiguration:ServiceName"] = "orders-api",
                 ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
-                ["LoggingConfiguration:UseElastic"] = "true",
-                ["LoggingConfiguration:ElasticUrl"] = "not-a-url"
+                ["LoggingConfiguration:OutputTemplate"] = string.Empty
             })
             .Build();
 
         services.AddRaycynixLogging(configuration);
 
         using var provider = services.BuildServiceProvider();
-        var access = () => provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<LoggingConfiguration>>().Value;
+        var access = () => provider.GetRequiredService<IOptions<LoggingConfiguration>>().Value;
 
         access.Should().Throw<OptionsValidationException>()
-            .WithMessage("*Elasticsearch URL*");
+            .WithMessage("*output template*");
+    }
+
+    /// <summary>
+    /// Verifies that host logging can still be configured directly from host configuration without DI registration.
+    /// </summary>
+    [Fact]
+    public void UseRaycynixLogging_WithoutServiceRegistration_ShouldUseConfigurationFallback()
+    {
+        var hostBuilder = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["LoggingConfiguration:ServiceName"] = "fallback-api",
+                    ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
+                    ["LoggingConfiguration:MinimumLevel"] = "Debug"
+                });
+            })
+            .UseRaycynixLogging();
+
+        var build = () =>
+        {
+            using var host = hostBuilder.Build();
+        };
+
+        build.Should().NotThrow();
     }
 
     private sealed class TestCategory;

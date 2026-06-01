@@ -26,6 +26,8 @@ internal sealed class FeatureFlagAccessor(
     /// <inheritdoc />
     public IReadOnlyDictionary<string, bool> GetAll()
     {
-        return configurationAccessor.Current.Flags;
+        return new Dictionary<string, bool>(
+            configurationAccessor.Current.Flags,
+            StringComparer.OrdinalIgnoreCase);
     }
 }

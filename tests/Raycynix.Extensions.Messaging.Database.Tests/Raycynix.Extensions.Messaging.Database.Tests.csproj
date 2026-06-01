@@ -11,22 +11,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Core" Version="1.53.0" />
+        <PackageReference Include="Azure.Core" Version="1.54.0" />
         <PackageReference Include="coverlet.collector" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="FluentAssertions" Version="8.9.0"/>
         <PackageReference Include="Microsoft.ApplicationInsights" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.6" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.7" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
         <PackageReference Include="Microsoft.Testing.Extensions.Telemetry" Version="2.2.1" />
         <PackageReference Include="Microsoft.Testing.Extensions.TrxReport.Abstractions" Version="2.2.1" />
         <PackageReference Include="Microsoft.Testing.Platform" Version="2.2.1" />
         <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="2.2.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="System.Memory.Data" Version="10.0.6" />
+        <PackageReference Include="OpenTelemetry" Version="1.15.3" />
+        <PackageReference Include="System.Memory.Data" Version="10.0.7" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -40,17 +41,13 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.MsSql\Raycynix.Extensions.Database.MsSql.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.MySql\Raycynix.Extensions.Database.MySql.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.PostgreSql\Raycynix.Extensions.Database.PostgreSql.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Sqlite\Raycynix.Extensions.Database.Sqlite.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Messaging.Abstractions\Raycynix.Extensions.Messaging.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Messaging.Database\Raycynix.Extensions.Messaging.Database.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics.Abstractions\Raycynix.Extensions.Metrics.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />

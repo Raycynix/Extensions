@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Raycynix.Extensions.Database.Implementations;
 
 /// <summary>
-/// Builds EF Core model cache keys that include dynamically registered configurator assemblies.
+/// Builds EF Core model cache keys that include the active provider, seed mode, and configurator model shape.
 /// </summary>
 internal sealed class DatabaseModelCacheKeyFactory : IModelCacheKeyFactory
 {
     /// <inheritdoc />
     public object Create(DbContext context, bool designTime)
     {
-        if (context is not DatabaseContext databaseContext)
+        if (context is not RaycynixDatabaseContext databaseContext)
         {
             return (context.GetType(), designTime);
         }

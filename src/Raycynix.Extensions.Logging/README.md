@@ -1,14 +1,25 @@
 # Raycynix.Extensions.Logging
 
-`Raycynix.Extensions.Logging` provides structured logging services and generic-host integration for Raycynix applications.
+`Raycynix.Extensions.Logging` provides structured logging services, typed logger adapters, and Serilog host integration for Raycynix applications.
 
 ## What it contains
 
 - `AddRaycynixLogging(...)`
-- `AddRaycynixLogging(IConfiguration, ...)`
-- `UseRaycynixLogging(this IHostBuilder ...)`
+- `AddRaycynixLogging()`
+- `UseRaycynixLogging(this IHostBuilder, ...)`
+- `LoggingBuilder`
 - `LoggingConfiguration`
-- Serilog-based logger implementation
+- Serilog-backed `ILogger<T>` implementation
+- Console sink setup
+- Serilog integration hooks for optional packages
+
+## What it does not contain
+
+- Elasticsearch sink integration
+- Provider-specific log shipping packages
+- ASP.NET Core middleware
+
+Use `Raycynix.Extensions.Logging.Elastic` when logs should be written to Elasticsearch.
 
 ## appsettings.json
 
@@ -19,8 +30,6 @@
     "ServiceVersion": "1.0.0",
     "Environment": "Production",
     "MinimumLevel": "Information",
-    "UseElastic": false,
-    "ElasticUrl": "http://localhost:9200",
     "OutputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] {Message:lj}{NewLine}{Exception}"
   }
 }
@@ -29,18 +38,27 @@
 ## Usage
 
 ```csharp
-var builder = Host.CreateDefaultBuilder(args)
+Host.CreateDefaultBuilder(args)
+    .UseRaycynixLogging()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddRaycynixLogging(context.Configuration);
+        services.AddHostedService<AppWorker>();
+    });
+```
+
+For default settings without configuration binding:
+
+```csharp
+Host.CreateDefaultBuilder(args)
     .UseRaycynixLogging()
     .ConfigureServices(services =>
     {
-        services.AddRaycynixLogging(builder.Configuration);
-        services.AddHostedService<AppWorker>();
+        services.AddRaycynixLogging();
     });
-
-await builder.RunConsoleAsync();
 ```
 
-You can also override bound settings in code:
+Runtime overrides are applied to the same `LoggingConfiguration` instance that optional integrations receive:
 
 ```csharp
 Host.CreateDefaultBuilder(args)
@@ -48,14 +66,30 @@ Host.CreateDefaultBuilder(args)
     {
         options.ServiceName = "orders-worker";
         options.MinimumLevel = LogLevel.Debug;
-        options.UseElastic = true;
-        options.ElasticUrl = "http://elastic:9200";
     })
-    .ConfigureServices(services =>
+    .ConfigureServices((context, services) =>
     {
-        services.AddRaycynixLogging();
+        services.AddRaycynixLogging(context.Configuration);
     });
 ```
+
+## Optional integrations
+
+Optional sinks are added through `LoggingBuilder`. When the integration needs its own configuration section, use the configuration overload:
+
+```csharp
+Host.CreateDefaultBuilder(args)
+    .UseRaycynixLogging()
+    .ConfigureServices((context, services) =>
+    {
+        services
+            .AddRaycynixLogging(context.Configuration)
+            .AddElastic();
+    });
+```
+
+`UseRaycynixLogging()` must still be called on the host builder because it connects Serilog to the generic host.
+If `AddRaycynixLogging(...)` is not registered, `UseRaycynixLogging()` falls back to the host `LoggingConfiguration` section and default values.
 
 ## Injecting the typed logger
 
@@ -64,11 +98,9 @@ public sealed class OrderProcessor(ILogger<OrderProcessor> logger)
 {
     public void Process(string orderId)
     {
-        logger.Information("Processing order", new { OrderId = orderId });
+        logger.Information("Processing order {OrderId}", orderId);
     }
 }
 ```
 
-`AddRaycynixLogging(builder.Configuration)` also registers `LoggingConfiguration` through the standard Raycynix configuration pipeline and validates it on startup.
-
-This package is not tied to ASP.NET Core middleware and can be used in web, worker, and console applications built on the generic host.
+`AddRaycynixLogging(context.Configuration)` also registers `LoggingConfiguration` through the Raycynix configuration pipeline and validates it on startup.

@@ -13,6 +13,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj" />
       <ProjectReference Include="..\..\src\Raycynix.Extensions.Database.Sqlite\Raycynix.Extensions.Database.Sqlite.csproj" />
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />
       <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
     </ItemGroup>
 

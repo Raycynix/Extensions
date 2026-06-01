@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.AspNetCore;
 using Raycynix.Extensions.Database.AspNetCore.Example;
-using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Logging;
 
@@ -85,7 +84,7 @@ app.MapGet("/orders/{number}", async (
 
 app.MapPost("/orders", async (
     CreateExampleOrderRequest request,
-    DatabaseContext databaseContext, 
+    RaycynixDatabaseContext databaseContext,
     Raycynix.Extensions.Logging.Abstractions.ILogger<OrderEndpoints> logger,
     CancellationToken cancellationToken) =>
 {
@@ -102,7 +101,7 @@ app.MapPost("/orders", async (
     databaseContext.Set<ExampleOrder>().Add(order);
     await databaseContext.SaveChangesAsync(cancellationToken);
 
-    logger.Information("Created order through HTTP endpoint", new
+    logger.Information("Created order through HTTP endpoint\n {Endpoint}", new
     {
         order.Number,
         order.CustomerName,

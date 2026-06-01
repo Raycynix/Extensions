@@ -1,6 +1,6 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Logging.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Configurations;
 
 namespace Raycynix.Extensions.Logging.Internal;
 

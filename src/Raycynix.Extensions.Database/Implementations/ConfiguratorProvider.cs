@@ -15,7 +15,9 @@ internal static class ConfiguratorProvider
     /// <param name="serviceProvider">The service provider used to activate configurators.</param>
     /// <param name="assemblies">The assemblies that contain configurator implementations.</param>
     /// <returns>The ordered configurator instances.</returns>
-    /// <exception cref="InvalidDataException">Thrown when a circular dependency is detected.</exception>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when a configurator dependency is missing or a circular dependency is detected.
+    /// </exception>
     public static List<IConfigurator> Provide(IServiceProvider serviceProvider, IEnumerable<Assembly> assemblies)
     {
         var configuratorTypes = assemblies
@@ -38,16 +40,39 @@ internal static class ConfiguratorProvider
 
         while (configurators.Length != orderedConfigurators.Length)
         {
-            var readyDependencies = orderedConfigurators.Select(oc => oc.Type).ToArray();
+            var readyDependencies = orderedConfigurators
+                .Select(static configurator => configurator.Type)
+                .ToHashSet();
 
             var resolvedConfigurators = configurators
-                .Where(c => c.DependsOn.All(t => readyDependencies.Contains(t)))
+                .Where(c => c.DependsOn.All(readyDependencies.Contains))
                 .Where(c => orderedConfigurators.All(oc => oc.Type != c.Type))
                 .ToArray();
 
             if (resolvedConfigurators.Length == 0)
             {
-                throw new InvalidDataException("Circular dependency detected between configurators.");
+                var knownTypes = configurators
+                    .Select(static configurator => configurator.Type)
+                    .ToHashSet();
+
+                var unresolvedConfigurators = configurators
+                    .Where(configurator => orderedConfigurators.All(ordered => ordered.Type != configurator.Type))
+                    .ToArray();
+
+                var missingDependencies = unresolvedConfigurators
+                    .SelectMany(static configurator => configurator.DependsOn)
+                    .Where(dependency => !knownTypes.Contains(dependency))
+                    .Distinct()
+                    .ToArray();
+
+                if (missingDependencies.Length > 0)
+                {
+                    throw new InvalidDataException(
+                        $"Missing configurator dependencies: {string.Join(", ", missingDependencies.Select(static type => type.FullName ?? type.Name))}.");
+                }
+
+                throw new InvalidDataException(
+                    $"Circular dependency detected between configurators: {string.Join(", ", unresolvedConfigurators.Select(static configurator => configurator.Type.FullName ?? configurator.Type.Name))}.");
             }
 
             orderedConfigurators = orderedConfigurators.Concat(resolvedConfigurators).ToArray();

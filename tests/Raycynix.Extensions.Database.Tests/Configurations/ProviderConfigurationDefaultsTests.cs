@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Raycynix.Extensions.Database.Configurations;
 using Raycynix.Extensions.Database.MsSql.Configurations;
 using Raycynix.Extensions.Database.MySql.Configurations;
 using Raycynix.Extensions.Database.PostgreSql.Configurations;
@@ -35,7 +34,7 @@ public sealed class ProviderConfigurationDefaultsTests
     {
         var configuration = new MsSqlServerConfiguration();
 
-        configuration.TrustServerCertificate.Should().BeTrue();
+        configuration.TrustServerCertificate.Should().BeFalse();
         configuration.MultipleActiveResultSets.Should().BeFalse();
         configuration.CommandTimeoutSeconds.Should().BeNull();
     }

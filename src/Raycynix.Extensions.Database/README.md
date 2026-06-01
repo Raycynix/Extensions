@@ -1,40 +1,42 @@
 # Raycynix.Extensions.Database
 
-`Raycynix.Extensions.Database` is the core database package.
+Core EF Core database infrastructure for Raycynix applications.
 
-## What it contains
+## What It Provides
 
-- `AddRaycynixDatabase(...)`
-- `AddRaycynixDatabaseAssembly(...)`
-- `DatabaseBuilder.AddAssembly(...)`
-- `DatabaseContext`
-- `DatabaseConfiguration`
-- provider registration infrastructure
-- `IDatabaseInitializer`
-- `DatabaseInitializer`
+- `AddRaycynixDatabase(...)` zero-setup registration with the default `DatabaseContext`
+- `AddRaycynixDatabase<TContext>(...)` for custom Raycynix database contexts
+- marker and explicit assembly overloads for model configurators and EF Core migrations
+- model assembly discovery through `AddAssembly(...)`
+- `RaycynixDatabaseContext`, `DatabaseContext`, `GenericConfigurator<T>`, and table-name helpers
+- provider selection through provider packages such as PostgreSQL, SQL Server, MySQL, or SQLite
+- startup initialization through `IDatabaseInitializer`
+- default no-op database observability
 
-## What it does not contain
+Shared contracts and configuration models live in `Raycynix.Extensions.Database.Abstractions`.
 
-- PostgreSQL provider integration
-- SQL Server provider integration
-- MySQL provider integration
-- SQLite provider integration
-- `WebApplication` extensions
-- ASP.NET Core startup integration
-- generic-host startup integration
+## Basic Usage
 
-## Usage
+For simple applications, call `AddRaycynixDatabase(...)` and one provider. The application entry assembly is registered automatically for configurator discovery and migrations.
 
 ```csharp
-builder.Services.AddRaycynixDatabase(builder.Configuration, options =>
-{
-    options.UseMigrations = true;
-});
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+        options.EnsureCreated = false;
+    })
+    .AddPostgreSql();
 ```
 
-## appsettings.json
+Exactly one provider must be registered:
 
-Core settings stay under `DatabaseConfiguration`:
+- `AddPostgreSql()`
+- `AddMsSql()`
+- `AddMySql()`
+- `AddSqlite()`
+
+## Configuration
 
 ```json
 {
@@ -52,27 +54,7 @@ Core settings stay under `DatabaseConfiguration`:
 }
 ```
 
-Then add exactly one provider package and extend the registration:
-
-```csharp
-builder.Services
-    .AddRaycynixDatabase(builder.Configuration, options =>
-    {
-        options.UseMigrations = true;
-    })
-    .AddPostgreSql();
-```
-
-Equivalent provider packages expose:
-
-- `AddPostgreSql()`
-- `AddMsSql()`
-- `AddMySql()`
-- `AddSqlite()`
-
-The provider package is selected by registration, not by a legacy `Provider` configuration key.
-
-Provider-specific settings remain nested under the same root section:
+Provider-specific settings are nested under `DatabaseConfiguration`:
 
 ```json
 {
@@ -88,72 +70,110 @@ Provider-specific settings remain nested under the same root section:
 }
 ```
 
-If a reusable package contributes EF Core configurators to the shared `DatabaseContext`, register its assembly explicitly:
+Provider packages validate their own structured connection requirements before building connection strings.
+
+## Custom Contexts
 
 ```csharp
-builder.Services.AddRaycynixDatabase(builder.Configuration)
-    .AddAssembly<SomePackageMarker>();
+public sealed class AppDatabaseContext : RaycynixDatabaseContext
+{
+    public AppDatabaseContext(
+        DbContextOptions<AppDatabaseContext> options,
+        DatabaseConfiguration config,
+        IDatabaseModelAssemblyRegistry modelAssemblyRegistry,
+        IDatabaseObservability observability,
+        ILogger<RaycynixDatabaseContext> logger,
+        IServiceProvider serviceProvider)
+        : base(options, config, modelAssemblyRegistry, observability, logger, serviceProvider)
+    {
+    }
+}
+
+builder.Services
+    .AddRaycynixDatabase<AppDatabaseContext>(builder.Configuration)
+    .AddPostgreSql();
 ```
 
-This keeps a single shared `DatabaseContext` while allowing infrastructure packages to extend the model without creating their own context.
+## Assembly Registration
 
-By default, `AddRaycynixDatabase(...)` also registers the caller assembly for configurator discovery. This is convenient when the application's own configurators live next to the startup code.
-
-If configurator assemblies should be controlled explicitly, disable caller-assembly registration and add the required assemblies yourself:
+The default registration scans the application entry assembly. For modular applications, register model assemblies explicitly:
 
 ```csharp
 builder.Services
     .AddRaycynixDatabase(builder.Configuration, registerCallerAssembly: false)
-    .AddPostgreSql()
-    .AddAssembly<IdentityModelMarker>()
-    .AddAssembly<AuditModelMarker>();
+    .AddAssembly<IdentityDatabaseMarker>()
+    .AddAssembly<AuditDatabaseMarker>()
+    .AddPostgreSql();
 ```
 
-Use explicit assembly registration in tests, plugin-style architectures, or shared assemblies that contain configurators with optional dependencies.
-
-Provider-specific packages extend the same fluent builder, and the core package expects exactly one database provider registration.
-
-Table names can be configured in three ways, in this order:
-
-1. an explicit runtime name passed to `ConfigureEntity(modelBuilder, tableName)`
-2. `DatabaseTableAttribute` on the configurator
-3. the entity type name
-
-For static table names, configurators can declare the default mapping with `DatabaseTableAttribute` instead of calling `ToTable(...)` manually inside `Configure(...)`.
-
-For runtime overrides, prefer injecting configuration into the configurator and passing the resolved name to `ConfigureEntity(modelBuilder, tableName)`.
-
-When a configurator changes the model shape at runtime, override `GetModelShapeCacheKey()` so EF Core does not reuse an incompatible cached model.
+When model configurators and migrations live in different assemblies, use marker overloads:
 
 ```csharp
-public sealed class OrdersDatabaseOptions
-{
-    public string TableName { get; init; } = "orders";
-}
+builder.Services
+    .AddRaycynixDatabase<DatabaseContext, AppModelMarker, AppMigrationsMarker>(builder.Configuration)
+    .AddPostgreSql();
+```
 
-public sealed class OrderConfigurator(
-    OrdersDatabaseOptions options) : GenericConfigurator<Order>
+or explicit assemblies:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase<DatabaseContext>(
+        builder.Configuration,
+        migrationsAssembly: typeof(AppMigrationsMarker).Assembly,
+        modelAssembly: typeof(AppModelMarker).Assembly)
+    .AddPostgreSql();
+```
+
+If `AddRaycynixDatabase` is called more than once with the same context, only the first call may configure `DatabaseConfiguration`. Later calls can add assemblies but cannot pass another `setup` callback.
+
+## Configurators
+
+Configurators contribute EF Core model configuration to the shared context:
+
+```csharp
+[DatabaseTable("orders")]
+public sealed class OrderConfigurator : GenericConfigurator<Order>
 {
     public override Type[] DependsOn => [];
 
     public override void Configure(ModelBuilder modelBuilder)
     {
-        var entity = ConfigureEntity(modelBuilder, options.TableName);
-        entity.HasKey(static current => current.Id);
-    }
-
-    protected override string? GetModelShapeCacheKey()
-    {
-        return options.TableName;
+        var entity = ConfigureEntity(modelBuilder);
+        entity.HasKey(static order => order.Id);
     }
 }
 ```
 
-If you want an explicit fluent call, use `modelBuilder.Entity<T>().EntityName(tableName)`.
+Table names are resolved in this order:
 
-If a configurator relies on runtime-dependent mappings such as table names, schemas, or provider-conditioned model shape, keep those values stable within a given service provider and include them in `GetModelShapeCacheKey()`.
+1. explicit runtime name passed to `ConfigureEntity(modelBuilder, tableName)`
+2. `DatabaseTableAttribute` on the configurator
+3. entity type name
 
-If you want to run initialization during startup, use one of these packages:
+If runtime values change the model shape, override `GetModelShapeCacheKey()`:
+
+```csharp
+protected override string? GetModelShapeCacheKey()
+{
+    return options.TableName;
+}
+```
+
+## Startup Initialization
+
+Use these packages to run initialization during startup:
 
 - `Raycynix.Extensions.Database.Hosting`
 - `Raycynix.Extensions.Database.AspNetCore`
+
+## Observability
+
+Database tracing and metrics live in `Raycynix.Extensions.Database.Observability`:
+
+```csharp
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration)
+    .AddPostgreSql()
+    .AddObservability();
+```

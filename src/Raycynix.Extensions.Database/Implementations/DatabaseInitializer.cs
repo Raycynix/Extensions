@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Internal;
 using Raycynix.Extensions.Logging.Abstractions;
 
@@ -16,7 +16,7 @@ public class DatabaseInitializer(
     ILogger<DatabaseInitializer> logger) : IDatabaseInitializer
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
-    private readonly DatabaseObservability _observability = serviceProvider.GetRequiredService<DatabaseObservability>();
+    private readonly IDatabaseObservability _observability = serviceProvider.GetRequiredService<IDatabaseObservability>();
     private readonly string _providerName = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().ProviderName;
 
     /// <summary>
@@ -51,7 +51,7 @@ public class DatabaseInitializer(
             using var initializationScope = _observability.BeginOperation(_providerName, "initialization");
 
             using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
             if (config.EnsureCreated)
             {

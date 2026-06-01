@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -21,7 +21,8 @@ internal sealed class DatabaseMessageOutboxStore(
     ];
 
     /// <inheritdoc />
-    public bool ShouldDeferToAmbientUnitOfWork => databaseContext.Database.CurrentTransaction is not null || HasExternalPendingChanges();
+    public bool ShouldDeferToAmbientUnitOfWork =>
+        databaseContext.Database.CurrentTransaction is not null || HasExternalPendingChanges();
 
     /// <inheritdoc />
     public async Task EnqueueAsync(SerializedMessage message, CancellationToken cancellationToken = default)
@@ -64,15 +65,12 @@ internal sealed class DatabaseMessageOutboxStore(
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
 
-        var pendingStatus = (int)MessageOutboxStatus.Pending;
-        var dispatchingStatus = (int)MessageOutboxStatus.Dispatching;
-        var failedStatus = (int)MessageOutboxStatus.Failed;
         var entities = await databaseContext.Set<MessagingOutboxEntryEntity>()
             .AsNoTracking()
             .Where(entry =>
-                entry.Status == pendingStatus ||
-                entry.Status == failedStatus ||
-                entry.Status == dispatchingStatus)
+                entry.Status == (int)MessageOutboxStatus.Pending ||
+                entry.Status == (int)MessageOutboxStatus.Failed ||
+                entry.Status == (int)MessageOutboxStatus.Dispatching)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -155,7 +153,8 @@ internal sealed class DatabaseMessageOutboxStore(
     {
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
         var existing = set.Local.SingleOrDefault(entry => entry.MessageId == message.MessageId) ??
-            await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+                       await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken)
+                           .ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
 
         if (existing is null)
@@ -211,9 +210,9 @@ internal sealed class DatabaseMessageOutboxStore(
 
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
-            await set
-                .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
-                .ConfigureAwait(false);
+                    await set
+                        .SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -266,8 +265,8 @@ internal sealed class DatabaseMessageOutboxStore(
 
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
-            await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
-            .ConfigureAwait(false);
+                    await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -299,8 +298,8 @@ internal sealed class DatabaseMessageOutboxStore(
 
         var set = databaseContext.Set<MessagingOutboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == messageId) ??
-            await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
-            .ConfigureAwait(false);
+                    await set.SingleOrDefaultAsync(current => current.MessageId == messageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -326,7 +325,7 @@ internal sealed class DatabaseMessageOutboxStore(
     }
 
     /// <summary>
-    /// Maps a tracked outbox entity to the public outbox entry model.
+    /// Maps a tracked-outbox entity to the public outbox entry model.
     /// </summary>
     /// <param name="entry">The database entity to map.</param>
     /// <returns>The public outbox entry representation.</returns>
@@ -345,7 +344,7 @@ internal sealed class DatabaseMessageOutboxStore(
                 CausationId = entry.CausationId,
                 CreatedAt = entry.CreatedAt,
                 Headers = JsonSerializer.Deserialize<Dictionary<string, string>>(entry.Headers) ??
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                          new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             },
             Status = (MessageOutboxStatus)entry.Status,
             CreatedAt = entry.CreatedAt,

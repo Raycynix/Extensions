@@ -1,12 +1,14 @@
 using System.Reflection;
+using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
 /// <summary>
 /// Stores assemblies that contribute EF Core configurators to the shared database context.
 /// </summary>
-public sealed class DatabaseModelAssemblyRegistry
+public sealed class DatabaseModelAssemblyRegistry : IDatabaseModelAssemblyRegistry
 {
+    private readonly Lock _sync = new();
     private readonly HashSet<Assembly> _assemblies = [];
 
     /// <summary>
@@ -16,7 +18,8 @@ public sealed class DatabaseModelAssemblyRegistry
     public void Add(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
-        _assemblies.Add(assembly);
+        lock (_sync)
+            _assemblies.Add(assembly);
     }
 
     /// <summary>
@@ -25,6 +28,7 @@ public sealed class DatabaseModelAssemblyRegistry
     /// <returns>The unique assemblies that should be scanned for configurators.</returns>
     public IReadOnlyCollection<Assembly> GetAll()
     {
-        return _assemblies.ToArray();
+        lock (_sync)
+            return _assemblies.ToArray();
     }
 }

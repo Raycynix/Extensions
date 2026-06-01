@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 
 namespace Raycynix.Extensions.Database.Tests.Configurations;
 
@@ -96,7 +96,7 @@ public sealed class DatabaseConfigurationTests
     }
 
     /// <summary>
-    /// Verifies that structured connection settings are validated through the provider-specific rules.
+    /// Verifies that structured connection settings are validated through provider-agnostic rules.
     /// </summary>
     [Fact]
     public void Validate_ShouldFail_WhenStructuredConnectionIsInvalid()

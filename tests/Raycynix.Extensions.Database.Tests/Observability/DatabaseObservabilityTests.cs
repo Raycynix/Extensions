@@ -1,8 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Database.Tests.Observability;
@@ -73,8 +71,8 @@ public sealed class DatabaseObservabilityTests
 
     private static object CreateObservability(IServiceProvider serviceProvider)
     {
-        var type = typeof(Database).Assembly
-            .GetType("Raycynix.Extensions.Database.Internal.DatabaseObservability")!;
+        var type = typeof(global::Raycynix.Extensions.Database.Observability.Observability).Assembly
+            .GetType("Raycynix.Extensions.Database.Observability.DatabaseObservability")!;
 
         return Activator.CreateInstance(type, serviceProvider)!;
     }

@@ -30,8 +30,15 @@ internal sealed class AttributeConfigurationReloadPolicy<TOptions> : IConfigurat
 
             if (!Equals(previousValue, currentValue))
             {
-                return ConfigurationReloadResult.Reject(
-                    $"Property {typeof(TOptions).Name}.{property.Name} cannot be changed at runtime.");
+                return attribute.Behavior switch
+                {
+                    ConfigurationReloadBehavior.Reject => ConfigurationReloadResult.Reject(
+                        $"Property {typeof(TOptions).Name}.{property.Name} cannot be changed at runtime."),
+                    ConfigurationReloadBehavior.Ignore => ConfigurationReloadResult.Ignore(),
+                    ConfigurationReloadBehavior.RestartRequired => ConfigurationReloadResult.RestartRequired(
+                        $"Property {typeof(TOptions).Name}.{property.Name} changes require a restart."),
+                    _ => ConfigurationReloadResult.Apply()
+                };
             }
         }
 

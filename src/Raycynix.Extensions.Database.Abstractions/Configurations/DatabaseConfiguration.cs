@@ -1,4 +1,4 @@
-namespace Raycynix.Extensions.Database.Configurations;
+namespace Raycynix.Extensions.Database.Abstractions.Configurations;
 
 /// <summary>
 /// Represents the database settings used by the Raycynix database extensions.
@@ -56,7 +56,7 @@ public class DatabaseConfiguration
     public int RetryDelaySeconds { get; set; } = 10;
 
     /// <summary>
-    /// Validates the configuration and throws when incompatible or incomplete values are provided.
+    /// Validates provider-agnostic database settings and throws when incompatible or incomplete values are provided.
     /// </summary>
     public void Validate()
     {

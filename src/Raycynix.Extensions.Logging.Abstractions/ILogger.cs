@@ -16,7 +16,7 @@ public interface ILogger<out T> : Microsoft.Extensions.Logging.ILogger<T>
     /// <param name="exception">An optional exception associated with the log entry.</param>
     /// <param name="message">The structured message template to log.</param>
     /// <param name="args">Optional arguments used to populate the message template.</param>
-    [MessageTemplateFormatMethod("messageTemplate")]
+    [MessageTemplateFormatMethod("message")]
     void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args);
 
     #region Trace

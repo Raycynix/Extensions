@@ -1,31 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>MySQL provider integration for Raycynix.Extensions.Database with AddMySql registration, MySQL connection-string composition, and EF Core UseMySQL configuration.</Description>
-        <PackageTags>raycynix;database;mysql;provider;efcore;entityframework;dotnet</PackageTags>
+        <PackageReleaseNotes>Added MySQL provider registration with provider-specific validation, connection-string composition, retries, command timeout, pooling options, and migrations assembly support.</PackageReleaseNotes>
+
+        <Description>MySQL provider integration for Raycynix.Extensions.Database with AddMySql registration, provider-specific validation, connection-string composition, and EF Core UseMySQL configuration.</Description>
+        <PackageTags>raycynix;database;mysql;provider;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.6"/>
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.6"/>
-        <PackageReference Include="System.Security.Permissions" Version="10.0.6"/>
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.7"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7"/>
+        <PackageReference Include="System.Security.Permissions" Version="10.0.7"/>
         <PackageReference Include="ZstdSharp.Port" Version="0.8.7"/>
         <PackageReference Include="Google.Protobuf" Version="3.34.1"/>
         <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.1"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

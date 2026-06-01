@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Raycynix.Extensions.Configuration.Abstractions.Enums;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
 
@@ -12,6 +13,8 @@ namespace Raycynix.Extensions.Configuration.Internal;
 internal sealed class ConfigurationChangeHostedService<TOptions>(
     IOptionsMonitor<TOptions> optionsMonitor,
     ConfigurationRuntimeState<TOptions> runtimeState,
+    ConfigurationDiagnosticsStore diagnostics,
+    IEnumerable<ConfigurationOptionsRegistration<TOptions>> registrations,
     IEnumerable<IConfigurationReloadPolicy<TOptions>> reloadPolicies,
     IEnumerable<IConfigurationChangeHandler<TOptions>> handlers,
     ILogger<ConfigurationChangeHostedService<TOptions>> logger)
@@ -19,14 +22,22 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
     where TOptions : class
 {
     private IDisposable? _registration;
-    private TOptions? _currentValue;
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _currentValue = optionsMonitor.CurrentValue;
-        runtimeState.SetCurrent(_currentValue);
+        runtimeState.SetCurrent(Options.DefaultName, optionsMonitor.CurrentValue);
         _registration = optionsMonitor.OnChange(OnChanged);
+
+        foreach (var registration in registrations)
+        {
+            diagnostics.AddRegistration(new ConfigurationRegistrationInfo(
+                typeof(TOptions),
+                registration.SectionName,
+                registration.Name,
+                registration.RequiredSection));
+            runtimeState.SetCurrent(registration.Name, optionsMonitor.Get(registration.Name));
+        }
 
         return Task.CompletedTask;
     }
@@ -48,27 +59,46 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
 
     private void OnChanged(TOptions updatedOptions, string? name)
     {
-        var previousOptions = _currentValue ?? updatedOptions;
-        var context = new ConfigurationChangeContext<TOptions>(previousOptions, updatedOptions, name);
+        var optionsName = string.IsNullOrWhiteSpace(name) ? Options.DefaultName : name;
+        var previousOptions = runtimeState.GetCurrent(optionsName) ?? optionsMonitor.Get(optionsName);
+        var context = new ConfigurationChangeContext<TOptions>(previousOptions, updatedOptions, optionsName);
         var reloadResult = EvaluateReload(context);
+        diagnostics.SetReload(
+            typeof(TOptions),
+            optionsName,
+            reloadResult.Behavior,
+            reloadResult.Reason);
 
         switch (reloadResult.Behavior)
         {
-            case Abstractions.Enums.ConfigurationReloadBehavior.Apply:
-                _currentValue = updatedOptions;
-                runtimeState.SetCurrent(updatedOptions);
+            case ConfigurationReloadBehavior.Apply:
+                runtimeState.SetCurrent(optionsName, updatedOptions);
                 logger.LogInformation(
                     "A runtime configuration change for options type {OptionsType} was applied.",
                     typeof(TOptions).Name);
                 _ = NotifyHandlersAsync(context);
                 return;
 
-            case Abstractions.Enums.ConfigurationReloadBehavior.Reject:
+            case ConfigurationReloadBehavior.Reject:
                 logger.LogWarning(
                     "A runtime configuration change for options type {OptionsType} was rejected. {Reason}",
                     typeof(TOptions).Name,
                     reloadResult.Reason ?? "No reason was provided.");
                 return;
+            case ConfigurationReloadBehavior.Ignore:
+                logger.LogInformation("A runtime configuration for options type {OptionsType} was ignored. {Reason}",
+                    typeof(TOptions).Name,
+                    reloadResult.Reason ?? "No reason was provided.");
+                return;
+
+            case ConfigurationReloadBehavior.RestartRequired:
+                logger.LogWarning(
+                    "A runtime configuration change for options type {OptionsType} requires an application restart. {Reason}",
+                    typeof(TOptions).Name,
+                    reloadResult.Reason ?? "No reason was provided.");
+                return;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -77,7 +107,7 @@ internal sealed class ConfigurationChangeHostedService<TOptions>(
         foreach (var policy in reloadPolicies)
         {
             var result = policy.Evaluate(context);
-            if (result.Behavior != Abstractions.Enums.ConfigurationReloadBehavior.Apply)
+            if (result.Behavior != ConfigurationReloadBehavior.Apply)
             {
                 return result;
             }

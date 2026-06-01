@@ -12,7 +12,7 @@ public sealed class ConfigurationChangeContext<TOptions>
     /// </summary>
     /// <param name="previous">The previous configuration snapshot.</param>
     /// <param name="current">The current configuration snapshot.</param>
-    /// <param name="name">The options instance name, if any.</param>
+    /// <param name="name">The option instance name, if any.</param>
     public ConfigurationChangeContext(TOptions previous, TOptions current, string? name)
     {
         Previous = previous;
@@ -32,7 +32,7 @@ public sealed class ConfigurationChangeContext<TOptions>
     public TOptions Current { get; }
 
     /// <summary>
-    /// Gets the options instance name, if any.
+    /// Gets the option instance name, if any.
     /// </summary>
     public string? Name { get; }
 

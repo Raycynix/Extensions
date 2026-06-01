@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Example;
@@ -14,7 +13,7 @@ internal sealed class DatabaseExampleWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
-        var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         logger.Information("Database example started");
 
@@ -44,7 +43,7 @@ internal sealed class DatabaseExampleWorker(
 
         foreach (var order in orders)
         {
-            logger.Information("Loaded order from database", new
+            logger.Information("Loaded order from database\n{Order}", new
             {
                 order.Number,
                 order.CustomerName,
@@ -54,7 +53,7 @@ internal sealed class DatabaseExampleWorker(
             });
         }
 
-        logger.Information("Database example finished", new { Count = orders.Count });
+        logger.Information("Database example finished\n{Count}", orders.Count);
         applicationLifetime.StopApplication();
     }
 }

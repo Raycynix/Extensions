@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.AspNetCore.FeatureGate;
 
@@ -7,26 +9,35 @@ namespace Raycynix.Extensions.Configuration.AspNetCore.Middleware;
 /// <summary>
 /// Enforces endpoint feature-gate metadata during request execution.
 /// </summary>
-internal sealed class FeatureGateMiddleware(RequestDelegate next)
+internal sealed class FeatureGateMiddleware(RequestDelegate next, IOptions<FeatureGateOptions> options)
 {
-    /// <summary>
-    /// Processes the current request and blocks access when a required feature is disabled.
-    /// </summary>
-    /// <param name="context">The current HTTP context.</param>
-    /// <param name="featureFlags">The feature-flag accessor used to evaluate endpoint requirements.</param>
-    public async Task InvokeAsync(HttpContext context, IFeatureFlagAccessor featureFlags)
+    public async Task InvokeAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint is not null)
+        if (endpoint is null)
         {
-            foreach (var gate in GetFeatureGates(endpoint))
-            {
-                if (!IsSatisfied(gate, featureFlags))
-                {
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    return;
-                }
-            }
+            await next(context);
+            return;
+        }
+
+        var gates = GetFeatureGates(endpoint);
+        if (gates.Count == 0)
+        {
+            await next(context);
+            return;
+        }
+
+        var featureFlags = context.RequestServices.GetService<IFeatureFlagAccessor>();
+        if (featureFlags is null)
+        {
+            context.Response.StatusCode = options.Value.MissingFeatureFlagAccessorStatusCode;
+            return;
+        }
+
+        if (gates.Any(gate => !IsSatisfied(gate, featureFlags)))
+        {
+            context.Response.StatusCode = options.Value.DisabledStatusCode;
+            return;
         }
 
         await next(context);
@@ -37,7 +48,8 @@ internal sealed class FeatureGateMiddleware(RequestDelegate next)
         var metadata = new List<FeatureGateMetadata>();
 
         metadata.AddRange(endpoint.Metadata.GetOrderedMetadata<FeatureGateMetadata>());
-        metadata.AddRange(endpoint.Metadata.GetOrderedMetadata<FeatureGateAttribute>().Select(static attribute => attribute.Metadata));
+        metadata.AddRange(endpoint.Metadata.GetOrderedMetadata<FeatureGateAttribute>()
+            .Select(static attribute => attribute.Metadata));
 
         return metadata;
     }

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Helpers;
 
-namespace Raycynix.Extensions.Logging.Configurations;
+namespace Raycynix.Extensions.Logging.Abstractions.Configurations;
 
 /// <summary>
 /// Represents configuration settings for Raycynix logging.
@@ -22,16 +22,6 @@ public class LoggingConfiguration
     /// Gets or sets the current environment name.
     /// </summary>
     public string Environment { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether Elasticsearch logging is enabled.
-    /// </summary>
-    public bool UseElastic { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets the Elasticsearch endpoint.
-    /// </summary>
-    public string ElasticUrl { get; set; } = "http://localhost:9200";
 
     /// <summary>
     /// Gets or sets the minimum log level.
@@ -62,11 +52,6 @@ public class LoggingConfiguration
         if (string.IsNullOrWhiteSpace(OutputTemplate))
         {
             throw new InvalidOperationException("Logging output template cannot be empty.");
-        }
-
-        if (UseElastic && !Uri.TryCreate(ElasticUrl, UriKind.Absolute, out _))
-        {
-            throw new InvalidOperationException("Logging Elasticsearch URL must be a valid absolute URI when Elastic logging is enabled.");
         }
     }
 }

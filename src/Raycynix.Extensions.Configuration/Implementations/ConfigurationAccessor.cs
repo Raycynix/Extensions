@@ -14,13 +14,12 @@ internal sealed class ConfigurationAccessor<TOptions>(
     where TOptions : class
 {
     /// <inheritdoc />
-    public TOptions Current => runtimeState.Current ?? optionsMonitor.CurrentValue;
+    public TOptions Current => runtimeState.GetCurrent(Options.DefaultName) ?? optionsMonitor.CurrentValue;
 
     /// <inheritdoc />
     public TOptions Get(string? name)
     {
-        return string.IsNullOrWhiteSpace(name)
-            ? Current
-            : optionsMonitor.Get(name);
+        var normalizedName = string.IsNullOrWhiteSpace(name) ? Options.DefaultName : name;
+        return runtimeState.GetCurrent(normalizedName) ?? optionsMonitor.Get(normalizedName);
     }
 }

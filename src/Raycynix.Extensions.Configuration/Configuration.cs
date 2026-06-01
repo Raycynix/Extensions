@@ -18,300 +18,375 @@ namespace Raycynix.Extensions.Configuration;
 public static class Configuration
 {
     /// <summary>
-    /// Registers the standard Raycynix application environment abstraction.
+    /// Extends configuration builders with Raycynix source registration APIs.
     /// </summary>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="environmentName">The current environment name.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixEnvironment(
-        this IServiceCollection services,
-        string environmentName)
+    /// <param name="builder">The configuration builder to update.</param>
+    extension(IConfigurationBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(services);
-
-        if (string.IsNullOrWhiteSpace(environmentName))
+        /// <summary>
+        /// Adds the standard Raycynix configuration sources to the provided builder.
+        /// </summary>
+        /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
+        /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
+        public IConfigurationBuilder AddRaycynixConfigurationSources(
+            Action<ConfigurationSourcesConfiguration>? setup = null)
         {
-            throw new ArgumentException("Environment name cannot be null or whitespace.", nameof(environmentName));
+            ArgumentNullException.ThrowIfNull(builder);
+
+            var config = new ConfigurationSourcesConfiguration();
+            setup?.Invoke(config);
+
+            ValidateSourcesConfiguration(config);
+            RegisterSources(builder, config);
+
+            return builder;
         }
 
-        services.TryAddSingleton<IApplicationEnvironment>(_ => new ApplicationEnvironment(environmentName));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the standard Raycynix application environment abstraction from the host environment.
-    /// </summary>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixEnvironment(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddSingleton<IApplicationEnvironment>(serviceProvider =>
+        /// <summary>
+        /// Replaces the current configuration sources with the standard Raycynix source order.
+        /// </summary>
+        /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
+        /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
+        public IConfigurationBuilder UseRaycynixConfigurationSources(
+            Action<ConfigurationSourcesConfiguration>? setup = null)
         {
-            var hostEnvironment = serviceProvider.GetRequiredService<IHostEnvironment>();
-            return new ApplicationEnvironment(hostEnvironment.EnvironmentName);
-        });
+            ArgumentNullException.ThrowIfNull(builder);
 
-        return services;
+            builder.Sources.Clear();
+            return builder.AddRaycynixConfigurationSources(setup);
+        }
     }
 
     /// <summary>
-    /// Adds the standard Raycynix configuration sources to the provided builder.
-    /// </summary>
-    /// <param name="builder">The configuration builder to update.</param>
-    /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
-    /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
-    public static IConfigurationBuilder AddRaycynixConfigurationSources(
-        this IConfigurationBuilder builder,
-        Action<ConfigurationSourcesConfiguration>? setup = null)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        var config = new ConfigurationSourcesConfiguration();
-        setup?.Invoke(config);
-
-        ValidateSourcesConfiguration(config);
-        RegisterSources(builder, config);
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Replaces the current configuration sources with the standard Raycynix source order.
-    /// </summary>
-    /// <param name="builder">The configuration builder to update.</param>
-    /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
-    /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
-    public static IConfigurationBuilder UseRaycynixConfigurationSources(
-        this IConfigurationBuilder builder,
-        Action<ConfigurationSourcesConfiguration>? setup = null)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Sources.Clear();
-        return builder.AddRaycynixConfigurationSources(setup);
-    }
-
-    /// <summary>
-    /// Registers the standard Raycynix feature flags configuration and accessor.
+    /// Extends service collections with Raycynix typed configuration registration APIs.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration source.</param>
-    /// <param name="sectionName">An optional feature flags section name. Defaults to <c>FeatureFlags</c>.</param>
-    /// <param name="configureDefaults">An optional callback for applying default feature flag values before binding.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixFeatureFlags(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string? sectionName = null,
-        Action<FeatureFlagsConfiguration>? configureDefaults = null)
+    extension(IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        sectionName ??= "FeatureFlags";
-
-        services.AddRaycynixConfiguration(configuration, sectionName, configureDefaults);
-        services.TryAddSingleton<IFeatureFlagAccessor, FeatureFlagAccessor>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers a typed configuration model using the standard Options pipeline with Raycynix conventions.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration source.</param>
-    /// <param name="sectionName">An optional configuration section name. Defaults to the model type name.</param>
-    /// <param name="configureDefaults">An optional callback for applying default values before configuration binding.</param>
-    /// <param name="configureBinder">An optional callback for binder behavior customization.</param>
-    /// <param name="configurePostBind">An optional callback for adjusting the bound options before validation and access.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfiguration<TOptions>(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string? sectionName = null,
-        Action<TOptions>? configureDefaults = null,
-        Action<BinderOptions>? configureBinder = null,
-        Action<TOptions>? configurePostBind = null)
-        where TOptions : class, new()
-    {
-        sectionName ??= typeof(TOptions).Name;
-        var section = configuration.GetSection(sectionName);
-
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationDefaults<TOptions>, EmptyConfigurationDefaults<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
-        services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
-        services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
-
-        var optionsBuilder = services.AddOptions<TOptions>();
-
-        optionsBuilder.Configure<IEnumerable<IConfigurationDefaults<TOptions>>>((options, defaultsProviders) =>
+        /// <summary>
+        /// Registers the standard Raycynix application environment abstraction.
+        /// </summary>
+        /// <param name="environmentName">The current environment name.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixEnvironment(
+            string environmentName)
         {
-            foreach (var defaultsProvider in defaultsProviders)
+            ArgumentNullException.ThrowIfNull(services);
+
+            if (string.IsNullOrWhiteSpace(environmentName))
             {
-                defaultsProvider.Apply(options);
+                throw new ArgumentException("Environment name cannot be null or whitespace.", nameof(environmentName));
             }
 
-            configureDefaults?.Invoke(options);
-        });
+            services.TryAddSingleton<IApplicationEnvironment>(_ => new ApplicationEnvironment(environmentName));
 
-        optionsBuilder.Bind(section, configureBinder ?? (_ => { }));
-        optionsBuilder.PostConfigure(options => configurePostBind?.Invoke(options));
-        optionsBuilder.ValidateOnStart();
+            return services;
+        }
 
-        return services;
-    }
+        /// <summary>
+        /// Registers the standard Raycynix application environment abstraction from the host environment.
+        /// </summary>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixEnvironment()
+        {
+            ArgumentNullException.ThrowIfNull(services);
 
-    /// <summary>
-    /// Registers the unified typed configuration accessor for the specified configuration model.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationAccessor<TOptions>(this IServiceCollection services)
-        where TOptions : class, new()
-    {
-        ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton<IApplicationEnvironment>(serviceProvider =>
+            {
+                var hostEnvironment = serviceProvider.GetRequiredService<IHostEnvironment>();
+                return new ApplicationEnvironment(hostEnvironment.EnvironmentName);
+            });
 
-        services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
-        services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
+            return services;
+        }
 
-        return services;
-    }
+        /// <summary>
+        /// Registers the standard Raycynix feature flags configuration and accessor.
+        /// </summary>
+        /// <param name="configuration">The application configuration source.</param>
+        /// <param name="sectionName">An optional feature flags section name. Defaults to <c>FeatureFlags</c>.</param>
+        /// <param name="configureDefaults">An optional callback for applying default feature flag values before binding.</param>
+        /// <param name="requireSection">When <see langword="true"/>, registration fails if the feature flags section is missing.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixFeatureFlags(
+            IConfiguration configuration,
+            string? sectionName = null,
+            Action<FeatureFlagsConfiguration>? configureDefaults = null,
+            bool requireSection = false)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
 
-    /// <summary>
-    /// Registers a Raycynix validator for a typed configuration model.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <typeparam name="TValidator">The validator type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationValidator<TOptions, TValidator>(
-        this IServiceCollection services)
-        where TOptions : class, new()
-        where TValidator : class, IConfigurationValidator<TOptions>
-    {
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationValidator<TOptions>, TValidator>());
+            var resolvedSectionName = sectionName ?? "FeatureFlags";
+            var section = configuration.GetSection(resolvedSectionName);
 
-        return services;
-    }
+            if (requireSection && !section.Exists())
+            {
+                throw new InvalidOperationException(
+                    $"Required configuration feature flag section '{resolvedSectionName}' was not found.");
+            }
 
-    /// <summary>
-    /// Registers an inline Raycynix validator for a typed configuration model.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="validate">The validation delegate.</param>
-    /// <param name="failureMessage">The error message returned when validation fails.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationValidator<TOptions>(
-        this IServiceCollection services,
-        Func<TOptions, bool> validate,
-        string failureMessage)
-        where TOptions : class, new()
-    {
-        ArgumentNullException.ThrowIfNull(validate);
+            services.AddRaycynixConfiguration(
+                configuration,
+                sectionName: resolvedSectionName,
+                configureDefaults: configureDefaults,
+                requireSection: requireSection);
+            services.TryAddSingleton<IFeatureFlagAccessor, FeatureFlagAccessor>();
 
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationValidator<TOptions>>(
-                new DelegateConfigurationValidator<TOptions>(validate, failureMessage)));
+            return services;
+        }
 
-        return services;
-    }
+        /// <summary>
+        /// Registers a typed configuration model using the standard Options pipeline with Raycynix conventions.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <param name="configuration">The application configuration source.</param>
+        /// <param name="sectionName">An optional configuration section name. Defaults to the model type name.</param>
+        /// <param name="optionsName">An optional named options instance. Defaults to the standard Options default name.</param>
+        /// <param name="configureDefaults">An optional callback for applying default values before configuration binding.</param>
+        /// <param name="configureBinder">An optional callback for binder behavior customization.</param>
+        /// <param name="configurePostBind">An optional callback for adjusting the bound options before validation and access.</param>
+        /// <param name="requireSection">When <see langword="true"/>, registration fails if the configuration section is missing.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfiguration<TOptions>(
+            IConfiguration configuration,
+            string? sectionName = null,
+            string? optionsName = null,
+            Action<TOptions>? configureDefaults = null,
+            Action<BinderOptions>? configureBinder = null,
+            Action<TOptions>? configurePostBind = null,
+            bool requireSection = false)
+            where TOptions : class, new()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
 
-    /// <summary>
-    /// Registers a typed configuration change handler notified through the standard options monitor pipeline.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <typeparam name="THandler">The change handler type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions, THandler>(
-        this IServiceCollection services)
-        where TOptions : class, new()
-        where THandler : class, IConfigurationChangeHandler<TOptions>
-    {
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>, THandler>());
+            var resolvedSectionName = sectionName ?? typeof(TOptions).Name;
+            var section = configuration.GetSection(resolvedSectionName);
 
-        return services;
-    }
+            if (requireSection && !section.Exists())
+            {
+                throw new InvalidOperationException(
+                    $"Required configuration section '{resolvedSectionName}' for options type '{typeof(TOptions).FullName}' was not found.");
+            }
 
-    /// <summary>
-    /// Registers an inline-typed configuration change handler notified through the standard options monitor pipeline.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="handleAsync">The delegate to execute when the configuration changes.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions>(
-        this IServiceCollection services,
-        Func<ConfigurationChangeContext<TOptions>, CancellationToken, ValueTask> handleAsync)
-        where TOptions : class, new()
-    {
-        ArgumentNullException.ThrowIfNull(handleAsync);
+            services.TryAddEnumerable(ServiceDescriptor
+                .Singleton<IConfigurationDefaults<TOptions>, EmptyConfigurationDefaults<TOptions>>());
+            services.TryAddEnumerable(ServiceDescriptor
+                .Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
+            services.TryAddEnumerable(ServiceDescriptor
+                .Singleton<IConfigurationReloadPolicy<TOptions>, AttributeConfigurationReloadPolicy<TOptions>>());
+            services.TryAddEnumerable(ServiceDescriptor
+                .Singleton<IConfigurationReloadPolicy<TOptions>, AllowConfigurationReloadPolicy<TOptions>>());
+            services.TryAddEnumerable(ServiceDescriptor
+                .Singleton<IHostedService, ConfigurationChangeHostedService<TOptions>>());
 
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>>(
-                new DelegateConfigurationChangeHandler<TOptions>(handleAsync)));
+            services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
+            services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
+            services.TryAddSingleton<ConfigurationDiagnosticsOptions>();
+            services.TryAddSingleton<IConfigurationRedactor, DefaultConfigurationRedactor>();
+            services.TryAddSingleton<ConfigurationDiagnosticsStore>();
+            services.TryAddSingleton<IConfigurationDiagnostics, ConfigurationDiagnostics>();
 
-        return services;
-    }
+            var resolvedOptionsName = string.IsNullOrWhiteSpace(optionsName) ? Options.DefaultName : optionsName;
+            services.AddSingleton(new ConfigurationOptionsRegistration<TOptions>(resolvedOptionsName,
+                resolvedSectionName, requireSection));
 
-    /// <summary>
-    /// Registers a reload policy for a typed configuration model.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <typeparam name="TReloadPolicy">The reload policy type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions, TReloadPolicy>(
-        this IServiceCollection services)
-        where TOptions : class, new()
-        where TReloadPolicy : class, IConfigurationReloadPolicy<TOptions>
-    {
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, TReloadPolicy>());
+            var optionsBuilder = services.AddOptions<TOptions>(resolvedOptionsName);
 
-        return services;
-    }
+            optionsBuilder.Configure<IEnumerable<IConfigurationDefaults<TOptions>>>((options, defaultsProviders) =>
+            {
+                foreach (var defaultsProvider in defaultsProviders)
+                {
+                    defaultsProvider.Apply(options);
+                }
 
-    /// <summary>
-    /// Registers an inline reload policy for a typed configuration model.
-    /// </summary>
-    /// <typeparam name="TOptions">The configuration model type.</typeparam>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="evaluate">The reload policy delegate.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions>(
-        this IServiceCollection services,
-        Func<ConfigurationChangeContext<TOptions>, ConfigurationReloadResult> evaluate)
-        where TOptions : class, new()
-    {
-        ArgumentNullException.ThrowIfNull(evaluate);
+                configureDefaults?.Invoke(options);
+            });
 
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>>(
-                new DelegateConfigurationReloadPolicy<TOptions>(evaluate)));
+            optionsBuilder.Bind(section, configureBinder ?? (_ => { }));
+            optionsBuilder.PostConfigure(options => configurePostBind?.Invoke(options));
+            optionsBuilder.ValidateOnStart();
 
-        return services;
+            return services;
+        }
+
+        /// <summary>
+        /// Configures runtime diagnostics for Raycynix typed configuration registrations.
+        /// </summary>
+        /// <param name="configure">The diagnostics options callback.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection ConfigureRaycynixConfigurationDiagnostics(
+            Action<ConfigurationDiagnosticsOptions> configure)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configure);
+
+            var options = new ConfigurationDiagnosticsOptions();
+            configure(options);
+
+            services.Replace(ServiceDescriptor.Singleton(options));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Replaces the default configuration redactor with a custom implementation.
+        /// </summary>
+        /// <typeparam name="TRedactor">The redactor implementation type.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationRedactor<TRedactor>()
+            where TRedactor : class, IConfigurationRedactor
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.Replace(ServiceDescriptor.Singleton<IConfigurationRedactor, TRedactor>());
+
+            return services;
+        }
+
+        /// <summary>
+        /// Replaces the default configuration redactor with an inline delegate.
+        /// </summary>
+        /// <param name="redact">The redaction delegate.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationRedactor(
+            Func<string, object?, object?> redact)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(redact);
+
+            services.Replace(ServiceDescriptor.Singleton<IConfigurationRedactor>(
+                new DelegateConfigurationRedactor(redact)));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the unified typed configuration accessor for the specified configuration model.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationAccessor<TOptions>()
+            where TOptions : class, new()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAddSingleton<ConfigurationRuntimeState<TOptions>>();
+            services.TryAddSingleton<IConfigurationAccessor<TOptions>, ConfigurationAccessor<TOptions>>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers a Raycynix validator for a typed configuration model.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <typeparam name="TValidator">The validator type.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationValidator<TOptions, TValidator>()
+            where TOptions : class, new()
+            where TValidator : class, IConfigurationValidator<TOptions>
+        {
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationValidator<TOptions>, TValidator>());
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an inline Raycynix validator for a typed configuration model.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <param name="validate">The validation delegate.</param>
+        /// <param name="failureMessage">The error message returned when validation fails.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationValidator<TOptions>(Func<TOptions, bool> validate,
+            string failureMessage)
+            where TOptions : class, new()
+        {
+            ArgumentNullException.ThrowIfNull(validate);
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IValidateOptions<TOptions>, RaycynixValidateOptions<TOptions>>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationValidator<TOptions>>(
+                    new DelegateConfigurationValidator<TOptions>(validate, failureMessage)));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers a typed configuration change handler notified through the standard options monitor pipeline.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <typeparam name="THandler">The change handler type.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions, THandler>()
+            where TOptions : class, new()
+            where THandler : class, IConfigurationChangeHandler<TOptions>
+        {
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>, THandler>());
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an inline-typed configuration change handler notified through the standard options monitor pipeline.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <param name="handleAsync">The delegate to execute when the configuration changes.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationChangeHandler<TOptions>(
+            Func<ConfigurationChangeContext<TOptions>, CancellationToken, ValueTask> handleAsync)
+            where TOptions : class, new()
+        {
+            ArgumentNullException.ThrowIfNull(handleAsync);
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationChangeHandler<TOptions>>(
+                    new DelegateConfigurationChangeHandler<TOptions>(handleAsync)));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers a reload policy for a typed configuration model.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <typeparam name="TReloadPolicy">The reload policy type.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions, TReloadPolicy>()
+            where TOptions : class, new()
+            where TReloadPolicy : class, IConfigurationReloadPolicy<TOptions>
+        {
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>, TReloadPolicy>());
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an inline reload policy for a typed configuration model.
+        /// </summary>
+        /// <typeparam name="TOptions">The configuration model type.</typeparam>
+        /// <param name="evaluate">The reload policy delegate.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixConfigurationReloadPolicy<TOptions>(
+            Func<ConfigurationChangeContext<TOptions>, ConfigurationReloadResult> evaluate)
+            where TOptions : class, new()
+        {
+            ArgumentNullException.ThrowIfNull(evaluate);
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigurationReloadPolicy<TOptions>>(
+                    new DelegateConfigurationReloadPolicy<TOptions>(evaluate)));
+
+            return services;
+        }
     }
 
     private static void RegisterSources(IConfigurationBuilder builder, ConfigurationSourcesConfiguration config)

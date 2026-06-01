@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Configurations;

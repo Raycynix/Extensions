@@ -1,19 +1,36 @@
 # Raycynix.Extensions.Database.Hosting
 
-`Raycynix.Extensions.Database.Hosting` adds startup integration for generic-host based applications.
+Generic host startup integration for Raycynix database initialization.
 
-## What it does
-
-This package resolves `IDatabaseInitializer` from DI and runs it during application startup.
-
-Register the shared database services and exactly one provider package before invoking the host initializer.
-
-## Available APIs
+## What It Provides
 
 - `InitializeRaycynixDatabaseAsync(this IServiceProvider serviceProvider)`
 - `InitializeRaycynixDatabaseAsync(this IHost host)`
 
-## appsettings.json
+The package resolves `IDatabaseInitializer` from a scope and runs the configured creation or migration steps.
+
+## Usage
+
+```csharp
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services
+    .AddRaycynixDatabase(builder.Configuration, options =>
+    {
+        options.UseMigrations = true;
+        options.EnsureCreated = false;
+    })
+    .AddPostgreSql();
+
+var host = builder.Build();
+
+await host.InitializeRaycynixDatabaseAsync();
+await host.RunAsync();
+```
+
+Register `Raycynix.Extensions.Database`, exactly one provider package, and any required model assemblies before calling the initializer.
+
+## Configuration
 
 ```json
 {
@@ -29,27 +46,3 @@ Register the shared database services and exactly one provider package before in
   }
 }
 ```
-
-## Usage
-
-```csharp
-var builder = Host.CreateApplicationBuilder(args);
-
-builder.Services
-    .AddRaycynixDatabase(builder.Configuration, options =>
-    {
-        options.UseMigrations = true;
-    })
-    .AddPostgreSql();
-
-var host = builder.Build();
-
-await host.InitializeRaycynixDatabaseAsync();
-await host.RunAsync();
-```
-
-## How it works
-
-1. Creates a scope from the service provider
-2. Resolves `IDatabaseInitializer`
-3. Calls `InitializeAsync(cancellationToken)`

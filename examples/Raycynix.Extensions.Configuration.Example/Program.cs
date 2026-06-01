@@ -1,9 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration;
-using Raycynix.Extensions.Configuration.Abstractions.Attributes;
-using Raycynix.Extensions.Configuration.Abstractions.Enums;
-using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
 using Raycynix.Extensions.Configuration.Example;
 
@@ -19,9 +16,24 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
 });
 
 builder.Services.AddRaycynixEnvironment();
-builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration, requireSection: true);
+builder.Services.ConfigureRaycynixConfigurationDiagnostics(options =>
+{
+    options.EnableSnapshots = true;
+});
+builder.Services.AddRaycynixConfigurationRedactor((key, value) =>
+{
+    if (key.Contains("ConnectionString", StringComparison.OrdinalIgnoreCase))
+    {
+        return "***";
+    }
+
+    return value;
+});
+
 builder.Services.AddRaycynixConfiguration<MessagingOptions>(
     builder.Configuration,
+    requireSection: true,
     configureDefaults: options =>
     {
         options.ConsumerName = "default-consumer";

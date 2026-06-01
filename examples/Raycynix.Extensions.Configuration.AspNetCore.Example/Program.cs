@@ -8,8 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddRaycynixAspNetCoreConfiguration();
 
-builder.Services.AddRaycynixFeatureFlags(builder.Configuration);
-builder.Services.AddRaycynixConfiguration<DashboardOptions>(builder.Configuration);
+builder.Services.AddRaycynixFeatureGateOptions(options =>
+{
+    options.DisabledStatusCode = StatusCodes.Status404NotFound;
+});
+
+builder.Services.AddRaycynixFeatureFlags(builder.Configuration, requireSection: true);
+builder.Services.AddRaycynixConfiguration<DashboardOptions>(
+    builder.Configuration,
+    requireSection: true);
 builder.Services.AddRaycynixConfigurationValidator<DashboardOptions>(
     options => options.RefreshIntervalSeconds > 0,
     "DashboardOptions.RefreshIntervalSeconds must be greater than zero.");
@@ -46,6 +53,13 @@ app.MapGet("/config", (IConfigurationAccessor<DashboardOptions> accessor) =>
 });
 
 app.MapGet("/features", (IFeatureFlagAccessor featureFlags) => Results.Ok(featureFlags.GetAll()));
+
+app.MapGet("/diagnostics/configuration", (IConfigurationDiagnostics diagnostics) => Results.Ok(new
+{
+    Registrations = diagnostics.GetRegistrations(),
+    Diagnostics = diagnostics.GetReloads(),
+    Snapshots = diagnostics.GetRedactedSnapshot<DashboardOptions>(),
+}));
 
 app.MapGet("/dashboard", (IConfigurationAccessor<DashboardOptions> accessor) =>
 {

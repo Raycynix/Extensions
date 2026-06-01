@@ -9,17 +9,21 @@
 - `IConfigurationAccessor<TOptions>`
 - `IConfigurationChangeHandler<TOptions>`
 - `IConfigurationDefaults<TOptions>`
+- `IConfigurationDiagnostics`
+- `IConfigurationRedactor`
 - `IFeatureFlagAccessor`
 - `IConfigurationReloadPolicy<TOptions>`
 - `IConfigurationValidator<TOptions>`
 - `ConfigurationChangeContext<TOptions>`
+- `ConfigurationRegistrationInfo`
+- `ConfigurationReloadInfo`
 - `ConfigurationReloadBehavior`
 - `ConfigurationReloadResult`
 - `ConfigurationValidationResult`
 
 ## Purpose
 
-This package allows applications and libraries to provide their own typed access, feature-flag access, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
+This package allows applications and libraries to provide their own typed access, feature-flag access, diagnostics, redaction, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
 
 ## Example
 
@@ -46,3 +50,5 @@ public sealed class CacheOptions
     public int DefaultTtlSeconds { get; init; }
 }
 ```
+
+Diagnostics consumers can depend on `IConfigurationDiagnostics` to inspect registered options, retained reload decisions, and redacted snapshots without referencing the implementation package directly.

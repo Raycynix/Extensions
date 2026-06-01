@@ -1,15 +1,16 @@
 # Raycynix.Extensions.Database.MySql
 
-`Raycynix.Extensions.Database.MySql` adds MySQL support to `Raycynix.Extensions.Database`.
+MySQL provider integration for `Raycynix.Extensions.Database`.
 
-## What it contains
+## What It Provides
 
-- `DatabaseBuilder.AddMySql(...)`
+- `AddMySql(...)`
 - `MySqlConfiguration`
-- MySQL connection-string building
-- `UseMySql(...)` integration for the shared `DatabaseContext`
+- MySQL structured connection-string composition
+- MySQL provider-specific validation
+- EF Core `UseMySQL(...)` configuration with retries, command timeout, pooling, and migrations assembly support
 
-The provider is selected by calling `.AddMySql(...)`, not by setting a legacy provider enum in configuration.
+The provider is selected by calling `.AddMySql(...)`.
 
 ## Usage
 
@@ -18,6 +19,7 @@ builder.Services
     .AddRaycynixDatabase(builder.Configuration, options =>
     {
         options.UseMigrations = true;
+        options.EnsureCreated = false;
     })
     .AddMySql(mySql =>
     {
@@ -26,7 +28,7 @@ builder.Services
     });
 ```
 
-## appsettings.json
+## Configuration
 
 ```json
 {
@@ -39,6 +41,7 @@ builder.Services
       "Password": "secret"
     },
     "UseMigrations": true,
+    "EnsureCreated": false,
     "MySqlConfiguration": {
       "AllowUserVariables": true,
       "Pooling": true,
@@ -48,4 +51,4 @@ builder.Services
 }
 ```
 
-This package keeps the shared `DatabaseContext` from the core package and only adds MySQL-specific registration on top of it.
+When a raw `ConnectionString` is not supplied, structured MySQL configuration requires `Host` and `Name`.

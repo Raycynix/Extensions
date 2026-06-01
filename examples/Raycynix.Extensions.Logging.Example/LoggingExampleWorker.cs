@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Configurations;
 
 namespace Raycynix.Extensions.Logging.Example;
 

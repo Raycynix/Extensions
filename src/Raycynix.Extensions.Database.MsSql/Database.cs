@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.MsSql.Configurations;
 using Raycynix.Extensions.Database.MsSql.Internal;
 
@@ -20,8 +20,8 @@ public static class Database
     /// <param name="builder">The shared database builder.</param>
     /// <param name="configure">An optional callback for adjusting SQL Server-specific settings.</param>
     /// <returns>The same builder instance for chaining.</returns>
-    public static DatabaseBuilder AddMsSql(
-        this DatabaseBuilder builder,
+    public static IDatabaseBuilder AddMsSql(
+        this IDatabaseBuilder builder,
         Action<MsSqlServerConfiguration>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);

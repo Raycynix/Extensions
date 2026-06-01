@@ -745,14 +745,14 @@ public sealed class MessagingDatabaseRegistrationTests
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)

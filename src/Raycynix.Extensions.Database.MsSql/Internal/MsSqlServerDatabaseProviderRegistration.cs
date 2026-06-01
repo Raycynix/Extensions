@@ -3,7 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.MsSql.Configurations;
 
 namespace Raycynix.Extensions.Database.MsSql.Internal;
@@ -38,7 +38,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
             InitialCatalog = connection.Name,
             UserID = connection.Username,
             Password = connection.Password,
-            TrustServerCertificate = settings?.TrustServerCertificate ?? true,
+            TrustServerCertificate = settings?.TrustServerCertificate ?? false,
             MultipleActiveResultSets = settings?.MultipleActiveResultSets ?? false
         };
 
@@ -72,5 +72,27 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
                 sqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+    }
+
+    /// <inheritdoc />
+    public void Validate(DatabaseConfiguration configuration)
+    {
+        if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
+        {
+            return;
+        }
+
+        var connection = configuration.ConnectionConfiguration
+                         ?? throw new InvalidOperationException("SQL Server connection configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(connection.Host))
+        {
+            throw new InvalidOperationException("SQL Server connection requires a host.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Name))
+        {
+            throw new InvalidOperationException("SQL Server connection requires a database name.");
+        }
     }
 }

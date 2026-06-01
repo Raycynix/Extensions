@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Configurations;
 using MySqlConfiguration = Raycynix.Extensions.Database.MySql.Configurations.MySqlConfiguration;
 
 namespace Raycynix.Extensions.Database.MySql.Internal;
@@ -71,5 +71,32 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
                 mySqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+    }
+
+    /// <inheritdoc />
+    public void Validate(DatabaseConfiguration configuration)
+    {
+        if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
+        {
+            return;
+        }
+
+        var connection = configuration.ConnectionConfiguration
+                         ?? throw new InvalidOperationException("MySQL connection configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(connection.Host))
+        {
+            throw new InvalidOperationException("MySQL connection requires a host.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Name))
+        {
+            throw new InvalidOperationException("MySQL connection requires a database name.");
+        }
+
+        if (string.IsNullOrWhiteSpace(connection.Username))
+        {
+            throw new InvalidOperationException("MySQL connection requires a username.");
+        }
     }
 }
