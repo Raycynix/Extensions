@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
@@ -11,7 +12,7 @@ internal sealed class DatabaseModelCacheKeyFactory : IModelCacheKeyFactory
     /// <inheritdoc />
     public object Create(DbContext context, bool designTime)
     {
-        if (context is not RaycynixDatabaseContext databaseContext)
+        if (context is not IRaycynixDatabaseContext databaseContext)
         {
             return (context.GetType(), designTime);
         }

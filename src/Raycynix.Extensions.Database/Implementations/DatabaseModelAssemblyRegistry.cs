@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -30,5 +31,19 @@ public sealed class DatabaseModelAssemblyRegistry : IDatabaseModelAssemblyRegist
     {
         lock (_sync)
             return _assemblies.ToArray();
+    }
+    
+    public static DatabaseModelAssemblyRegistry GetOrCreate(IServiceCollection services)
+    {
+        if (services
+                .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseModelAssemblyRegistry))
+                ?.ImplementationInstance is DatabaseModelAssemblyRegistry existingRegistry)
+        {
+            return existingRegistry;
+        }
+
+        var registry = new DatabaseModelAssemblyRegistry();
+        services.AddSingleton(registry);
+        return registry;
     }
 }

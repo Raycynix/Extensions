@@ -9,6 +9,7 @@ using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Database.PostgreSql;
 using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Messaging.Database.Configurations;
@@ -48,12 +49,12 @@ public sealed class DatabaseRegistrationTests
         var databaseConfiguration = serviceProvider.GetRequiredService<DatabaseConfiguration>();
         var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>();
         var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         databaseConfiguration.ConnectionString.Should().Be("Data Source=test.db");
         databaseConfiguration.EnableSeed.Should().BeFalse();
         accessor.Current.ConnectionString.Should().Be("Data Source=test.db");
-        initializer.Should().BeOfType<DatabaseInitializer>();
+        initializer.Should().BeOfType<DatabaseInitializer<RaycynixDatabaseContext>>();
         context.Should().NotBeNull();
     }
 
@@ -165,7 +166,7 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var act = () => scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         act.Should()
             .Throw<NotSupportedException>()
@@ -197,7 +198,7 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var act = () => scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         act.Should()
             .Throw<InvalidOperationException>()
@@ -227,7 +228,7 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var act = () => scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var act = () => scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         act.Should()
             .Throw<NotSupportedException>()
@@ -259,7 +260,7 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         context.Should().NotBeNull();
     }
@@ -289,7 +290,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         context.Model.FindEntityType(typeof(MessagingInboxEntryEntity)).Should().NotBeNull();
         context.Model.FindEntityType(typeof(MessagingOutboxEntryEntity)).Should().NotBeNull();
@@ -319,7 +320,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
         var entityType = context.Model.FindEntityType(typeof(ExternalConfiguredEntity));
 
         entityType.Should().NotBeNull();
@@ -349,7 +350,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         context.Model.FindEntityType(typeof(ExternalConfiguredEntity)).Should().BeNull();
     }
@@ -372,7 +373,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        var builder = services.AddRaycynixDatabase<DatabaseContext, DatabaseRegistrationTests>(configuration);
+        var builder = services.AddRaycynixDatabase<RaycynixDatabaseContext, DatabaseRegistrationTests>(configuration);
 
         builder.CallerAssembly.GetName().Name.Should().Be(typeof(DatabaseRegistrationTests).Assembly.GetName().Name);
     }

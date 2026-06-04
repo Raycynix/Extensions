@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Raycynix.Extensions.Database;
+namespace Raycynix.Extensions.Database.Infrastructure;
 
 /// <summary>
 /// Provides convenience extensions for EF Core entity builders used by the Raycynix database package.

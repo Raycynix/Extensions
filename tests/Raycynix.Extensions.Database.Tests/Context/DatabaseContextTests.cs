@@ -5,12 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Database.Sqlite;
 
 namespace Raycynix.Extensions.Database.Tests.Context;
 
 /// <summary>
-/// Covers public runtime behavior of <see cref="DatabaseContext"/>.
+/// Covers public runtime behavior of <see cref="RaycynixDatabaseContext"/>.
 /// </summary>
 public sealed class DatabaseContextTests
 {
@@ -28,7 +29,7 @@ public sealed class DatabaseContextTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         context.ChangeTracker.LazyLoadingEnabled.Should().BeTrue();
         context.ChangeTracker.AutoDetectChangesEnabled.Should().BeFalse();
@@ -49,7 +50,7 @@ public sealed class DatabaseContextTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
         var entityType = context.Model.FindEntityType(typeof(AttributedEntity));
 
         entityType.Should().NotBeNull();
@@ -71,7 +72,7 @@ public sealed class DatabaseContextTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
         var entityType = context.Model.FindEntityType(typeof(RuntimeAttributedEntity));
 
         entityType.Should().NotBeNull();
@@ -111,7 +112,7 @@ public sealed class DatabaseContextTests
 
     private sealed class RuntimeAttributedEntity
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
     }
 
     private sealed record RuntimeAttributedEntityConfiguration(string TableName);
@@ -138,14 +139,14 @@ public sealed class DatabaseContextTests
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)

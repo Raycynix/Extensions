@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Database;
+using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.AspNetCore;
 using Raycynix.Extensions.Database.AspNetCore.Example;
 using Raycynix.Extensions.Database.Sqlite;
@@ -23,10 +25,7 @@ builder.Services
         options.UseMigrations = false;
         options.EnableSeed = true;
     })
-    .AddSqlite(sqlite =>
-    {
-        sqlite.CommandTimeoutSeconds = 30;
-    });
+    .AddSqlite(sqlite => { sqlite.CommandTimeoutSeconds = 30; });
 
 var app = builder.Build();
 
@@ -43,7 +42,7 @@ app.MapGet("/", () => Results.Ok(new
     }
 }));
 
-app.MapGet("/orders", async (DatabaseContext databaseContext, CancellationToken cancellationToken) =>
+app.MapGet("/orders", async ([FromServices]RaycynixDatabaseContext databaseContext, CancellationToken cancellationToken) =>
 {
     var orders = await databaseContext.Set<ExampleOrder>()
         .AsNoTracking()
@@ -61,7 +60,7 @@ app.MapGet("/orders", async (DatabaseContext databaseContext, CancellationToken 
 
 app.MapGet("/orders/{number}", async (
     string number,
-    DatabaseContext databaseContext,
+    [FromServices] RaycynixDatabaseContext databaseContext,
     ILoggerFactory loggerFactory,
     CancellationToken cancellationToken) =>
 {
@@ -84,7 +83,7 @@ app.MapGet("/orders/{number}", async (
 
 app.MapPost("/orders", async (
     CreateExampleOrderRequest request,
-    RaycynixDatabaseContext databaseContext,
+    [FromServices]RaycynixDatabaseContext databaseContext,
     Raycynix.Extensions.Logging.Abstractions.ILogger<OrderEndpoints> logger,
     CancellationToken cancellationToken) =>
 {

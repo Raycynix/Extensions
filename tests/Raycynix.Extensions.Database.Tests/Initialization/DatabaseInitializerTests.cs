@@ -9,7 +9,7 @@ using Raycynix.Extensions.Database.Sqlite;
 namespace Raycynix.Extensions.Database.Tests.Initialization;
 
 /// <summary>
-/// Covers initialization flow for <see cref="DatabaseInitializer"/>.
+/// Covers initialization flow for <see cref="DatabaseInitializer{TContext}"/>.
 /// </summary>
 public sealed class DatabaseInitializerTests
 {
@@ -109,14 +109,14 @@ public sealed class DatabaseInitializerTests
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)

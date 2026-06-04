@@ -10,7 +10,7 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Removes expired inbox and outbox rows from the messaging persistence tables.
 /// </summary>
 public sealed class MessagingDatabaseCleanupProcessor(
-    DatabaseContext databaseContext,
+    RaycynixDatabaseContext databaseContext,
     MessagingDatabasePersistenceConfiguration configuration)
 {
     /// <summary>

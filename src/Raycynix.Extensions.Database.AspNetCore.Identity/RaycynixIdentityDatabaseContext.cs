@@ -1,28 +1,19 @@
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
 
-namespace Raycynix.Extensions.Database;
+namespace Raycynix.Extensions.Database.AspNetCore.Identity;
 
-/// <summary>
-/// Provides the extensible EF Core database context used by the Raycynix database infrastructure.
-/// </summary>
-public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContext
+public abstract class RaycynixIdentityDatabaseContext : IdentityDbContext, IRaycynixDatabaseContext
 {
     private readonly DatabaseConfiguration _config;
     private readonly IDatabaseModelConfigurator _modelConfigurator;
     private readonly string _providerName;
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="RaycynixDatabaseContext"/>.
-    /// </summary>
-    /// <param name="options">The EF Core options for the context.</param>
-    /// <param name="config">The database configuration.</param>
-    /// <param name="modelConfigurator"></param>
-    /// <param name="serviceProvider">The service provider used to activate configurators and resolve database infrastructure services.</param>
-    public RaycynixDatabaseContext(
+    protected RaycynixIdentityDatabaseContext(
         DbContextOptions options,
         DatabaseConfiguration config,
         IDatabaseModelConfigurator modelConfigurator,

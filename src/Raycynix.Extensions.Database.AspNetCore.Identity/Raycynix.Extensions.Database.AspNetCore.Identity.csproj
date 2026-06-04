@@ -4,10 +4,10 @@
         <Version>2.1.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added explicit model and migrations assembly registration, provider-specific validation hooks, safer DbContext registration, improved configurator dependency diagnostics, and default no-op database observability.</PackageReleaseNotes>
+        <PackageReleaseNotes>Releasing of Identity Pack for database</PackageReleaseNotes>
 
-        <Description>Core Raycynix EF Core database infrastructure with shared DbContext registration, custom context support, model assembly discovery, provider validation, initialization, and model-cache integration.</Description>
-        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet</PackageTags>
+        <Description>Core Raycynix EF Core database infrastructure with shared IdentityDbContext registration, custom context support, model assembly discovery, provider validation, initialization, and model-cache integration.</Description>
+        <PackageTags>raycynix;database;identity;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -18,12 +18,15 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Database.AspNetCore\Raycynix.Extensions.Database.AspNetCore.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj"/>
         <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />
         <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
     </ItemGroup>
 

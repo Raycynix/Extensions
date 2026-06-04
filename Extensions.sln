@@ -232,6 +232,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Secrets
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Elastic", "src\Raycynix.Extensions.Logging.Elastic\Raycynix.Extensions.Logging.Elastic.csproj", "{33FD80E4-6891-42D7-854C-007245593BC0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity", "src\Raycynix.Extensions.Database.AspNetCore.Identity\Raycynix.Extensions.Database.AspNetCore.Identity.csproj", "{081C8F32-5A2B-431F-9454-280455ADCC89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1250,6 +1252,18 @@ Global
 		{926564D2-0B36-4F44-B7DB-3D1095C7255F}.Release|x64.Build.0 = Release|Any CPU
 		{926564D2-0B36-4F44-B7DB-3D1095C7255F}.Release|x86.ActiveCfg = Release|Any CPU
 		{926564D2-0B36-4F44-B7DB-3D1095C7255F}.Release|x86.Build.0 = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|x64.Build.0 = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Debug|x86.Build.0 = Debug|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x64.ActiveCfg = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x64.Build.0 = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x86.ActiveCfg = Release|Any CPU
+		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1368,5 +1382,6 @@ Global
 		{A4F584EF-90BB-4EA2-BD33-FA16207B3B22} = {68FB6461-A81B-4C06-97B9-C0EB2D9D1074}
 		{33FD80E4-6891-42D7-854C-007245593BC0} = {99940817-284B-4AE2-944F-B0ABE2C0B1E3}
 		{926564D2-0B36-4F44-B7DB-3D1095C7255F} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{081C8F32-5A2B-431F-9454-280455ADCC89} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 	EndGlobalSection
 EndGlobal
