@@ -234,6 +234,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity", "src\Raycynix.Extensions.Database.AspNetCore.Identity\Raycynix.Extensions.Database.AspNetCore.Identity.csproj", "{081C8F32-5A2B-431F-9454-280455ADCC89}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity.Example", "examples\Raycynix.Extensions.Database.AspNetCore.Identity.Example\Raycynix.Extensions.Database.AspNetCore.Identity.Example.csproj", "{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1264,6 +1266,18 @@ Global
 		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x64.Build.0 = Release|Any CPU
 		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x86.ActiveCfg = Release|Any CPU
 		{081C8F32-5A2B-431F-9454-280455ADCC89}.Release|x86.Build.0 = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|x64.Build.0 = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1383,5 +1397,6 @@ Global
 		{33FD80E4-6891-42D7-854C-007245593BC0} = {99940817-284B-4AE2-944F-B0ABE2C0B1E3}
 		{926564D2-0B36-4F44-B7DB-3D1095C7255F} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
 		{081C8F32-5A2B-431F-9454-280455ADCC89} = {85B7AC0B-BB66-438B-80B0-ADB9E512F69F}
+		{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA} = {D7A953A4-2700-4AB2-811B-48DB3BD519BE}
 	EndGlobalSection
 EndGlobal

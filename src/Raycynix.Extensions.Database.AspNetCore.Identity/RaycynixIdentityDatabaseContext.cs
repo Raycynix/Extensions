@@ -7,13 +7,13 @@ using Raycynix.Extensions.Database.Implementations;
 
 namespace Raycynix.Extensions.Database.AspNetCore.Identity;
 
-public abstract class RaycynixIdentityDatabaseContext : IdentityDbContext, IRaycynixDatabaseContext
+public sealed class RaycynixIdentityDatabaseContext : IdentityDbContext, IRaycynixDatabaseContext
 {
     private readonly DatabaseConfiguration _config;
     private readonly IDatabaseModelConfigurator _modelConfigurator;
     private readonly string _providerName;
 
-    protected RaycynixIdentityDatabaseContext(
+    public RaycynixIdentityDatabaseContext(
         DbContextOptions options,
         DatabaseConfiguration config,
         IDatabaseModelConfigurator modelConfigurator,

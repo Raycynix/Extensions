@@ -37,10 +37,11 @@ public sealed class DatabaseModelConfigurator(
             observability.RecordSuccess(providerName, "model_creating");
 
         }
-        catch
+        catch (Exception ex)
         {
             observability.RecordFailure(providerName, "model_creating");
-            throw new Exception("Failed to configure database model");
+            throw new Exception("Failed to configure database model", ex);
+            
         }
     }
     
