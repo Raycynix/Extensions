@@ -6,6 +6,14 @@ using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
+/// <summary>
+/// Applies registered EF Core configurators and optional seed data to a Raycynix database model.
+/// </summary>
+/// <param name="logger">The logger used to record model configuration activity.</param>
+/// <param name="config">The active database configuration.</param>
+/// <param name="modelAssemblyRegistry">The registry of assemblies that contribute model configurators.</param>
+/// <param name="observability">The observability implementation used to record model-building operations.</param>
+/// <param name="serviceProvider">The service provider used to activate configurators.</param>
 public sealed class DatabaseModelConfigurator(
     ILogger<DatabaseModelConfigurator> logger,
     DatabaseConfiguration config,
@@ -14,6 +22,7 @@ public sealed class DatabaseModelConfigurator(
     IServiceProvider serviceProvider)
     : IDatabaseModelConfigurator
 {
+    /// <inheritdoc />
     public void Configure(ModelBuilder modelBuilder, string providerName)
     {
         try

@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +9,9 @@ using Raycynix.Extensions.Database.Infrastructure;
 
 namespace Raycynix.Extensions.Database.AspNetCore.Identity;
 
+/// <summary>
+/// Provides service registration extensions for the Raycynix identity database infrastructure.
+/// </summary>
 public static class IdentityDatabase
 {
     /// <summary>
@@ -21,7 +23,7 @@ public static class IdentityDatabase
         /// <summary>
         /// Registers the Raycynix database infrastructure using separate marker types for model configurators and EF Core migrations.
         /// </summary>
-        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
+        /// <typeparam name="TContext">The concrete Raycynix Identity database context type to register.</typeparam>
         /// <typeparam name="TMarker">A marker type from the assembly that contributes EF Core configurators.</typeparam>
         /// <typeparam name="TMigrationMarker">A marker type from the assembly that contains EF Core migrations.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
@@ -30,7 +32,7 @@ public static class IdentityDatabase
         public IDatabaseBuilder AddRaycynixIdentityDatabase<TContext, TMarker, TMigrationMarker>(
             IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : IdentityDbContext, IRaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixIdentityDatabaseContext
         {
             var migrationsAssembly = typeof(TMigrationMarker).Assembly;
             var modelAssembly = typeof(TMarker).Assembly;
@@ -47,7 +49,7 @@ public static class IdentityDatabase
         /// Registers the Raycynix database infrastructure using a custom context type and a marker type
         /// from the assembly that contributes EF Core configurators and contains EF Core migrations.
         /// </summary>
-        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
+        /// <typeparam name="TContext">The concrete Raycynix Identity database context type to register.</typeparam>
         /// <typeparam name="TMarker">A marker type from the assembly to register for configurators and migrations.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
@@ -55,7 +57,7 @@ public static class IdentityDatabase
         public IDatabaseBuilder AddRaycynixIdentityDatabase<TContext, TMarker>(
             IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : IdentityDbContext, IRaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixIdentityDatabaseContext
         {
             var assembly = typeof(TMarker).Assembly;
 
@@ -70,7 +72,7 @@ public static class IdentityDatabase
         /// <summary>
         /// Registers the Raycynix database infrastructure using explicit model and migrations assemblies.
         /// </summary>
-        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
+        /// <typeparam name="TContext">The concrete Raycynix Identity database context type to register.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="migrationsAssembly">The assembly that contains EF Core migrations.</param>
         /// <param name="modelAssembly">The assembly that contributes EF Core configurators.</param>
@@ -81,7 +83,7 @@ public static class IdentityDatabase
             Assembly migrationsAssembly,
             Assembly modelAssembly,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : IdentityDbContext, IRaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixIdentityDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(migrationsAssembly);
             ArgumentNullException.ThrowIfNull(modelAssembly);
@@ -98,7 +100,7 @@ public static class IdentityDatabase
         /// Registers the Raycynix database infrastructure using a custom context type and an explicit assembly
         /// that contributes EF Core configurators and contains EF Core migrations.
         /// </summary>
-        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
+        /// <typeparam name="TContext">The concrete Raycynix Identity database context type to register.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="assembly">The assembly to register for configurators and migrations.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
@@ -107,7 +109,7 @@ public static class IdentityDatabase
             IConfiguration configuration,
             Assembly assembly,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : IdentityDbContext, IRaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixIdentityDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(assembly);
 
@@ -122,7 +124,7 @@ public static class IdentityDatabase
         /// <summary>
         /// Registers the Raycynix database infrastructure using a custom context type.
         /// </summary>
-        /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
+        /// <typeparam name="TContext">The concrete Raycynix Identity database context type to register.</typeparam>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <param name="registerCallerAssembly">
@@ -133,7 +135,7 @@ public static class IdentityDatabase
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixIdentityDatabase<TContext>(IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null,
-            bool registerCallerAssembly = true) where TContext : IdentityDbContext, IRaycynixDatabaseContext
+            bool registerCallerAssembly = true) where TContext : DbContext, IRaycynixIdentityDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
@@ -149,7 +151,7 @@ public static class IdentityDatabase
         }
 
         /// <summary>
-        /// Registers the Raycynix database infrastructure using the default <see cref="RaycynixDatabaseContext"/>.
+        /// Registers the Raycynix database infrastructure using the default <see cref="RaycynixIdentityDatabaseContext"/>.
         /// </summary>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
@@ -162,7 +164,7 @@ public static class IdentityDatabase
         public IDatabaseBuilder AddRaycynixIdentityDatabase(IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null, bool registerCallerAssembly = true)
         {
-            return services.AddRaycynixDatabase<RaycynixIdentityDatabaseContext>(
+            return services.AddRaycynixIdentityDatabase<RaycynixIdentityDatabaseContext>(
                 configuration,
                 setup,
                 registerCallerAssembly);

@@ -7,7 +7,7 @@ using Raycynix.Extensions.Database.Implementations;
 namespace Raycynix.Extensions.Database;
 
 /// <summary>
-/// Provides the extensible EF Core database context used by the Raycynix database infrastructure.
+/// Provides the default EF Core database context used by the Raycynix database infrastructure.
 /// </summary>
 public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContext
 {
@@ -20,8 +20,8 @@ public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContex
     /// </summary>
     /// <param name="options">The EF Core options for the context.</param>
     /// <param name="config">The database configuration.</param>
-    /// <param name="modelConfigurator"></param>
-    /// <param name="serviceProvider">The service provider used to activate configurators and resolve database infrastructure services.</param>
+    /// <param name="modelConfigurator">The model configurator used to apply registered entity configurators.</param>
+    /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixDatabaseContext(
         DbContextOptions options,
         DatabaseConfiguration config,
@@ -55,6 +55,7 @@ public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContex
             : QueryTrackingBehavior.NoTracking;
     }
 
+    /// <inheritdoc />
     public string GetModelCacheKey()
     {
         return _modelConfigurator.GetModelCacheKey(_providerName);

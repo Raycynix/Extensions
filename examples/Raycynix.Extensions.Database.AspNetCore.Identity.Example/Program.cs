@@ -39,7 +39,7 @@ app.MapGet("/", () => Results.Ok(new
     }
 }));
 
-app.MapGet("/orders", async ([FromServices]RaycynixDatabaseContext databaseContext, CancellationToken cancellationToken) =>
+app.MapGet("/orders", async ([FromServices]RaycynixIdentityDatabaseContext databaseContext, CancellationToken cancellationToken) =>
 {
     var orders = await databaseContext.Set<ExampleOrder>()
         .AsNoTracking()
@@ -57,7 +57,7 @@ app.MapGet("/orders", async ([FromServices]RaycynixDatabaseContext databaseConte
 
 app.MapGet("/orders/{number}", async (
     string number,
-    [FromServices] RaycynixDatabaseContext databaseContext,
+    [FromServices] RaycynixIdentityDatabaseContext databaseContext,
     ILoggerFactory loggerFactory,
     CancellationToken cancellationToken) =>
 {
@@ -80,7 +80,7 @@ app.MapGet("/orders/{number}", async (
 
 app.MapPost("/orders", async (
     CreateExampleOrderRequest request,
-    [FromServices]RaycynixDatabaseContext databaseContext,
+    [FromServices]RaycynixIdentityDatabaseContext databaseContext,
     Raycynix.Extensions.Logging.Abstractions.ILogger<OrderEndpoints> logger,
     CancellationToken cancellationToken) =>
 {
@@ -114,6 +114,7 @@ app.MapPost("/orders", async (
     return Results.Created($"/orders/{order.Number}", response);
 });
 
+app.Run();
 
 internal abstract record CreateExampleOrderRequest(Guid CustomerId, decimal TotalAmount);
 

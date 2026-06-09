@@ -18,6 +18,13 @@ public sealed class DatabaseProviderDescriptor
     /// </summary>
     public required IDatabaseProviderRegistration Registration { get; init; }
 
+    /// <summary>
+    /// Resolves the single active database provider registration from the service provider.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider containing database provider registrations.</param>
+    /// <returns>A descriptor for the active database provider.</returns>
+    /// <exception cref="NotSupportedException">Thrown when no database provider is registered.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when more than one database provider is registered.</exception>
     public static DatabaseProviderDescriptor Resolve(IServiceProvider serviceProvider)
     {
         var registrations = serviceProvider.GetServices<IDatabaseProviderRegistration>().ToArray();

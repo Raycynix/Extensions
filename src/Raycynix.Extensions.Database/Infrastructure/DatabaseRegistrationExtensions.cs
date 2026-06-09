@@ -14,8 +14,21 @@ using Raycynix.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database.Infrastructure;
 
+/// <summary>
+/// Contains shared registration logic used by Raycynix database extension packages.
+/// </summary>
 public class DatabaseRegistrationExtensions
 {
+    /// <summary>
+    /// Registers the shared Raycynix database infrastructure for the specified EF Core context type.
+    /// </summary>
+    /// <typeparam name="TContext">The concrete DbContext type to register.</typeparam>
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configuration">The application configuration used to bind database settings.</param>
+    /// <param name="migrationsAssembly">The assembly that contains EF Core migrations.</param>
+    /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
+    /// <param name="modelAssembly">An optional assembly that contributes EF Core model configurators.</param>
+    /// <returns>A database builder for provider and feature registration.</returns>
     public static IDatabaseBuilder RegisterRaycynixDatabaseCore<TContext>(
         IServiceCollection services,
         IConfiguration configuration,

@@ -8,7 +8,7 @@ Core EF Core database infrastructure for Raycynix applications.
 - `AddRaycynixDatabase<TContext>(...)` for custom Raycynix database contexts
 - marker and explicit assembly overloads for model configurators and EF Core migrations
 - model assembly discovery through `AddAssembly(...)`
-- `RaycynixDatabaseContext`, `DatabaseContext`, `GenericConfigurator<T>`, and table-name helpers
+- `RaycynixDatabaseContext`, `GenericConfigurator<T>`, and table-name helpers
 - provider selection through provider packages such as PostgreSQL, SQL Server, MySQL, or SQLite
 - startup initialization through `IDatabaseInitializer`
 - default no-op database observability
@@ -75,17 +75,37 @@ Provider packages validate their own structured connection requirements before b
 ## Custom Contexts
 
 ```csharp
-public sealed class AppDatabaseContext : RaycynixDatabaseContext
+public sealed class AppDatabaseContext : DbContext, IRaycynixDatabaseContext
 {
+    private readonly IDatabaseModelConfigurator _modelConfigurator;
+    private readonly string _providerName;
+
     public AppDatabaseContext(
-        DbContextOptions<AppDatabaseContext> options,
+        DbContextOptions options,
         DatabaseConfiguration config,
-        IDatabaseModelAssemblyRegistry modelAssemblyRegistry,
-        IDatabaseObservability observability,
-        ILogger<RaycynixDatabaseContext> logger,
+        IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
-        : base(options, config, modelAssemblyRegistry, observability, logger, serviceProvider)
+        : base(options)
     {
+        _modelConfigurator = modelConfigurator;
+        _providerName = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().ProviderName;
+
+        ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
+        ChangeTracker.AutoDetectChangesEnabled = config.EnableAutoDetectChanges;
+        ChangeTracker.QueryTrackingBehavior = config.UseQueryTrackingByDefault
+            ? QueryTrackingBehavior.TrackAll
+            : QueryTrackingBehavior.NoTracking;
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        _modelConfigurator.Configure(builder, _providerName);
+    }
+
+    public string GetModelCacheKey()
+    {
+        return _modelConfigurator.GetModelCacheKey(_providerName);
     }
 }
 

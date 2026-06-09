@@ -32,7 +32,12 @@ public sealed class DatabaseModelAssemblyRegistry : IDatabaseModelAssemblyRegist
         lock (_sync)
             return _assemblies.ToArray();
     }
-    
+
+    /// <summary>
+    /// Gets the existing shared registry from the service collection or creates and registers a new one.
+    /// </summary>
+    /// <param name="services">The service collection that owns the registry.</param>
+    /// <returns>The shared model assembly registry instance.</returns>
     public static DatabaseModelAssemblyRegistry GetOrCreate(IServiceCollection services)
     {
         if (services

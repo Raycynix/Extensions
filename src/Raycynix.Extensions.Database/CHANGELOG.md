@@ -1,8 +1,18 @@
 # Changelog
 
+## 2.1.0
+### Added
+- Added explicit model and migrations assembly registration overloads.
+- Added provider-specific validation hooks before provider configuration.
+- Added default no-op database observability.
+
+### Changed
+- Improved DbContext registration safety for repeated registrations and custom contexts.
+- Improved configurator dependency diagnostics.
+
 ## 2.0.0
 ### Added
-- Added `RaycynixDatabaseContext` as the extensible base context.
+- Added `RaycynixDatabaseContext` as the default Raycynix EF Core context.
 - Added `AddRaycynixDatabase<TContext>(...)` for custom context registration.
 - Added marker and explicit assembly overloads for separate model and migrations assemblies.
 - Added fluent `AddAssembly(...)` model assembly registration.
