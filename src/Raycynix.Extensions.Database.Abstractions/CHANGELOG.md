@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+### Added
+- Added provider-specific validation contracts.
+- Added shared database configuration, provider, builder, model assembly registry, configurator, and observability abstractions.
+
 ## 2.0.0
 ### Added
 - Added shared database configuration contracts.

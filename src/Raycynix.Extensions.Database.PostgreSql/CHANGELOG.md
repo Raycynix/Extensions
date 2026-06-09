@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+### Added
+- Added PostgreSQL provider registration with provider-specific validation.
+- Added Npgsql connection-string composition.
+- Added retry, command timeout, pooling, error detail, and migrations assembly support.
+
 ## 2.0.0
 ### Added
 - Added PostgreSQL provider registration through `AddPostgreSql(...)`.

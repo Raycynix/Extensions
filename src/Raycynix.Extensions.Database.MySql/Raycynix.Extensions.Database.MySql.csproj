@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
 
         <IsPackable>true</IsPackable>
 
@@ -19,12 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.7"/>
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7"/>
-        <PackageReference Include="System.Security.Permissions" Version="10.0.7"/>
-        <PackageReference Include="ZstdSharp.Port" Version="0.8.7"/>
-        <PackageReference Include="Google.Protobuf" Version="3.34.1"/>
-        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.1"/>
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.8"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8"/>
+        <PackageReference Include="System.Security.Permissions" Version="10.0.8"/>
+        <PackageReference Include="ZstdSharp.Port" Version="0.8.8" />
+        <PackageReference Include="Google.Protobuf" Version="3.35.0" />
+        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
     </ItemGroup>
 
     <ItemGroup>

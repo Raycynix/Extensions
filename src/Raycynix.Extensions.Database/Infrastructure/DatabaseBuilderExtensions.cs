@@ -1,7 +1,7 @@
 using System.Reflection;
 using Raycynix.Extensions.Database.Abstractions;
 
-namespace Raycynix.Extensions.Database;
+namespace Raycynix.Extensions.Database.Infrastructure;
 
 /// <summary>
 /// Provides fluent extensions for adding model assemblies to a Raycynix database registration.

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Messaging.Database.Configurations;
 using Raycynix.Extensions.Messaging.Database.Models;
 

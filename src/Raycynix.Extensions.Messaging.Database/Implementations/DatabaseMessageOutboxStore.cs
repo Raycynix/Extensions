@@ -12,7 +12,7 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists outbox state for outgoing messages in the configured database.
 /// </summary>
 internal sealed class DatabaseMessageOutboxStore(
-    DatabaseContext databaseContext) : ITransactionalMessageOutboxStore
+    RaycynixDatabaseContext databaseContext) : ITransactionalMessageOutboxStore
 {
     private static readonly HashSet<Type> MessagingEntityTypes =
     [

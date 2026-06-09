@@ -1,15 +1,11 @@
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Raycynix.Extensions.Configuration;
-using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
-using Raycynix.Extensions.Database.Internal;
-using Raycynix.Extensions.Logging;
+using Raycynix.Extensions.Database.Infrastructure;
 
 namespace Raycynix.Extensions.Database;
 
@@ -36,12 +32,12 @@ public static class Database
         public IDatabaseBuilder AddRaycynixDatabase<TContext, TMarker, TMigrationMarker>(
             IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : RaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixDatabaseContext
         {
             var migrationsAssembly = typeof(TMigrationMarker).Assembly;
             var modelAssembly = typeof(TMarker).Assembly;
 
-            return RegisterRaycynixDatabase<TContext>(
+            return DatabaseRegistrationExtensions.RegisterRaycynixDatabaseCore<TContext>(
                 services,
                 configuration,
                 migrationsAssembly,
@@ -61,11 +57,11 @@ public static class Database
         public IDatabaseBuilder AddRaycynixDatabase<TContext, TMarker>(
             IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : RaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixDatabaseContext
         {
             var assembly = typeof(TMarker).Assembly;
 
-            return RegisterRaycynixDatabase<TContext>(
+            return DatabaseRegistrationExtensions.RegisterRaycynixDatabaseCore<TContext>(
                 services,
                 configuration,
                 assembly,
@@ -87,12 +83,12 @@ public static class Database
             Assembly migrationsAssembly,
             Assembly modelAssembly,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : RaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(migrationsAssembly);
             ArgumentNullException.ThrowIfNull(modelAssembly);
 
-            return RegisterRaycynixDatabase<TContext>(
+            return DatabaseRegistrationExtensions.RegisterRaycynixDatabaseCore<TContext>(
                 services,
                 configuration,
                 migrationsAssembly,
@@ -113,11 +109,11 @@ public static class Database
             IConfiguration configuration,
             Assembly assembly,
             Action<DatabaseConfiguration>? setup = null)
-            where TContext : RaycynixDatabaseContext
+            where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(assembly);
 
-            return RegisterRaycynixDatabase<TContext>(
+            return DatabaseRegistrationExtensions.RegisterRaycynixDatabaseCore<TContext>(
                 services,
                 configuration,
                 assembly,
@@ -139,14 +135,14 @@ public static class Database
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase<TContext>(IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null,
-            bool registerCallerAssembly = true) where TContext : RaycynixDatabaseContext
+            bool registerCallerAssembly = true) where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
             var callerAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
 
-            return RegisterRaycynixDatabase<TContext>(
+            return DatabaseRegistrationExtensions.RegisterRaycynixDatabaseCore<TContext>(
                 services,
                 configuration,
                 callerAssembly,
@@ -155,7 +151,7 @@ public static class Database
         }
 
         /// <summary>
-        /// Registers the Raycynix database infrastructure using the default <see cref="DatabaseContext"/>.
+        /// Registers the Raycynix database infrastructure using the default <see cref="RaycynixDatabaseContext"/>.
         /// </summary>
         /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
@@ -168,7 +164,7 @@ public static class Database
         public IDatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
             Action<DatabaseConfiguration>? setup = null, bool registerCallerAssembly = true)
         {
-            return services.AddRaycynixDatabase<DatabaseContext>(
+            return services.AddRaycynixDatabase<RaycynixDatabaseContext>(
                 configuration,
                 setup,
                 registerCallerAssembly);
@@ -184,7 +180,7 @@ public static class Database
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(assembly);
 
-            var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
+            var modelAssemblyRegistry = DatabaseModelAssemblyRegistry.GetOrCreate(services);
             modelAssemblyRegistry.Add(assembly);
             return services;
         }
@@ -198,139 +194,5 @@ public static class Database
         {
             return services.AddRaycynixDatabaseAssembly(typeof(TMarker).Assembly);
         }
-    }
-
-    private static DatabaseBuilder RegisterRaycynixDatabase<TContext>(
-        IServiceCollection services,
-        IConfiguration configuration,
-        Assembly migrationsAssembly,
-        Action<DatabaseConfiguration>? setup,
-        Assembly? modelAssembly)
-        where TContext : RaycynixDatabaseContext
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-        ArgumentNullException.ThrowIfNull(migrationsAssembly);
-
-        EnsureContextRegistrationIsCompatible<TContext>(services);
-
-        var modelAssemblyRegistry = GetOrCreateModelAssemblyRegistry(services);
-        if (modelAssembly is not null)
-        {
-            modelAssemblyRegistry.Add(modelAssembly);
-        }
-
-        if (IsContextRegistered<TContext>(services))
-        {
-            if (setup is not null)
-            {
-                throw new InvalidOperationException(
-                    "Raycynix database is already registered. Configure DatabaseConfiguration only on the first AddRaycynixDatabase call.");
-            }
-
-            return new DatabaseBuilder(services, configuration, migrationsAssembly);
-        }
-
-        services.AddRaycynixLogging(configuration);
-
-        services.AddRaycynixConfiguration<DatabaseConfiguration>(
-            configuration,
-            configurePostBind: setup);
-
-        services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
-        services.TryAddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
-
-        services.TryAddSingleton<IDatabaseModelAssemblyRegistry>(modelAssemblyRegistry);
-        services.TryAddSingleton(static serviceProvider => ResolveProviderDescriptor(serviceProvider));
-
-        services.TryAddSingleton<IDatabaseObservability, NoOpDatabaseObservability>();
-        services.TryAddSingleton<IDatabaseInitializer, DatabaseInitializer>();
-
-        if (services.All(static descriptor => descriptor.ServiceType != typeof(TContext)))
-        {
-            services.AddDbContext<TContext>((serviceProvider, options) =>
-            {
-                var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-                var providerRegistration =
-                    serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
-
-                providerRegistration.Validate(config);
-
-                var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
-                options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
-                providerRegistration.Configure(options, connectionString, config, migrationsAssembly, serviceProvider);
-            });
-        }
-
-        services.TryAddScoped<RaycynixDatabaseContext>(provider =>
-            provider.GetRequiredService<TContext>());
-        services.TryAddSingleton(new DatabaseContextDescriptor
-        {
-            ContextType = typeof(TContext)
-        });
-
-        return new DatabaseBuilder(services, configuration, migrationsAssembly);
-    }
-
-    private static DatabaseModelAssemblyRegistry GetOrCreateModelAssemblyRegistry(IServiceCollection services)
-    {
-        if (services
-                .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseModelAssemblyRegistry))
-                ?.ImplementationInstance is DatabaseModelAssemblyRegistry existingRegistry)
-        {
-            return existingRegistry;
-        }
-
-        var registry = new DatabaseModelAssemblyRegistry();
-        services.AddSingleton(registry);
-        return registry;
-    }
-
-    private static DatabaseProviderDescriptor ResolveProviderDescriptor(IServiceProvider serviceProvider)
-    {
-        var registrations = serviceProvider.GetServices<IDatabaseProviderRegistration>().ToArray();
-
-        return registrations.Length switch
-        {
-            1 => new DatabaseProviderDescriptor
-            {
-                ProviderName = registrations[0].ProviderName,
-                Registration = registrations[0]
-            },
-            0 => throw new NotSupportedException(
-                "No database provider is registered. Add exactly one matching provider package, for example AddSqlite(), AddPostgreSql(), AddMsSql(), or AddMySql()."),
-            _ => throw new InvalidOperationException(
-                $"Multiple database providers are registered ({string.Join(", ", registrations.Select(static registration => registration.ProviderName))}). Register exactly one database provider package.")
-        };
-    }
-
-    private static void EnsureContextRegistrationIsCompatible<TContext>(IServiceCollection services)
-        where TContext : RaycynixDatabaseContext
-    {
-        var registeredContextType = GetRegisteredContextType(services);
-        if (registeredContextType is null || registeredContextType == typeof(TContext))
-        {
-            return;
-        }
-
-        throw new InvalidOperationException(
-            $"Raycynix database is already registered with context type {registeredContextType.FullName}. " +
-            $"It cannot be registered again with context type {typeof(TContext).FullName}.");
-    }
-
-    private static bool IsContextRegistered<TContext>(IServiceCollection services)
-        where TContext : RaycynixDatabaseContext
-    {
-        return GetRegisteredContextType(services) == typeof(TContext);
-    }
-
-    private static Type? GetRegisteredContextType(IServiceCollection services)
-    {
-        return services
-            .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseContextDescriptor))
-            ?.ImplementationInstance is DatabaseContextDescriptor descriptor
-            ? descriptor.ContextType
-            : null;
     }
 }

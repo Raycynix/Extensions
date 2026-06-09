@@ -7,6 +7,7 @@ using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
+using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Database.Sqlite;
 using Raycynix.Extensions.Messaging.Abstractions.Attributes;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
@@ -242,7 +243,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var scope = provider.CreateAsyncScope())
             {
-                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
                     .SingleAsync(current => current.MessageId == message.MessageId, TestContext.Current.CancellationToken);
                 entry.UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
@@ -278,7 +279,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var scope = provider.CreateAsyncScope())
             {
-                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var publisher = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
                 var envelopeFactory = scope.ServiceProvider.GetRequiredService<IMessageEnvelopeFactory>();
                 var transportPublisher = provider.GetRequiredService<RecordingTransportPublisher>();
@@ -310,7 +311,7 @@ public sealed class MessagingDatabaseRegistrationTests
                 transportPublisher.PublishedMessageIds.Should().BeEmpty();
 
                 await using var beforeSaveScope = provider.CreateAsyncScope();
-                var beforeSaveContext = beforeSaveScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var beforeSaveContext = beforeSaveScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var beforeSaveStore = beforeSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 (await beforeSaveContext.Set<TestBusinessEntity>().AnyAsync(TestContext.Current.CancellationToken)).Should().BeFalse();
                 (await beforeSaveStore.GetAsync(messageId, TestContext.Current.CancellationToken)).Should().BeNull();
@@ -320,7 +321,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var afterSaveScope = provider.CreateAsyncScope())
             {
-                var afterSaveContext = afterSaveScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var afterSaveContext = afterSaveScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var afterSaveStore = afterSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 (await afterSaveContext.Set<TestBusinessEntity>().AnyAsync(entity => entity.Id == "order-ambient", TestContext.Current.CancellationToken))
                     .Should()
@@ -416,7 +417,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var scope = provider.CreateAsyncScope())
             {
-                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
                     .SingleAsync(current => current.MessageId == "msg-dispatch-stale", TestContext.Current.CancellationToken);
                 entry.NextAttemptAt = DateTimeOffset.UtcNow.AddMinutes(-10);
@@ -453,7 +454,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var scope = provider.CreateAsyncScope())
             {
-                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 databaseContext.Set<MessagingInboxEntryEntity>().AddRange(
                     new MessagingInboxEntryEntity
                     {
@@ -486,7 +487,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var verificationScope = provider.CreateAsyncScope())
             {
-                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 (await databaseContext.Set<MessagingInboxEntryEntity>()
                         .AnyAsync(entry => entry.MessageId == "inbox-expired", TestContext.Current.CancellationToken))
                     .Should()
@@ -518,7 +519,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var scope = provider.CreateAsyncScope())
             {
-                var databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 databaseContext.Set<MessagingOutboxEntryEntity>().AddRange(
                     new MessagingOutboxEntryEntity
                     {
@@ -565,7 +566,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var verificationScope = provider.CreateAsyncScope())
             {
-                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                var databaseContext = verificationScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 (await databaseContext.Set<MessagingOutboxEntryEntity>()
                         .AnyAsync(entry => entry.MessageId == "outbox-expired", TestContext.Current.CancellationToken))
                     .Should()

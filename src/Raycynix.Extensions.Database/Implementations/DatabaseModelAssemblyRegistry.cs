@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -30,5 +31,24 @@ public sealed class DatabaseModelAssemblyRegistry : IDatabaseModelAssemblyRegist
     {
         lock (_sync)
             return _assemblies.ToArray();
+    }
+
+    /// <summary>
+    /// Gets the existing shared registry from the service collection or creates and registers a new one.
+    /// </summary>
+    /// <param name="services">The service collection that owns the registry.</param>
+    /// <returns>The shared model assembly registry instance.</returns>
+    public static DatabaseModelAssemblyRegistry GetOrCreate(IServiceCollection services)
+    {
+        if (services
+                .FirstOrDefault(static descriptor => descriptor.ServiceType == typeof(DatabaseModelAssemblyRegistry))
+                ?.ImplementationInstance is DatabaseModelAssemblyRegistry existingRegistry)
+        {
+            return existingRegistry;
+        }
+
+        var registry = new DatabaseModelAssemblyRegistry();
+        services.AddSingleton(registry);
+        return registry;
     }
 }

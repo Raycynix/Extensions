@@ -78,7 +78,7 @@ public sealed class MessagingDatabaseProviderModelTests
     private static void AssertConcurrencyModel(ServiceProvider provider)
     {
         using var scope = provider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
         var inbox = context.Model.FindEntityType(typeof(MessagingInboxEntryEntity));
         var outbox = context.Model.FindEntityType(typeof(MessagingOutboxEntryEntity));

@@ -11,7 +11,7 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists inbox state for incoming messages in the configured database.
 /// </summary>
 internal sealed class DatabaseIncomingMessageInboxStore(
-    DatabaseContext databaseContext,
+    RaycynixDatabaseContext databaseContext,
     MessagingConfiguration configuration) : IIncomingMessageInboxStore
 {
     /// <inheritdoc />
