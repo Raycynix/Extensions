@@ -29,7 +29,8 @@ public sealed class RaycynixIdentityDatabaseContext : IdentityDbContext, IRaycyn
         IServiceProvider serviceProvider)
         : base(options)
     {
-        _services = new RaycynixIdentityDatabaseContextServices(this, config, modelConfigurator, serviceProvider);
+        _services = new RaycynixIdentityDatabaseContextServices(config, modelConfigurator, serviceProvider);
+        _services.ConfigureChangeTracker(this);
     }
 
     /// <summary>
@@ -72,7 +73,8 @@ public sealed class RaycynixIdentityDatabaseContext<TUser> : IdentityDbContext<T
         IServiceProvider serviceProvider)
         : base(options)
     {
-        _services = new RaycynixIdentityDatabaseContextServices(this, config, modelConfigurator, serviceProvider);
+        _services = new RaycynixIdentityDatabaseContextServices(config, modelConfigurator, serviceProvider);
+        _services.ConfigureChangeTracker(this);
     }
 
     /// <summary>
@@ -120,7 +122,8 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey>
         IServiceProvider serviceProvider)
         : base(options)
     {
-        _services = new RaycynixIdentityDatabaseContextServices(this, config, modelConfigurator, serviceProvider);
+        _services = new RaycynixIdentityDatabaseContextServices(config, modelConfigurator, serviceProvider);
+        _services.ConfigureChangeTracker(this);
     }
 
     /// <summary>
@@ -180,7 +183,8 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey, TUserCla
         IServiceProvider serviceProvider)
         : base(options)
     {
-        _services = new RaycynixIdentityDatabaseContextServices(this, config, modelConfigurator, serviceProvider);
+        _services = new RaycynixIdentityDatabaseContextServices(config, modelConfigurator, serviceProvider);
+        _services.ConfigureChangeTracker(this);
     }
 
     /// <summary>
@@ -202,21 +206,25 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey, TUserCla
 
 internal sealed class RaycynixIdentityDatabaseContextServices
 {
+    private readonly DatabaseConfiguration _config;
     private readonly IDatabaseModelConfigurator _modelConfigurator;
     private readonly string _providerName;
 
     public RaycynixIdentityDatabaseContextServices(
-        DbContext context,
         DatabaseConfiguration config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
     {
+        _config = config;
         _modelConfigurator = modelConfigurator;
         _providerName = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().ProviderName;
+    }
 
-        context.ChangeTracker.LazyLoadingEnabled = config.EnableLazyLoading;
-        context.ChangeTracker.AutoDetectChangesEnabled = config.EnableAutoDetectChanges;
-        context.ChangeTracker.QueryTrackingBehavior = config.UseQueryTrackingByDefault
+    public void ConfigureChangeTracker(DbContext context)
+    {
+        context.ChangeTracker.LazyLoadingEnabled = _config.EnableLazyLoading;
+        context.ChangeTracker.AutoDetectChangesEnabled = _config.EnableAutoDetectChanges;
+        context.ChangeTracker.QueryTrackingBehavior = _config.UseQueryTrackingByDefault
             ? QueryTrackingBehavior.TrackAll
             : QueryTrackingBehavior.NoTracking;
     }
