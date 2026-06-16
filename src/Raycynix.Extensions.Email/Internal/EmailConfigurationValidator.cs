@@ -1,0 +1,35 @@
+using System.ComponentModel.DataAnnotations;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
+using Raycynix.Extensions.Configuration.Abstractions.Models;
+using Raycynix.Extensions.Email.Configurations;
+
+namespace Raycynix.Extensions.Email.Internal;
+
+internal sealed class EmailConfigurationValidator : IConfigurationValidator<EmailConfiguration>
+{
+    public ConfigurationValidationResult Validate(EmailConfiguration options)
+    {
+        var errors = new List<string>();
+
+        ValidateEmailAddress(options.DefaultFromAddress, nameof(options.DefaultFromAddress), errors);
+        ValidateEmailAddress(options.DefaultReplyToAddress, nameof(options.DefaultReplyToAddress), errors);
+
+        return errors.Count == 0
+            ? ConfigurationValidationResult.Success()
+            : ConfigurationValidationResult.Failure(errors);
+    }
+
+    private static void ValidateEmailAddress(string? address, string name, ICollection<string> errors)
+    {
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            return;
+        }
+
+        var attribute = new EmailAddressAttribute();
+        if (!attribute.IsValid(address))
+        {
+            errors.Add($"{name} must be a valid email address.");
+        }
+    }
+}

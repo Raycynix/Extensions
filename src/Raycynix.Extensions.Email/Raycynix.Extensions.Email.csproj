@@ -4,10 +4,10 @@
         <Version>2.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes></PackageReleaseNotes>
+        <PackageReleaseNotes>Added shared Raycynix email registration infrastructure, configuration binding, provider resolution, and email builder support.</PackageReleaseNotes>
 
-        <Description></Description>
-        <PackageTags></PackageTags>
+        <Description>Shared email registration infrastructure for Raycynix applications, including provider resolution, typed configuration, and email builder support.</Description>
+        <PackageTags>raycynix;email;mail;sender;configuration;dependency-injection;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -15,5 +15,11 @@
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
         <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Email.Abstractions\Raycynix.Extensions.Email.Abstractions.csproj" />
     </ItemGroup>
 </Project>
