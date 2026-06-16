@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    
+    <PropertyGroup>
+        <Version>2.0.0</Version>
+
+        <IsPackable>true</IsPackable>
+        <PackageReleaseNotes></PackageReleaseNotes>
+
+        <Description></Description>
+        <PackageTags></PackageTags>
+
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
+    </ItemGroup>
+</Project>
