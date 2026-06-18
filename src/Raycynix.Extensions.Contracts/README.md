@@ -29,6 +29,7 @@
 - service-specific DTOs
 - API gateway contracts
 - transport-specific ASP.NET Core middleware
+- logging or runtime diagnostics
 
 ## Contract Rules
 

@@ -9,6 +9,7 @@
 - helpers for reading contract headers from incoming requests
 - minimal API helpers for contract-aware HTTP results
 - MVC helpers for converting `ModelState` into `ErrorContract`
+- optional Microsoft.Extensions.Logging diagnostics for contract middleware and result execution
 
 ## Installation
 
@@ -136,3 +137,21 @@ var error = ModelState.ToErrorContract(traceId: HttpContext.TraceIdentifier);
 ```
 
 This package intentionally provides transport integration only. It does not enforce compatibility policy or automatic contract negotiation.
+
+## Logging
+
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+
+Contract metadata middleware and contract HTTP results write detailed execution diagnostics at `Debug`. They log contract names, versions, endpoint names, status codes, and envelope usage, but never log response payloads.
+
+Enable Debug logs when troubleshooting contract header emission or contract result execution:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Raycynix.Extensions.Contracts.AspNetCore": "Debug"
+    }
+  }
+}
+```

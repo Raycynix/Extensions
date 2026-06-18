@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Contracts.AspNetCore.Extensions;
 using Raycynix.Extensions.Contracts.Models;
 
@@ -48,9 +50,17 @@ public sealed class ContractHttpResult<TContract> : IResult
     public bool UseEnvelope { get; }
 
     /// <inheritdoc />
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
+
+        var logger = httpContext.RequestServices?.GetService<ILogger<ContractHttpResult<TContract>>>();
+        logger?.LogDebug(
+            "Executing contract HTTP result. Contract: {ContractName}, Version: {ContractVersion}, StatusCode: {StatusCode}, UsesEnvelope: {UsesEnvelope}.",
+            Metadata.Name,
+            Metadata.Version,
+            StatusCode,
+            UseEnvelope);
 
         httpContext.Response.StatusCode = StatusCode;
         httpContext.Response.WriteContractMetadata(Metadata);
@@ -63,6 +73,12 @@ public sealed class ContractHttpResult<TContract> : IResult
             }
             : Value;
 
-        return httpContext.Response.WriteAsJsonAsync(payload, cancellationToken: httpContext.RequestAborted);
+        await httpContext.Response.WriteAsJsonAsync(payload, cancellationToken: httpContext.RequestAborted);
+
+        logger?.LogDebug(
+            "Contract HTTP result completed. Contract: {ContractName}, Version: {ContractVersion}, StatusCode: {StatusCode}.",
+            Metadata.Name,
+            Metadata.Version,
+            StatusCode);
     }
 }
