@@ -2,6 +2,7 @@ using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database.Observability;
 
@@ -13,6 +14,7 @@ internal sealed class DatabaseObservability : IDatabaseObservability
     private readonly ITracer? _tracer;
     private readonly IMetricCounter? _operationCounter;
     private readonly IMetricHistogram? _operationDuration;
+    private readonly ILogger<DatabaseObservability>? _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DatabaseObservability"/>.
@@ -20,10 +22,14 @@ internal sealed class DatabaseObservability : IDatabaseObservability
     /// <param name="serviceProvider">The service provider used to resolve optional observability services.</param>
     public DatabaseObservability(IServiceProvider serviceProvider)
     {
+        _logger = serviceProvider.GetService(typeof(ILogger<DatabaseObservability>)) as ILogger<DatabaseObservability>;
         _tracer = serviceProvider.GetService(typeof(ITracer)) as ITracer;
 
         if (serviceProvider.GetService(typeof(IMetricsService)) is not IMetricsService metricsService)
         {
+            _logger?.LogDebug(
+                "Database observability initialized without metrics service. Tracing enabled: {TracingEnabled}.",
+                _tracer is not null);
             return;
         }
 
@@ -39,6 +45,11 @@ internal sealed class DatabaseObservability : IDatabaseObservability
             "Duration of observed database operations.",
             "provider",
             "operation");
+
+        _logger?.LogDebug(
+            "Database observability initialized. Metrics enabled: {MetricsEnabled}, Tracing enabled: {TracingEnabled}.",
+            true,
+            _tracer is not null);
     }
 
     /// <summary>
@@ -50,6 +61,11 @@ internal sealed class DatabaseObservability : IDatabaseObservability
     public IDisposable BeginOperation(string providerName, string operation)
     {
         providerName = providerName.ToLowerInvariant();
+        _logger?.LogDebug(
+            "Beginning observed database operation {Operation} for provider {ProviderName}.",
+            operation,
+            providerName);
+
         var timer = _operationDuration?.MeasureDuration(providerName, operation) ?? NoopDisposable.Instance;
         var trace = _tracer?.StartTrace($"database.{operation}", new Dictionary<string, string>
         {
@@ -99,6 +115,12 @@ internal sealed class DatabaseObservability : IDatabaseObservability
                 operation,
                 status
             ]);
+
+        _logger?.LogDebug(
+            "Recorded database operation {Operation} for provider {ProviderName} with status {Status}.",
+            operation,
+            providerName,
+            status);
     }
 
     private sealed class CompositeDisposable(IDisposable first, IDisposable second) : IDisposable

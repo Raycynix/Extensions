@@ -47,3 +47,7 @@ builder.Services
 ```
 
 When a raw `ConnectionString` is not supplied, structured SQLite configuration requires only `Name`, which becomes the SQLite data source.
+
+## Logging
+
+The provider emits optional `Microsoft.Extensions.Logging` diagnostics for validation, connection-string source selection, and EF Core provider configuration. Connection strings and data source values are never logged.

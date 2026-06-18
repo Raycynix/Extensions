@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-
-        <PackageReleaseNotes>Provides ASP.NET Core WebApplication startup helpers for running Raycynix database initialization through the shared hosting integration.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages.</PackageReleaseNotes>
 
         <Description>ASP.NET Core startup integration for running Raycynix database initialization from WebApplication while reusing the shared database hosting extensions.</Description>
         <PackageTags>raycynix;database;aspnetcore;webapplication;web;startup;initialization;migrations;minimal-api;dotnet</PackageTags>
@@ -19,11 +18,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Hosting\Raycynix.Extensions.Database.Hosting.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
 </Project>

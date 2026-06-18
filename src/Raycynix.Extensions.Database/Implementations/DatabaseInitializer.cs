@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
@@ -14,7 +14,7 @@ public class DatabaseInitializer<TContext>(
     IDatabaseObservability observability,
     DatabaseConfiguration config,
     DatabaseProviderDescriptor descriptor,
-    ILogger<DatabaseInitializer<TContext>> logger) : IDatabaseInitializer
+    ILogger<DatabaseInitializer<TContext>>? logger = null) : IDatabaseInitializer
     where TContext : DbContext, IRaycynixDatabaseContext
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
@@ -35,7 +35,7 @@ public class DatabaseInitializer<TContext>(
     {
         if (IsReady)
         {
-            logger.Information("Database is already initialized");
+            logger?.LogDebug("Database is already initialized for provider {ProviderName}.", _providerName);
             return;
         }
 
@@ -45,11 +45,11 @@ public class DatabaseInitializer<TContext>(
         {
             if (IsReady)
             {
-                logger.Information("Database is already initialized");
+                logger?.LogDebug("Database is already initialized for provider {ProviderName}.", _providerName);
                 return;
             }
 
-            logger.Information("Starting database initializer");
+            logger?.LogInformation("Starting database initialization for provider {ProviderName}.", _providerName);
             using var initializationScope = observability.BeginOperation(_providerName, "initialization");
 
             using var scope = serviceScopeFactory.CreateScope();
@@ -57,45 +57,59 @@ public class DatabaseInitializer<TContext>(
 
             if (config.EnsureCreated)
             {
-                logger.Information("Applying database creation");
+                logger?.LogInformation("Applying database creation for provider {ProviderName}.", _providerName);
                 using var ensureCreatedScope = observability.BeginOperation(_providerName, "ensure_created");
 
                 try
                 {
                     await context.Database.EnsureCreatedAsync(cancellationToken);
                     observability.RecordSuccess(_providerName, "ensure_created");
+                    logger?.LogDebug("Database creation completed for provider {ProviderName}.", _providerName);
                 }
-                catch
+                catch (Exception exception)
                 {
                     observability.RecordFailure(_providerName, "ensure_created");
+                    logger?.LogError(
+                        exception,
+                        "Database creation failed for provider {ProviderName}.",
+                        _providerName);
                     throw;
                 }
             }
 
             if (config.UseMigrations)
             {
-                logger.Information("Applying migrations");
+                logger?.LogInformation("Applying database migrations for provider {ProviderName}.", _providerName);
                 using var migrationsScope = observability.BeginOperation(_providerName, "migrate");
 
                 try
                 {
                     await context.Database.MigrateAsync(cancellationToken);
                     observability.RecordSuccess(_providerName, "migrate");
+                    logger?.LogDebug("Database migrations completed for provider {ProviderName}.", _providerName);
                 }
-                catch
+                catch (Exception exception)
                 {
                     observability.RecordFailure(_providerName, "migrate");
+                    logger?.LogError(
+                        exception,
+                        "Database migration failed for provider {ProviderName}.",
+                        _providerName);
                     throw;
                 }
             }
 
             IsReady = true;
             observability.RecordSuccess(_providerName, "initialization");
-            logger.Information("Database initialized");
+            logger?.LogInformation("Database initialization completed for provider {ProviderName}.", _providerName);
         }
-        catch
+        catch (Exception exception)
         {
             observability.RecordFailure(_providerName, "initialization");
+            logger?.LogError(
+                exception,
+                "Database initialization failed for provider {ProviderName}.",
+                _providerName);
             throw;
         }
         finally

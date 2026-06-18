@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>Added SQLite provider registration with provider-specific validation, SQLite connection-string composition, mode and cache options, command timeout, and migrations assembly support.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for SQLite provider configuration.</PackageReleaseNotes>
 
         <Description>SQLite provider integration for Raycynix.Extensions.Database with AddSqlite registration, provider-specific validation, SQLite connection-string composition, and EF Core UseSqlite configuration.</Description>
         <PackageTags>raycynix;database;sqlite;provider;provider-validation;efcore;entityframework;migrations;connection-string;embedded-database;dotnet</PackageTags>
@@ -19,14 +19,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
-        <PackageReference Include="SQLitePCLRaw.core" Version="3.0.3" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3"/>
+        <PackageReference Include="SQLitePCLRaw.core" Version="3.0.3"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
-        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj"/>
     </ItemGroup>
 
 </Project>

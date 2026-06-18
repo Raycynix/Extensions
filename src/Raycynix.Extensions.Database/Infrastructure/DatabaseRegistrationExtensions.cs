@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
-using Raycynix.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database.Infrastructure;
 
@@ -60,8 +60,6 @@ public class DatabaseRegistrationExtensions
             return new DatabaseBuilder(services, configuration, migrationsAssembly);
         }
 
-        services.AddRaycynixLogging(configuration);
-
         services.AddRaycynixConfiguration<DatabaseConfiguration>(
             configuration,
             configurePostBind: setup);
@@ -82,15 +80,31 @@ public class DatabaseRegistrationExtensions
         {
             services.AddDbContext<TContext>((serviceProvider, options) =>
             {
+                var logger = serviceProvider.GetService<ILogger<TContext>>();
                 var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-                var providerRegistration =
-                    serviceProvider.GetRequiredService<DatabaseProviderDescriptor>().Registration;
+                var providerDescriptor = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>();
+                var providerRegistration = providerDescriptor.Registration;
+
+                logger?.LogDebug(
+                    "Configuring DbContext {DbContextType} with database provider {ProviderName}. Migrations assembly: {MigrationsAssembly}.",
+                    typeof(TContext).Name,
+                    providerDescriptor.ProviderName,
+                    migrationsAssembly.GetName().Name);
 
                 providerRegistration.Validate(config);
+                logger?.LogDebug(
+                    "Database configuration validated for DbContext {DbContextType} with provider {ProviderName}.",
+                    typeof(TContext).Name,
+                    providerDescriptor.ProviderName);
 
                 var connectionString = providerRegistration.ResolveConnectionString(config, serviceProvider);
                 options.ReplaceService<IModelCacheKeyFactory, DatabaseModelCacheKeyFactory>();
                 providerRegistration.Configure(options, connectionString, config, migrationsAssembly, serviceProvider);
+
+                logger?.LogDebug(
+                    "DbContext {DbContextType} configured with database provider {ProviderName}.",
+                    typeof(TContext).Name,
+                    providerDescriptor.ProviderName);
             });
         }
 

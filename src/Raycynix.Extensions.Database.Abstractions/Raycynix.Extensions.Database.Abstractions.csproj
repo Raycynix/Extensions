@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-
-        <PackageReleaseNotes>Added provider-specific validation contracts and shared database configuration, provider, builder, model assembly registry, configurator, and observability abstractions.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages.</PackageReleaseNotes>
 
         <Description>Lightweight contracts and configuration models for Raycynix database providers, provider validation, EF Core configurators, initialization, model assembly registration, and observability integration.</Description>
         <PackageTags>raycynix;database;abstractions;contracts;efcore;configurators;providers;provider-validation;configuration;observability;initialization;dotnet</PackageTags>
@@ -19,8 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9"/>
     </ItemGroup>
 
 </Project>

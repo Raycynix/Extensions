@@ -33,3 +33,7 @@ The package observes infrastructure operations such as:
 - model creation
 
 Metrics use the `raycynix_database_*` prefix.
+
+## Logging
+
+The observability package emits optional `Microsoft.Extensions.Logging` diagnostics for observability setup and operation recording. It logs provider names, operation names, and statuses, but does not log connection strings or credentials.

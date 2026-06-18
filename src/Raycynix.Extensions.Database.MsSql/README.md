@@ -51,3 +51,7 @@ builder.Services
 ```
 
 When a raw `ConnectionString` is not supplied, structured SQL Server configuration requires `Host` and `Name`. Username and password are passed through when provided.
+
+## Logging
+
+The provider emits optional `Microsoft.Extensions.Logging` diagnostics for validation, connection-string source selection, and EF Core provider configuration. Connection strings, usernames, and passwords are never logged.

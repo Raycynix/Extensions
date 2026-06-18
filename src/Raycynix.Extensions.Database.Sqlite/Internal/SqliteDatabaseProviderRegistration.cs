@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Database.Sqlite.Internal;
 /// <summary>
 /// Implements SQLite-specific connection and EF Core configuration for the shared database context.
 /// </summary>
-internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegistration
+internal sealed class SqliteDatabaseProviderRegistration(
+    ILogger<SqliteDatabaseProviderRegistration>? logger = null) : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
     public string ProviderName => "sqlite";
@@ -21,6 +23,7 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Using configured raw SQLite connection string.");
             return configuration.ConnectionString;
         }
 
@@ -47,6 +50,12 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
             builder.Cache = Enum.Parse<SqliteCacheMode>(settings.Cache, ignoreCase: true);
         }
 
+        logger?.LogDebug(
+            "Resolved SQLite connection string from structured configuration. ModeConfigured: {ModeConfigured}, CacheConfigured: {CacheConfigured}, CommandTimeoutConfigured: {CommandTimeoutConfigured}.",
+            !string.IsNullOrWhiteSpace(settings?.Mode),
+            !string.IsNullOrWhiteSpace(settings?.Cache),
+            settings?.CommandTimeoutSeconds is not null);
+
         return builder.ToString();
     }
 
@@ -72,6 +81,10 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
                 sqliteOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+
+        logger?.LogDebug(
+            "Configured EF Core SQLite provider. Migrations assembly: {MigrationsAssembly}.",
+            migrationsAssembly.GetName().Name);
     }
 
     /// <inheritdoc />
@@ -79,6 +92,7 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Skipping structured SQLite validation because a raw connection string is configured.");
             return;
         }
 
@@ -89,5 +103,7 @@ internal sealed class SqliteDatabaseProviderRegistration : IDatabaseProviderRegi
         {
             throw new InvalidOperationException("SQLite connection requires a data source name.");
         }
+
+        logger?.LogDebug("SQLite structured connection configuration validated.");
     }
 }

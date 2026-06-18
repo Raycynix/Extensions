@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+- Added optional `Microsoft.Extensions.Logging.ILogger<T>` diagnostics for startup database initialization.
+
 ## 2.1.0
 ### Added
 - Added generic host and `IServiceProvider` startup helpers for running Raycynix database initialization through `IDatabaseInitializer`.
