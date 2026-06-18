@@ -1,12 +1,9 @@
 using System.Net.Sockets;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using MimeKit;
-using Raycynix.Extensions.Email.Abstractions.Enums;
 using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
-using Raycynix.Extensions.Email.Configurations;
 using Raycynix.Extensions.Email.Implementations;
 using Raycynix.Extensions.Email.Smtp.Configurations;
 using Raycynix.Extensions.Email.Smtp.Enums;
@@ -14,10 +11,10 @@ using Raycynix.Extensions.Email.Smtp.Enums;
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 
 internal sealed class SmtpEmailSender(
-    EmailConfiguration emailConfiguration,
     SmtpConfiguration smtpConfiguration,
     EmailProviderDescriptor providerDescriptor,
-    IServiceProvider serviceProvider) : IEmailSender
+    IServiceProvider serviceProvider,
+    SmtpMimeMessageFactory mimeMessageFactory) : IEmailSender
 {
     private const string ProviderName = "smtp";
 
@@ -31,7 +28,7 @@ internal sealed class SmtpEmailSender(
         EnsureActiveProvider();
         message.Validate();
 
-        var mimeMessage = await CreateMimeMessageAsync(message, cancellationToken);
+        var mimeMessage = await mimeMessageFactory.CreateAsync(message, cancellationToken);
         using var client = new SmtpClient();
         client.Timeout = smtpConfiguration.TimeoutMilliseconds;
 
@@ -43,13 +40,10 @@ internal sealed class SmtpEmailSender(
                 ResolveSecureSocketOptions(),
                 cancellationToken);
 
-            if (!smtpConfiguration.UseDefaultCredentials &&
-                !string.IsNullOrWhiteSpace(smtpConfiguration.Username))
+            var credentials = SmtpCredentialFactory.Create(smtpConfiguration);
+            if (credentials is not null)
             {
-                await client.AuthenticateAsync(
-                    smtpConfiguration.Username,
-                    smtpConfiguration.Password ?? string.Empty,
-                    cancellationToken);
+                await client.AuthenticateAsync(credentials, cancellationToken);
             }
 
             await client.SendAsync(mimeMessage, cancellationToken);
@@ -64,7 +58,7 @@ internal sealed class SmtpEmailSender(
                 exception.Message,
                 exception.StatusCode.ToString());
         }
-        catch (Exception exception) when (exception is SmtpProtocolException or IOException or SocketException or MailKit.Security.AuthenticationException)
+        catch (Exception exception) when (exception is SmtpProtocolException or IOException or SocketException or AuthenticationException)
         {
             throw new EmailSendException("SMTP provider could not complete the email send operation.", exception);
         }
@@ -76,112 +70,6 @@ internal sealed class SmtpEmailSender(
         {
             throw new EmailProviderConfigurationException(
                 $"The active email provider is '{providerDescriptor.ProviderName}', but SMTP sender was resolved.");
-        }
-    }
-
-    private async Task<MimeMessage> CreateMimeMessageAsync(
-        EmailMessage message,
-        CancellationToken cancellationToken)
-    {
-        var sender = message.From
-                     ?? emailConfiguration.ResolveDefaultFrom()
-                     ?? throw new EmailSendException(
-                         "Email message requires a sender address. Set EmailConfiguration.DefaultFromAddress or EmailMessage.From.");
-
-        var mimeMessage = new MimeMessage
-        {
-            Subject = message.Subject
-        };
-
-        mimeMessage.From.Add(ToMailboxAddress(sender));
-        AddRecipients(mimeMessage.To, message.To);
-        AddRecipients(mimeMessage.Cc, message.Cc);
-        AddRecipients(mimeMessage.Bcc, message.Bcc);
-        AddReplyTo(mimeMessage, message);
-        AddHeaders(mimeMessage, message.Headers);
-
-        var bodyBuilder = new BodyBuilder();
-        AddBody(bodyBuilder, message.Body);
-
-        foreach (var attachment in message.Attachments)
-        {
-            await AddAttachmentAsync(bodyBuilder, attachment, cancellationToken);
-        }
-
-        mimeMessage.Body = bodyBuilder.ToMessageBody();
-        return mimeMessage;
-    }
-
-    private void AddReplyTo(MimeMessage mimeMessage, EmailMessage message)
-    {
-        var replyTo = message.ReplyTo ?? emailConfiguration.ResolveDefaultReplyTo();
-        if (replyTo is not null)
-        {
-            mimeMessage.ReplyTo.Add(ToMailboxAddress(replyTo));
-        }
-    }
-
-    private static void AddBody(BodyBuilder bodyBuilder, EmailBody body)
-    {
-        if (!string.IsNullOrWhiteSpace(body.Html))
-        {
-            bodyBuilder.HtmlBody = body.Html;
-        }
-
-        if (!string.IsNullOrWhiteSpace(body.PlainText))
-        {
-            bodyBuilder.TextBody = body.PlainText;
-        }
-
-        if (body.PreferredFormat == EmailBodyFormat.PlainText &&
-            !string.IsNullOrWhiteSpace(body.PlainText) &&
-            string.IsNullOrWhiteSpace(body.Html))
-        {
-            bodyBuilder.TextBody = body.PlainText;
-        }
-    }
-
-    private static async Task AddAttachmentAsync(
-        BodyBuilder bodyBuilder,
-        EmailAttachment attachment,
-        CancellationToken cancellationToken)
-    {
-        await using var stream = await attachment.OpenReadAsync(cancellationToken);
-        using var memory = new MemoryStream();
-        await stream.CopyToAsync(memory, cancellationToken);
-
-        var entity = bodyBuilder.Attachments.Add(
-            attachment.FileName,
-            memory.ToArray(),
-            ContentType.Parse(attachment.ContentType));
-
-        if (!string.IsNullOrWhiteSpace(attachment.ContentId) &&
-            entity is MimePart mimePart)
-        {
-            mimePart.ContentId = attachment.ContentId;
-        }
-    }
-
-    private static void AddHeaders(MimeMessage mimeMessage, IReadOnlyDictionary<string, string> headers)
-    {
-        foreach (var (key, value) in headers)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                continue;
-            }
-
-            mimeMessage.Headers.Replace(key, value);
-        }
-    }
-
-    private static void AddRecipients(
-        InternetAddressList target,
-        IEnumerable<EmailAddress> recipients)
-    {
-        foreach (var recipient in recipients)
-        {
-            target.Add(ToMailboxAddress(recipient));
         }
     }
 
@@ -199,10 +87,4 @@ internal sealed class SmtpEmailSender(
         };
     }
 
-    private static MailboxAddress ToMailboxAddress(EmailAddress address)
-    {
-        return string.IsNullOrWhiteSpace(address.DisplayName)
-            ? MailboxAddress.Parse(address.Address)
-            : new MailboxAddress(address.DisplayName, address.Address);
-    }
 }

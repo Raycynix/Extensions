@@ -1,6 +1,6 @@
-namespace Raycynix.Extensions.Email.Smtp.Configurations;
-
 using Raycynix.Extensions.Email.Smtp.Enums;
+
+namespace Raycynix.Extensions.Email.Smtp.Configurations;
 
 /// <summary>
 /// Represents SMTP provider settings.

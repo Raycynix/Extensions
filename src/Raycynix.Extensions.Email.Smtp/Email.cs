@@ -36,6 +36,7 @@ public static class Email
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<IEmailProviderRegistration, SmtpEmailProviderRegistration>());
+        builder.Services.TryAddSingleton<SmtpMimeMessageFactory>();
         builder.Services.TryAddTransient<IEmailSender, SmtpEmailSender>();
 
         return builder;

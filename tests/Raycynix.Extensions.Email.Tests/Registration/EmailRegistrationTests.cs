@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Email;
 using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
