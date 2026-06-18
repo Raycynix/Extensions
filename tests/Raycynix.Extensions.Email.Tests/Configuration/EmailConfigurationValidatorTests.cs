@@ -53,4 +53,25 @@ public sealed class EmailConfigurationValidatorTests
         result.Succeeded.Should().BeFalse();
         result.Errors.Should().ContainSingle(error => error.Contains("cannot exceed 255 characters."));
     }
+
+    /// <summary>
+    /// Verifies that configured default addresses use the same strict mailbox validation as EmailAddress.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Validate_ShouldFail_WhenDefaultAddressContainsDisplayNameMailbox(bool fromAddress)
+    {
+        var validator = new EmailConfigurationValidator();
+        var configuration = new EmailConfiguration
+        {
+            DefaultFromAddress = fromAddress ? "Sender <sender@example.com>" : "sender@example.com",
+            DefaultReplyToAddress = fromAddress ? "reply@example.com" : "Reply <reply@example.com>"
+        };
+
+        var result = validator.Validate(configuration);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().ContainSingle(error => error.Contains("must be a valid email address."));
+    }
 }

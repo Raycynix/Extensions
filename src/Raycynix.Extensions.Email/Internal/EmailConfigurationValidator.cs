@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
 using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Abstractions.Models;
 
 namespace Raycynix.Extensions.Email.Internal;
 
@@ -28,8 +28,11 @@ internal sealed class EmailConfigurationValidator : IConfigurationValidator<Emai
             return;
         }
 
-        var attribute = new EmailAddressAttribute();
-        if (!attribute.IsValid(address))
+        try
+        {
+            _ = new EmailAddress(address);
+        }
+        catch (ArgumentException)
         {
             errors.Add($"{name} must be a valid email address.");
         }
