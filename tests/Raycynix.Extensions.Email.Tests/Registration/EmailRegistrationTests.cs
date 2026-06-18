@@ -28,7 +28,6 @@ public sealed class EmailRegistrationTests
             ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
             ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
             ["EmailConfiguration:SmtpConfiguration:Port"] = "587",
-            ["EmailConfiguration:SmtpConfiguration:EnableSsl"] = "true",
             ["EmailConfiguration:SmtpConfiguration:SecureSocketOptions"] = "StartTls",
             ["EmailConfiguration:SmtpConfiguration:Username"] = "smtp-user",
             ["EmailConfiguration:SmtpConfiguration:Password"] = "smtp-password"
@@ -43,7 +42,6 @@ public sealed class EmailRegistrationTests
 
         smtp.Host.Should().Be("smtp.example.com");
         smtp.Port.Should().Be(587);
-        smtp.EnableSsl.Should().BeTrue();
         smtp.SecureSocketOptions.Should().Be(SmtpSecureSocketOptions.StartTls);
         smtp.Username.Should().Be("smtp-user");
         smtp.Password.Should().Be("smtp-password");

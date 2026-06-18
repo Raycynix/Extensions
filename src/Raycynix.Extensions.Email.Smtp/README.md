@@ -24,7 +24,6 @@ builder.Services
     {
         smtp.Host = "smtp.example.com";
         smtp.Port = 465;
-        smtp.EnableSsl = true;
         smtp.SecureSocketOptions = SmtpSecureSocketOptions.SslOnConnect;
         smtp.Username = "smtp-user";
         smtp.Password = "smtp-password";
@@ -41,7 +40,6 @@ builder.Services
     "SmtpConfiguration": {
       "Host": "smtp.example.com",
       "Port": 465,
-      "EnableSsl": true,
       "SecureSocketOptions": "SslOnConnect",
       "Username": "smtp-user",
       "Password": "smtp-password",

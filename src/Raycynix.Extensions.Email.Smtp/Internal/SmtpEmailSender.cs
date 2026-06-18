@@ -37,7 +37,7 @@ internal sealed class SmtpEmailSender(
             await client.ConnectAsync(
                 smtpConfiguration.Host ?? throw new EmailProviderConfigurationException("SMTP host is required."),
                 smtpConfiguration.Port,
-                ResolveSecureSocketOptions(),
+                SmtpSecureSocketOptionsMapper.Map(smtpConfiguration),
                 cancellationToken);
 
             var credentials = SmtpCredentialFactory.Create(smtpConfiguration);
@@ -71,20 +71,6 @@ internal sealed class SmtpEmailSender(
             throw new EmailProviderConfigurationException(
                 $"The active email provider is '{providerDescriptor.ProviderName}', but SMTP sender was resolved.");
         }
-    }
-
-    private SecureSocketOptions ResolveSecureSocketOptions()
-    {
-        return smtpConfiguration.SecureSocketOptions switch
-        {
-            SmtpSecureSocketOptions.None => SecureSocketOptions.None,
-            SmtpSecureSocketOptions.StartTls => SecureSocketOptions.StartTls,
-            SmtpSecureSocketOptions.StartTlsWhenAvailable => SecureSocketOptions.StartTlsWhenAvailable,
-            SmtpSecureSocketOptions.SslOnConnect => SecureSocketOptions.SslOnConnect,
-            _ when smtpConfiguration.Port == 465 => SecureSocketOptions.SslOnConnect,
-            _ when smtpConfiguration.EnableSsl => SecureSocketOptions.StartTls,
-            _ => SecureSocketOptions.None
-        };
     }
 
 }

@@ -20,10 +20,10 @@ internal sealed class EmailExampleWorker(
 
         logger.Information("Email example prepared message\n{Message}", new
         {
-            To = message.To.Select(static recipient => recipient.Address).ToArray(),
+            To = string.Join(", ", message.To.Select(static recipient => recipient.Address)),
             message.Subject,
             HasHtml = !string.IsNullOrWhiteSpace(message.Body.Html),
-            Attachments = message.Attachments.Select(static attachment => attachment.FileName).ToArray()
+            Attachments = string.Join(", ", message.Attachments.Select(static attachment => attachment.FileName))
         });
 
         if (!options.Send)

@@ -20,6 +20,11 @@ internal sealed class SmtpConfigurationValidator : IConfigurationValidator<SmtpC
             errors.Add("SMTP port must be between 1 and 65535.");
         }
 
+        if (!Enum.IsDefined(options.SecureSocketOptions))
+        {
+            errors.Add("SMTP secure socket options value is not supported.");
+        }
+
         if (options.TimeoutMilliseconds < 0)
         {
             errors.Add("SMTP timeout cannot be negative.");

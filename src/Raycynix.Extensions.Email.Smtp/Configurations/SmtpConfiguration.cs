@@ -18,11 +18,6 @@ public sealed class SmtpConfiguration
     public int Port { get; set; } = 25;
 
     /// <summary>
-    /// Gets or sets a value indicating whether SSL should be enabled.
-    /// </summary>
-    public bool EnableSsl { get; set; }
-
-    /// <summary>
     /// Gets or sets the SMTP transport security mode.
     /// </summary>
     public SmtpSecureSocketOptions SecureSocketOptions { get; set; } = SmtpSecureSocketOptions.Auto;

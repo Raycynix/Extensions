@@ -6,7 +6,7 @@ namespace Raycynix.Extensions.Email.Smtp.Enums;
 public enum SmtpSecureSocketOptions
 {
     /// <summary>
-    /// Automatically selects a transport security mode from the configured port and SSL setting.
+    /// Lets MailKit automatically select a transport security mode.
     /// </summary>
     Auto,
 

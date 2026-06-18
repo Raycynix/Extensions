@@ -24,5 +24,9 @@ internal sealed class SmtpEmailProviderRegistration : IEmailProviderRegistration
             throw new EmailProviderConfigurationException("SMTP port must be between 1 and 65535.");
         }
 
+        if (!Enum.IsDefined(configuration.SecureSocketOptions))
+        {
+            throw new EmailProviderConfigurationException("SMTP secure socket options value is not supported.");
+        }
     }
 }

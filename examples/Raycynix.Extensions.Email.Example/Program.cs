@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration;
@@ -33,22 +34,31 @@ builder
             .AddRaycynixEmail(context.Configuration)
             .AddSmtp(smtp =>
             {
-                using var secretProvider = services.BuildServiceProvider();
-                var secrets = secretProvider.GetRequiredService<ISecretResolver>();
-
-                smtp.Username = secrets
-                    .GetSecretAsync("EmailConfiguration:SmtpConfiguration:Username")
-                    .AsTask()
-                    .GetAwaiter()
-                    .GetResult();
-                smtp.Password = secrets
-                    .GetSecretAsync("EmailConfiguration:SmtpConfiguration:Password")
-                    .AsTask()
-                    .GetAwaiter()
-                    .GetResult();
+                smtp.Username = ResolveSecret(
+                    context.Configuration,
+                    "EmailConfiguration:SmtpConfiguration:Username");
+                smtp.Password = ResolveSecret(
+                    context.Configuration,
+                    "EmailConfiguration:SmtpConfiguration:Password");
             });
 
         services.AddHostedService<EmailExampleWorker>();
     });
 
 await builder.RunConsoleAsync();
+
+static string? ResolveSecret(IConfiguration configuration, string key)
+{
+    var secretServices = new ServiceCollection();
+    secretServices.AddSingleton(configuration);
+    secretServices.AddRaycynixSecrets();
+
+    using var secretProvider = secretServices.BuildServiceProvider();
+    var secrets = secretProvider.GetRequiredService<ISecretResolver>();
+
+    return secrets
+        .GetSecretAsync(key)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+}
