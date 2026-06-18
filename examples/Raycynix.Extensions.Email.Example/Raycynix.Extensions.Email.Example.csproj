@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+
+        <Version>1.0.0-example</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Email\Raycynix.Extensions.Email.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Email.Abstractions\Raycynix.Extensions.Email.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Email.Smtp\Raycynix.Extensions.Email.Smtp.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Secrets\Raycynix.Extensions.Secrets.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="appsettings.Production.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
