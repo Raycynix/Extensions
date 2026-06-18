@@ -6,7 +6,6 @@ using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
 using Raycynix.Extensions.Email.Implementations;
 using Raycynix.Extensions.Email.Smtp.Configurations;
-using Raycynix.Extensions.Email.Smtp.Enums;
 
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 

@@ -13,6 +13,8 @@ internal sealed class EmailConfigurationValidator : IConfigurationValidator<Emai
 
         ValidateEmailAddress(options.DefaultFromAddress, nameof(options.DefaultFromAddress), errors);
         ValidateEmailAddress(options.DefaultReplyToAddress, nameof(options.DefaultReplyToAddress), errors);
+        ValidateDisplayName(options.DefaultFromDisplayName, nameof(options.DefaultFromDisplayName), errors);
+        ValidateDisplayName(options.DefaultReplyToDisplayName, nameof(options.DefaultReplyToDisplayName), errors);
 
         return errors.Count == 0
             ? ConfigurationValidationResult.Success()
@@ -30,6 +32,14 @@ internal sealed class EmailConfigurationValidator : IConfigurationValidator<Emai
         if (!attribute.IsValid(address))
         {
             errors.Add($"{name} must be a valid email address.");
+        }
+    }
+
+    private static void ValidateDisplayName(string? displayName, string name, ICollection<string> errors)
+    {
+        if (displayName?.Length > 255)
+        {
+            errors.Add($"{name} cannot exceed 255 characters.");
         }
     }
 }
