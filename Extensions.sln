@@ -38,6 +38,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Observability", "src\Raycynix.Extensions.Database.Observability\Raycynix.Extensions.Database.Observability.csproj", "{926564D2-0B36-4F44-B7DB-3D1095C7255F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{0F8563DA-599C-496C-A6F2-5E62F3E02B4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Abstractions", "src\Raycynix.Extensions.Email.Abstractions\Raycynix.Extensions.Email.Abstractions.csproj", "{B02E8A4E-606D-4AA4-A3B7-7C4DA2343A91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email", "src\Raycynix.Extensions.Email\Raycynix.Extensions.Email.csproj", "{20142B0D-8C5B-4471-857B-AE06997DAB53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Smtp", "src\Raycynix.Extensions.Email.Smtp\Raycynix.Extensions.Email.Smtp.csproj", "{DAF3992F-33B0-413B-99B1-0ACE43A216ED}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{A33E87AD-E657-42B4-9115-71BBA2FA1212}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.Abstractions", "src\Raycynix.Extensions.Exceptions.Abstractions\Raycynix.Extensions.Exceptions.Abstractions.csproj", "{48FEB21D-DBEF-4686-AF07-9AC8F0AC24B2}"
@@ -57,6 +65,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Abstractions", "src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj", "{4123DB0C-4799-461E-9E09-3738777C2DD6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging", "src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj", "{987E464F-92D0-4156-9E4B-9E27EE63931E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Elastic", "src\Raycynix.Extensions.Logging.Elastic\Raycynix.Extensions.Logging.Elastic.csproj", "{33FD80E4-6891-42D7-854C-007245593BC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metrics", "Metrics", "{9CFC7EE0-B711-4287-8162-B3D1BF165A7F}"
 EndProject
@@ -123,6 +133,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.Hosting.Tests", "tests\Raycynix.Extensions.Database.Hosting.Tests\Raycynix.Extensions.Database.Hosting.Tests.csproj", "{713B1F69-DCE6-426D-84BE-A9275D95CDCC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Tests", "tests\Raycynix.Extensions.Database.AspNetCore.Tests\Raycynix.Extensions.Database.AspNetCore.Tests.csproj", "{27D291F5-E8A6-49EE-9B16-28CB10EA1CE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Tests", "tests\Raycynix.Extensions.Email.Tests\Raycynix.Extensions.Email.Tests.csproj", "{D7D23218-F4AF-44C2-8133-3B89F68801FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{40E0A74F-AF0D-4831-92EB-5F5265AB2D25}"
 EndProject
@@ -194,6 +206,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Example", "examples\Raycynix.Extensions.Database.AspNetCore.Example\Raycynix.Extensions.Database.AspNetCore.Example.csproj", "{89C36B65-D822-4CC8-ACAA-45A9D8456B2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity", "src\Raycynix.Extensions.Database.AspNetCore.Identity\Raycynix.Extensions.Database.AspNetCore.Identity.csproj", "{081C8F32-5A2B-431F-9454-280455ADCC89}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity.Example", "examples\Raycynix.Extensions.Database.AspNetCore.Identity.Example\Raycynix.Extensions.Database.AspNetCore.Identity.Example.csproj", "{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Example", "examples\Raycynix.Extensions.Email.Example\Raycynix.Extensions.Email.Example.csproj", "{4BCD5BE0-0F4A-4B1A-9745-33BC33C7E5AE}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exceptions", "Exceptions", "{904F6B16-B3BD-4BAF-98E2-E327527E2D70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Exceptions.Example", "examples\Raycynix.Extensions.Exceptions.Example\Raycynix.Extensions.Exceptions.Example.csproj", "{962661E2-7E57-4200-A02B-C3097A11A547}"
@@ -229,24 +247,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Security.Example", "examples\Raycynix.Extensions.Security.Example\Raycynix.Extensions.Security.Example.csproj", "{B1DA413F-B1A1-4C8A-9A45-488878EB2B85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Secrets.Example", "examples\Raycynix.Extensions.Secrets.Example\Raycynix.Extensions.Secrets.Example.csproj", "{A4F584EF-90BB-4EA2-BD33-FA16207B3B22}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Elastic", "src\Raycynix.Extensions.Logging.Elastic\Raycynix.Extensions.Logging.Elastic.csproj", "{33FD80E4-6891-42D7-854C-007245593BC0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity", "src\Raycynix.Extensions.Database.AspNetCore.Identity\Raycynix.Extensions.Database.AspNetCore.Identity.csproj", "{081C8F32-5A2B-431F-9454-280455ADCC89}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Database.AspNetCore.Identity.Example", "examples\Raycynix.Extensions.Database.AspNetCore.Identity.Example\Raycynix.Extensions.Database.AspNetCore.Identity.Example.csproj", "{3B89AA02-3ADF-43AC-9A82-7BC6D1DAC8BA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{0F8563DA-599C-496C-A6F2-5E62F3E02B4C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Abstractions", "src\Raycynix.Extensions.Email.Abstractions\Raycynix.Extensions.Email.Abstractions.csproj", "{B02E8A4E-606D-4AA4-A3B7-7C4DA2343A91}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email", "src\Raycynix.Extensions.Email\Raycynix.Extensions.Email.csproj", "{20142B0D-8C5B-4471-857B-AE06997DAB53}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Smtp", "src\Raycynix.Extensions.Email.Smtp\Raycynix.Extensions.Email.Smtp.csproj", "{DAF3992F-33B0-413B-99B1-0ACE43A216ED}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Tests", "tests\Raycynix.Extensions.Email.Tests\Raycynix.Extensions.Email.Tests.csproj", "{D7D23218-F4AF-44C2-8133-3B89F68801FA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Email.Example", "examples\Raycynix.Extensions.Email.Example\Raycynix.Extensions.Email.Example.csproj", "{4BCD5BE0-0F4A-4B1A-9745-33BC33C7E5AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
