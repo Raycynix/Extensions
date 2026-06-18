@@ -1,5 +1,7 @@
 namespace Raycynix.Extensions.Email.Smtp.Configurations;
 
+using Raycynix.Extensions.Email.Smtp.Enums;
+
 /// <summary>
 /// Represents SMTP provider settings.
 /// </summary>
@@ -19,6 +21,11 @@ public sealed class SmtpConfiguration
     /// Gets or sets a value indicating whether SSL should be enabled.
     /// </summary>
     public bool EnableSsl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SMTP transport security mode.
+    /// </summary>
+    public SmtpSecureSocketOptions SecureSocketOptions { get; set; } = SmtpSecureSocketOptions.Auto;
 
     /// <summary>
     /// Gets or sets the SMTP username.

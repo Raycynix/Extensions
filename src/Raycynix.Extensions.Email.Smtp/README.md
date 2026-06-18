@@ -7,7 +7,7 @@ SMTP provider integration for `Raycynix.Extensions.Email`.
 - `AddSmtp(...)`
 - `SmtpConfiguration`
 - SMTP provider-specific validation
-- `IEmailSender` implementation backed by `System.Net.Mail.SmtpClient`
+- `IEmailSender` implementation backed by MailKit
 
 The provider is selected by calling `.AddSmtp(...)`.
 
@@ -23,8 +23,9 @@ builder.Services
     .AddSmtp(smtp =>
     {
         smtp.Host = "smtp.example.com";
-        smtp.Port = 587;
+        smtp.Port = 465;
         smtp.EnableSsl = true;
+        smtp.SecureSocketOptions = SmtpSecureSocketOptions.SslOnConnect;
         smtp.Username = "smtp-user";
         smtp.Password = "smtp-password";
     });
@@ -39,8 +40,9 @@ builder.Services
     "DefaultFromDisplayName": "Example App",
     "SmtpConfiguration": {
       "Host": "smtp.example.com",
-      "Port": 587,
+      "Port": 465,
       "EnableSsl": true,
+      "SecureSocketOptions": "SslOnConnect",
       "Username": "smtp-user",
       "Password": "smtp-password",
       "TimeoutMilliseconds": 100000

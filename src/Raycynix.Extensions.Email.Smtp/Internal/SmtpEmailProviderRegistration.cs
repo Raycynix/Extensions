@@ -23,5 +23,6 @@ internal sealed class SmtpEmailProviderRegistration : IEmailProviderRegistration
         {
             throw new EmailProviderConfigurationException("SMTP port must be between 1 and 65535.");
         }
+
     }
 }
