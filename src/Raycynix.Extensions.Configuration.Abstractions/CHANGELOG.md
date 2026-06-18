@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+- Documented the standard optional Microsoft.Extensions logging approach for runtime diagnostics implemented by concrete packages.
+
 ## 2.0.0
 ### Added
 - Added configuration diagnostics contracts.

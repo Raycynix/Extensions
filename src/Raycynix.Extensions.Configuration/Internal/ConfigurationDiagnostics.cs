@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
 using Raycynix.Extensions.Configuration.Configurations;
@@ -11,31 +13,63 @@ internal sealed class ConfigurationDiagnostics(
     ConfigurationDiagnosticsStore store,
     IServiceProvider serviceProvider,
     IConfigurationRedactor redactor,
-    ConfigurationDiagnosticsOptions options)
+    ConfigurationDiagnosticsOptions options,
+    ILogger<ConfigurationDiagnostics>? logger = null)
     : IConfigurationDiagnostics
 {
     public IReadOnlyCollection<ConfigurationRegistrationInfo> GetRegistrations()
     {
-        return store.GetRegistrations();
+        var registrations = store.GetRegistrations();
+        logger?.LogDebug(
+            "Retrieved {RegistrationCount} configuration diagnostic registrations.",
+            registrations.Count);
+
+        return registrations;
     }
 
     public IReadOnlyCollection<ConfigurationReloadInfo> GetReloads()
     {
-        return store.GetReloads();
+        var reloads = store.GetReloads();
+        logger?.LogDebug(
+            "Retrieved {ReloadCount} configuration reload diagnostic entries.",
+            reloads.Count);
+
+        return reloads;
     }
 
     public object? GetRedactedSnapshot<TOptions>(string? optionsName = null)
         where TOptions : class
     {
+        var resolvedOptionsName = string.IsNullOrWhiteSpace(optionsName)
+            ? Options.DefaultName
+            : optionsName;
+
         if (!options.EnableSnapshots)
         {
+            logger?.LogWarning(
+                "A redacted configuration snapshot was requested for options type {OptionsType} with name {OptionsName}, but snapshots are disabled.",
+                typeof(TOptions).Name,
+                resolvedOptionsName);
+
             throw new InvalidOperationException("Configuration snapshots are disabled.");
         }
+
+        logger?.LogDebug(
+            "Creating redacted configuration snapshot for options type {OptionsType} with name {OptionsName}.",
+            typeof(TOptions).Name,
+            resolvedOptionsName);
 
         var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<TOptions>>();
         var snapshot = accessor.Get(optionsName);
 
-        return RedactValue(string.Empty, snapshot, new HashSet<object>(ReferenceEqualityComparer.Instance));
+        var redactedSnapshot = RedactValue(string.Empty, snapshot, new HashSet<object>(ReferenceEqualityComparer.Instance));
+
+        logger?.LogDebug(
+            "Created redacted configuration snapshot for options type {OptionsType} with name {OptionsName}.",
+            typeof(TOptions).Name,
+            resolvedOptionsName);
+
+        return redactedSnapshot;
     }
 
     private object? RedactValue(string key, object? value, ISet<object> visited)
