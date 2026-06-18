@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
@@ -136,6 +137,55 @@ public sealed class EmailRegistrationTests
 
         await act.Should().ThrowAsync<EmailSendException>()
             .WithMessage("Email message requires a sender address.*");
+    }
+
+    /// <summary>
+    /// Verifies that runtime SMTP provider validation uses the same timeout rules as configuration validation.
+    /// </summary>
+    [Fact]
+    public void SmtpSender_ShouldThrow_WhenTimeoutIsInvalid()
+    {
+        var services = new ServiceCollection();
+        var configuration = CreateConfiguration(new Dictionary<string, string?>
+        {
+            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
+            ["EmailConfiguration:SmtpConfiguration:TimeoutMilliseconds"] = "-1"
+        });
+        services
+            .AddRaycynixEmail(configuration)
+            .AddSmtp();
+
+        using var provider = services.BuildServiceProvider();
+        var act = () => provider.GetRequiredService<IEmailSender>();
+
+        act.Should().Throw<OptionsValidationException>()
+            .WithMessage("SMTP timeout cannot be negative.");
+    }
+
+    /// <summary>
+    /// Verifies that runtime SMTP provider validation rejects conflicting authentication modes.
+    /// </summary>
+    [Fact]
+    public void SmtpSender_ShouldThrow_WhenDefaultCredentialsAreCombinedWithExplicitCredentials()
+    {
+        var services = new ServiceCollection();
+        var configuration = CreateConfiguration(new Dictionary<string, string?>
+        {
+            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
+            ["EmailConfiguration:SmtpConfiguration:UseDefaultCredentials"] = "true",
+            ["EmailConfiguration:SmtpConfiguration:Username"] = "smtp-user"
+        });
+        services
+            .AddRaycynixEmail(configuration)
+            .AddSmtp();
+
+        using var provider = services.BuildServiceProvider();
+        var act = () => provider.GetRequiredService<IEmailSender>();
+
+        act.Should().Throw<OptionsValidationException>()
+            .WithMessage("SMTP default credentials cannot be combined with explicit username or password.");
     }
 
     private static IConfiguration CreateConfiguration(

@@ -1,3 +1,5 @@
+using System.Net.Mime;
+
 namespace Raycynix.Extensions.Email.Abstractions.Models;
 
 /// <summary>
@@ -42,6 +44,7 @@ public sealed class EmailAttachment
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         ArgumentNullException.ThrowIfNull(content);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        ValidateContentType(contentType);
 
         var contentCopy = content.ToArray();
 
@@ -88,6 +91,7 @@ public sealed class EmailAttachment
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        ValidateContentType(contentType);
 
         var resolvedFileName = fileName ?? Path.GetFileName(path);
         ArgumentException.ThrowIfNullOrWhiteSpace(resolvedFileName);
@@ -99,5 +103,28 @@ public sealed class EmailAttachment
             ContentId = contentId,
             OpenReadAsync = _ => ValueTask.FromResult<Stream>(File.OpenRead(path))
         };
+    }
+
+    /// <summary>
+    /// Validates the attachment before it is sent.
+    /// </summary>
+    public void Validate()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(FileName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ContentType);
+        ArgumentNullException.ThrowIfNull(OpenReadAsync);
+        ValidateContentType(ContentType);
+    }
+
+    private static void ValidateContentType(string contentType)
+    {
+        try
+        {
+            _ = new ContentType(contentType);
+        }
+        catch (FormatException exception)
+        {
+            throw new ArgumentException("Attachment content type must be a valid MIME content type.", nameof(contentType), exception);
+        }
     }
 }

@@ -84,4 +84,81 @@ public sealed class EmailMessageValidationTests
             .Throw<InvalidOperationException>()
             .WithMessage("To cannot contain null values.");
     }
+
+    /// <summary>
+    /// Verifies that header names must be explicit before provider-specific MIME creation.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenHeaderKeyIsEmpty()
+    {
+        var message = new EmailMessage
+        {
+            To = [new EmailAddress("user@example.com")],
+            Subject = "Hello",
+            Body = EmailBody.FromPlainText("Hello"),
+            Headers = new Dictionary<string, string>
+            {
+                [" "] = "value"
+            }
+        };
+
+        var act = message.Validate;
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Headers cannot contain null or whitespace keys.");
+    }
+
+    /// <summary>
+    /// Verifies that metadata values cannot contain null entries.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenMetadataValueIsNull()
+    {
+        var message = new EmailMessage
+        {
+            To = [new EmailAddress("user@example.com")],
+            Subject = "Hello",
+            Body = EmailBody.FromPlainText("Hello"),
+            Metadata = new Dictionary<string, string>
+            {
+                ["trace"] = null!
+            }
+        };
+
+        var act = message.Validate;
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Metadata cannot contain null values.");
+    }
+
+    /// <summary>
+    /// Verifies that attachment validation runs during message validation.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenAttachmentContentTypeIsInvalid()
+    {
+        var message = new EmailMessage
+        {
+            To = [new EmailAddress("user@example.com")],
+            Subject = "Hello",
+            Body = EmailBody.FromPlainText("Hello"),
+            Attachments =
+            [
+                new EmailAttachment
+                {
+                    FileName = "data.bin",
+                    ContentType = "not a content type",
+                    OpenReadAsync = _ => ValueTask.FromResult<Stream>(new MemoryStream([1, 2, 3]))
+                }
+            ]
+        };
+
+        var act = message.Validate;
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("Attachment content type must be a valid MIME content type.*");
+    }
 }

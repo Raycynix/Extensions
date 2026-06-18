@@ -14,19 +14,10 @@ internal sealed class SmtpEmailProviderRegistration : IEmailProviderRegistration
                             ?? throw new EmailProviderConfigurationException(
                                 "SMTP configuration is not registered.");
 
-        if (string.IsNullOrWhiteSpace(configuration.Host))
+        var result = new SmtpConfigurationValidator().Validate(configuration);
+        if (!result.Succeeded)
         {
-            throw new EmailProviderConfigurationException("SMTP host is required.");
-        }
-
-        if (configuration.Port is <= 0 or > 65535)
-        {
-            throw new EmailProviderConfigurationException("SMTP port must be between 1 and 65535.");
-        }
-
-        if (!Enum.IsDefined(configuration.SecureSocketOptions))
-        {
-            throw new EmailProviderConfigurationException("SMTP secure socket options value is not supported.");
+            throw new EmailProviderConfigurationException(string.Join(" ", result.Errors));
         }
     }
 }

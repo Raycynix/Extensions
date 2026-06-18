@@ -58,6 +58,40 @@ public sealed class EmailAttachmentTests
         }
     }
 
+    /// <summary>
+    /// Verifies that invalid MIME content types are rejected before provider-specific message creation.
+    /// </summary>
+    [Fact]
+    public void FromBytes_ShouldThrow_WhenContentTypeIsInvalid()
+    {
+        var act = () => EmailAttachment.FromBytes(
+            "data.bin",
+            [1, 2, 3],
+            "not a content type");
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Attachment content type must be a valid MIME content type.*");
+    }
+
+    /// <summary>
+    /// Verifies that manually constructed attachments validate their MIME content type.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenContentTypeIsInvalid()
+    {
+        var attachment = new EmailAttachment
+        {
+            FileName = "data.bin",
+            ContentType = "not a content type",
+            OpenReadAsync = _ => ValueTask.FromResult<Stream>(new MemoryStream([1, 2, 3]))
+        };
+
+        var act = attachment.Validate;
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Attachment content type must be a valid MIME content type.*");
+    }
+
     private static async Task<byte[]> ReadAllAsync(Stream stream)
     {
         using var memory = new MemoryStream();

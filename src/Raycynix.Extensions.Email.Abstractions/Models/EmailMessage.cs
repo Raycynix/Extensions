@@ -86,6 +86,9 @@ public sealed class EmailMessage
         ThrowIfContainsNull(Cc, nameof(Cc));
         ThrowIfContainsNull(Bcc, nameof(Bcc));
         ThrowIfContainsNull(Attachments, nameof(Attachments));
+        ValidateAttachments();
+        ValidateDictionary(Headers, nameof(Headers));
+        ValidateDictionary(Metadata, nameof(Metadata));
     }
 
     private static void ThrowIfContainsNull<T>(IEnumerable<T> values, string parameterName)
@@ -93,6 +96,32 @@ public sealed class EmailMessage
         if (values.Any(static value => value is null))
         {
             throw new InvalidOperationException($"{parameterName} cannot contain null values.");
+        }
+    }
+
+    private void ValidateAttachments()
+    {
+        foreach (var attachment in Attachments)
+        {
+            attachment.Validate();
+        }
+    }
+
+    private static void ValidateDictionary(
+        IReadOnlyDictionary<string, string> values,
+        string parameterName)
+    {
+        foreach (var (key, value) in values)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new InvalidOperationException($"{parameterName} cannot contain null or whitespace keys.");
+            }
+
+            if (value is null)
+            {
+                throw new InvalidOperationException($"{parameterName} cannot contain null values.");
+            }
         }
     }
 }
