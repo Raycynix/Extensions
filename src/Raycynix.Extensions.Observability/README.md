@@ -5,7 +5,7 @@
 ## What it contains
 
 - `AddRaycynixObservability(...)`
-- registration of logging, tracing, and metrics services
+- registration of tracing and metrics services
 - `IOperationContext` registration
 
 ## What it does not contain
@@ -23,21 +23,22 @@ builder.Services.AddRaycynixObservability();
 ```csharp
 public sealed class CheckoutHandler(
     IOperationContext operationContext,
-    Raycynix.Extensions.Logging.Abstractions.ILogger<CheckoutHandler> logger,
+    Microsoft.Extensions.Logging.ILogger<CheckoutHandler> logger,
     Raycynix.Extensions.Tracing.Abstractions.Interfaces.ITracer tracer)
 {
     public void Handle()
     {
         using var activity = tracer.StartTrace("checkout.handle");
 
-        logger.Information("Handling checkout", new
-        {
+        logger.LogInformation(
+            "Handling checkout. CorrelationId:{CorrelationId} TraceId:{TraceId}",
             operationContext.CorrelationId,
-            operationContext.TraceId
-        });
+            operationContext.TraceId);
     }
 }
 ```
+
+`AddRaycynixObservability()` does not register `Raycynix.Extensions.Logging`. Applications can use any provider that works with `Microsoft.Extensions.Logging`.
 
 For ASP.NET Core integration, use `Raycynix.Extensions.Observability.AspNetCore`.
 `AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()` for you.

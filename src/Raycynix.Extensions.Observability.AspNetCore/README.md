@@ -31,3 +31,5 @@ You can also map custom paths:
 ```csharp
 app.MapRaycynixObservabilityEndpoints("/internal/health", "/internal/metrics");
 ```
+
+The middleware uses standard `Microsoft.Extensions.Logging` scopes for correlation diagnostics when a logger provider is registered. It does not require `Raycynix.Extensions.Logging`.

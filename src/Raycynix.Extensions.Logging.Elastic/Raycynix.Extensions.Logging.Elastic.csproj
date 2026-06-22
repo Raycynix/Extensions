@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Initial 2.1.0 Elasticsearch logging integration package. Adds AddElastic() for Raycynix logging, binds LoggingConfiguration:ElasticConfiguration, and configures the Serilog Elasticsearch sink.</PackageReleaseNotes>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
 
         <Description>Elasticsearch sink integration for Raycynix Serilog-based logging.</Description>
         <PackageTags>raycynix;logging;serilog;elasticsearch;elastic;structured-logging;sink;integration;dotnet</PackageTags>
@@ -16,14 +16,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Elastic.Channels" Version="0.48.0" />
-        <PackageReference Include="Elastic.Ingest.Elasticsearch" Version="0.48.0" />
-        <PackageReference Include="Elastic.Serilog.Sinks" Version="9.0.0" />
-        <PackageReference Include="Elastic.Transport" Version="1.0.0" />
+        <PackageReference Include="Elastic.Channels" Version="0.48.0"/>
+        <PackageReference Include="Elastic.Ingest.Elasticsearch" Version="0.48.0"/>
+        <PackageReference Include="Elastic.Serilog.Sinks" Version="9.0.0"/>
+        <PackageReference Include="Elastic.Transport" Version="1.0.0"/>
     </ItemGroup>
 
 </Project>

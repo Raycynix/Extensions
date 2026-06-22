@@ -42,3 +42,5 @@ builder.Services.AddRaycynixMetrics(builder.Configuration, options =>
 ```
 
 For ASP.NET Core middleware and endpoint integration, use `Raycynix.Extensions.Metrics.AspNetCore`.
+
+The runtime package emits optional diagnostics through `Microsoft.Extensions.Logging` when a logger provider is available. Metric label values are not written by the package logs.

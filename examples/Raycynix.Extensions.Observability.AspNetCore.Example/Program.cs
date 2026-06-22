@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Net;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Logging;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Observability.AspNetCore;
 using Raycynix.Extensions.Observability.AspNetCore.Middleware;
@@ -18,13 +17,7 @@ ActivitySource.AddActivityListener(activityListener);
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseRaycynixLogging(options =>
-{
-    options.MinimumLevel = LogLevel.Debug;
-});
-
 builder.Services.AddRaycynixAspNetCoreObservability();
-builder.Services.AddRaycynixLogging(builder.Configuration);
 builder.Services.AddHttpClient("downstream")
     .ConfigurePrimaryHttpMessageHandler(() => new EchoCorrelationHandler());
 
@@ -94,7 +87,7 @@ app.MapGet("/context", (
 
 app.MapGet("/checkout", async (
     IOperationContext operationContext,
-    Raycynix.Extensions.Logging.Abstractions.ILogger<CheckoutEndpoint> logger,
+    ILogger<CheckoutEndpoint> logger,
     ITracer tracer,
     CancellationToken cancellationToken) =>
 {
@@ -111,11 +104,10 @@ app.MapGet("/checkout", async (
             requestCounter.Increment(labelValues: ["checkout"]);
             tracer.AddTag("correlation.id", operationContext.CorrelationId);
 
-            logger.Information("Handling checkout request with {@Metadata}", new
-            {
+            logger.LogInformation(
+                "Handling checkout request. CorrelationId:{CorrelationId} TraceId:{TraceId}",
                 operationContext.CorrelationId,
-                operationContext.TraceId
-            });
+                operationContext.TraceId);
 
             await Task.Delay(40, cancellationToken);
 
@@ -170,7 +162,8 @@ internal sealed class CheckoutEndpoint;
 
 internal sealed class EchoCorrelationHandler : HttpMessageHandler
 {
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
         request.Headers.TryGetValues("X-Correlation-ID", out var values);
         var correlationId = values?.SingleOrDefault() ?? string.Empty;

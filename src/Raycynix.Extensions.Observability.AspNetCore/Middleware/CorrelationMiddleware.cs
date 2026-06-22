@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
-using Serilog.Context;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
@@ -27,14 +27,15 @@ public class CorrelationMiddleware(RequestDelegate next)
         IServiceProvider serviceProvider)
     {
         var securityContext = serviceProvider.GetService<ISecurityContext>();
-        var correlationId = context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue)
-            ? headerValue.ToString()
-            : context.TraceIdentifier;
+        var correlationId =
+            context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue)
+                ? headerValue.ToString()
+                : context.TraceIdentifier;
 
         operationContext.SetCorrelationIdIfMissing(correlationId);
         context.Response.Headers[CorrelationHeaderHandler.CorrelationHeader] = operationContext.CorrelationId;
 
-        var userId = context.User?.Identity?.Name;
+        var userId = context.User.Identity?.Name;
         if (!string.IsNullOrWhiteSpace(userId))
         {
             operationContext.UserId = userId;
@@ -73,12 +74,19 @@ public class CorrelationMiddleware(RequestDelegate next)
             activity?.SetTag("subject.type", operationContext.SubjectType);
         }
 
-        using (LogContext.PushProperty("CorrelationId", operationContext.CorrelationId))
-        using (LogContext.PushProperty("TraceId", traceId))
-        using (LogContext.PushProperty("UserId", operationContext.UserId))
-        using (LogContext.PushProperty("SubjectId", operationContext.SubjectId))
-        using (LogContext.PushProperty("SubjectType", operationContext.SubjectType))
+        var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<CorrelationMiddleware>();
+        using (logger?.BeginScope(new Dictionary<string, object?>
+               {
+                   ["CorrelationId"] = operationContext.CorrelationId,
+                   ["TraceId"] = traceId
+               }))
         {
+            logger?.LogDebug(
+                "Resolved request correlation context. HasUserId:{HasUserId} HasSubjectId:{HasSubjectId} SubjectType:{SubjectType}",
+                !string.IsNullOrWhiteSpace(operationContext.UserId),
+                !string.IsNullOrWhiteSpace(operationContext.SubjectId),
+                operationContext.SubjectType);
+
             OperationContext.Current = operationContext;
 
             try

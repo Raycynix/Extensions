@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
+
         <Description>Abstractions and contracts for Raycynix tracing services, activity-based tracer APIs, and shared tracing primitives.</Description>
         <PackageTags>raycynix;tracing;abstractions;contracts;activitysource;diagnostics;correlation;primitives;dotnet</PackageTags>
 

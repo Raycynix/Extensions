@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
@@ -10,13 +11,16 @@ namespace Raycynix.Extensions.Tracing.Implementations;
 public class Tracer : ITracer
 {
     private readonly ActivitySource _activitySource;
+    private readonly ILogger<Tracer>? _logger;
 
     /// <summary>
     /// Initializes a new tracer for the specified service name.
     /// </summary>
-    public Tracer(string serviceName)
+    public Tracer(string serviceName, ILogger<Tracer>? logger = null)
     {
         _activitySource = new ActivitySource(serviceName);
+        _logger = logger;
+        _logger?.LogDebug("Created Raycynix tracer. ServiceName:{ServiceName}", serviceName);
     }
 
     /// <summary>
@@ -29,7 +33,18 @@ public class Tracer : ITracer
     {
         var activity = _activitySource.StartActivity(name);
 
-        if (activity == null) return NoopDisposable.Instance;
+        if (activity == null)
+        {
+            _logger?.LogDebug("Trace activity was not created because no listener is active. TraceName:{TraceName}",
+                name);
+            return NoopDisposable.Instance;
+        }
+
+        _logger?.LogDebug(
+            "Started trace activity. TraceName:{TraceName} TagCount:{TagCount}",
+            name,
+            tags?.Count ?? 0);
+
         if (tags == null) return activity;
 
         foreach (var tag in tags)
@@ -43,14 +58,26 @@ public class Tracer : ITracer
     /// </summary>
     /// <param name="key">The key of the tag to add.</param>
     /// <param name="value">The value of the tag associated with the specified key.</param>
-    public void AddTag(string key, string value) => Activity.Current?.SetTag(key, value);
+    public void AddTag(string key, string value)
+    {
+        Activity.Current?.SetTag(key, value);
+        _logger?.LogDebug("Added tag to current trace activity. TagKey:{TagKey} HasActivity:{HasActivity}", key,
+            Activity.Current is not null);
+    }
 
     /// <summary>
     /// Sets a baggage value on the current activity.
     /// </summary>
     /// <param name="key">The key of the baggage item to set.</param>
     /// <param name="value">The value of the baggage item to set for the specified key.</param>
-    public void SetBaggage(string key, string value) => Activity.Current?.SetBaggage(key, value);
+    public void SetBaggage(string key, string value)
+    {
+        Activity.Current?.SetBaggage(key, value);
+        _logger?.LogDebug(
+            "Set baggage on current trace activity. BaggageKey:{BaggageKey} HasActivity:{HasActivity}",
+            key,
+            Activity.Current is not null);
+    }
 
     /// <summary>
     /// Gets a baggage value from the current activity.
