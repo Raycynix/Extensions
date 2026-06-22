@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Configurations;
 
@@ -9,7 +10,8 @@ namespace Raycynix.Extensions.Messaging.Implementations;
 public sealed class MessageOutboxRecoveryProcessor(
     IEnumerable<ITransportMessagePublisher> transportPublishers,
     IMessageOutboxStore outboxStore,
-    MessagingConfiguration configuration)
+    MessagingConfiguration configuration,
+    ILogger<MessageOutboxRecoveryProcessor>? logger = null)
 {
     /// <summary>
     /// Processes a single outbox recovery cycle.
@@ -20,6 +22,7 @@ public sealed class MessageOutboxRecoveryProcessor(
     {
         if (!configuration.Outbox.Enabled)
         {
+            logger?.LogDebug("Outbox recovery skipped because outbox is disabled.");
             return 0;
         }
 
@@ -29,6 +32,8 @@ public sealed class MessageOutboxRecoveryProcessor(
                 configuration.Outbox.RecoveryBatchSize,
                 cancellationToken)
             .ConfigureAwait(false);
+
+        logger?.LogDebug("Outbox recovery loaded {MessageCount} available message(s).", entries.Count);
 
         var successCount = 0;
         foreach (var entry in entries)
@@ -42,6 +47,8 @@ public sealed class MessageOutboxRecoveryProcessor(
                 .ConfigureAwait(false);
             if (!leased)
             {
+                logger?.LogDebug("Outbox recovery could not acquire dispatch lease. Destination={Destination}.",
+                    entry.Message.Destination);
                 continue;
             }
 
@@ -50,6 +57,8 @@ public sealed class MessageOutboxRecoveryProcessor(
                 await transportPublisher.PublishAsync(entry.Message, cancellationToken).ConfigureAwait(false);
                 await outboxStore.MarkDispatchedAsync(entry.Message.MessageId, cancellationToken).ConfigureAwait(false);
                 successCount++;
+                logger?.LogDebug("Outbox recovery published message. Destination={Destination}.",
+                    entry.Message.Destination);
             }
             catch (Exception exception)
             {
@@ -59,9 +68,13 @@ public sealed class MessageOutboxRecoveryProcessor(
                         DateTimeOffset.UtcNow.Add(configuration.Outbox.RetryDelay),
                         cancellationToken)
                     .ConfigureAwait(false);
+                logger?.LogWarning(exception, "Outbox recovery publish failed. Destination={Destination}.",
+                    entry.Message.Destination);
             }
         }
 
+        logger?.LogDebug("Outbox recovery completed. SuccessCount={SuccessCount}, AvailableCount={AvailableCount}.",
+            successCount, entries.Count);
         return successCount;
     }
 

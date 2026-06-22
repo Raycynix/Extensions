@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -12,9 +13,10 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// Persists outbox state for outgoing messages in the configured database.
 /// </summary>
 internal sealed class DatabaseMessageOutboxStore(
-    RaycynixDatabaseContext databaseContext) : ITransactionalMessageOutboxStore
+    RaycynixDatabaseContext databaseContext,
+    ILogger<DatabaseMessageOutboxStore>? logger = null) : ITransactionalMessageOutboxStore
 {
-    private static readonly HashSet<Type> MessagingEntityTypes =
+    private static readonly HashSet<Type> _messagingEntityTypes =
     [
         typeof(MessagingOutboxEntryEntity),
         typeof(MessagingInboxEntryEntity)
@@ -30,6 +32,8 @@ internal sealed class DatabaseMessageOutboxStore(
         ArgumentNullException.ThrowIfNull(message);
         await EnqueueCoreAsync(message, cancellationToken).ConfigureAwait(false);
         await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug("Persisted outbox message. Destination={Destination}, Format={Format}.", message.Destination,
+            message.Format);
     }
 
     /// <inheritdoc />
@@ -74,13 +78,17 @@ internal sealed class DatabaseMessageOutboxStore(
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return entities
+        var available = entities
             .Where(entry => entry.NextAttemptAt <= asOf)
             .OrderBy(entry => entry.NextAttemptAt)
             .ThenBy(entry => entry.CreatedAt)
             .Take(maxCount)
             .Select(Map)
             .ToArray();
+
+        logger?.LogDebug("Loaded {AvailableCount} available outbox message(s). MaxCount={MaxCount}.", available.Length,
+            maxCount);
+        return available;
     }
 
     /// <inheritdoc />
@@ -90,6 +98,7 @@ internal sealed class DatabaseMessageOutboxStore(
 
         await MarkDispatchedCoreAsync(messageId, cancellationToken).ConfigureAwait(false);
         await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug("Marked outbox message as dispatched.");
     }
 
     /// <inheritdoc />
@@ -110,6 +119,8 @@ internal sealed class DatabaseMessageOutboxStore(
 
         await MarkFailedCoreAsync(messageId, exception, nextAttemptAt, cancellationToken).ConfigureAwait(false);
         await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug("Marked outbox message as failed. ExceptionType={ExceptionType}.",
+            exception.GetType().FullName);
     }
 
     /// <inheritdoc />
@@ -175,6 +186,8 @@ internal sealed class DatabaseMessageOutboxStore(
                 AttemptCount = 0,
                 NextAttemptAt = now
             });
+            logger?.LogDebug("Added new outbox entry. Destination={Destination}, Format={Format}.", message.Destination,
+                message.Format);
             return;
         }
 
@@ -190,6 +203,8 @@ internal sealed class DatabaseMessageOutboxStore(
         existing.UpdatedAt = now;
         existing.NextAttemptAt = now;
         existing.Error = null;
+        logger?.LogDebug("Reset existing outbox entry to pending. Destination={Destination}, Format={Format}.",
+            message.Destination, message.Format);
     }
 
     /// <summary>
@@ -216,6 +231,7 @@ internal sealed class DatabaseMessageOutboxStore(
 
         if (entry is null)
         {
+            logger?.LogDebug("Outbox dispatch lease could not be acquired because entry was not found.");
             return false;
         }
 
@@ -230,6 +246,9 @@ internal sealed class DatabaseMessageOutboxStore(
 
         if (!canLease)
         {
+            logger?.LogDebug(
+                "Outbox dispatch lease could not be acquired because entry is not available. Status={Status}.",
+                (MessageOutboxStatus)entry.Status);
             return false;
         }
 
@@ -245,11 +264,13 @@ internal sealed class DatabaseMessageOutboxStore(
         try
         {
             await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            logger?.LogDebug("Acquired outbox dispatch lease. PreviousStatus={PreviousStatus}.", previousStatus);
             return true;
         }
         catch (DbUpdateConcurrencyException)
         {
             databaseContext.Entry(entry).State = EntityState.Unchanged;
+            logger?.LogDebug("Outbox dispatch lease lost due to optimistic concurrency.");
             return false;
         }
     }
@@ -321,7 +342,7 @@ internal sealed class DatabaseMessageOutboxStore(
     {
         return databaseContext.ChangeTracker.Entries()
             .Where(static entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
-            .Any(entry => !MessagingEntityTypes.Contains(entry.Entity.GetType()));
+            .Any(entry => !_messagingEntityTypes.Contains(entry.Entity.GetType()));
     }
 
     /// <summary>

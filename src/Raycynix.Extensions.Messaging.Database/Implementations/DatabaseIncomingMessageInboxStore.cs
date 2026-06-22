@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -12,16 +13,19 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// </summary>
 internal sealed class DatabaseIncomingMessageInboxStore(
     RaycynixDatabaseContext databaseContext,
-    MessagingConfiguration configuration) : IIncomingMessageInboxStore
+    MessagingConfiguration configuration,
+    ILogger<DatabaseIncomingMessageInboxStore>? logger = null) : IIncomingMessageInboxStore
 {
     /// <inheritdoc />
-    public async Task<bool> TryBeginProcessingAsync(IncomingTransportMessage message, CancellationToken cancellationToken = default)
+    public async Task<bool> TryBeginProcessingAsync(IncomingTransportMessage message,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
 
         var set = databaseContext.Set<MessagingInboxEntryEntity>();
         var existing = set.Local.SingleOrDefault(entry => entry.MessageId == message.MessageId) ??
-            await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+                       await set.SingleOrDefaultAsync(entry => entry.MessageId == message.MessageId, cancellationToken)
+                           .ConfigureAwait(false);
 
         if (existing is null)
         {
@@ -36,6 +40,7 @@ internal sealed class DatabaseIncomingMessageInboxStore(
             try
             {
                 await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                logger?.LogDebug("Created inbox processing entry. Destination={Destination}.", message.Destination);
                 return true;
             }
             catch (DbUpdateException)
@@ -68,13 +73,15 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     }
 
     /// <inheritdoc />
-    public async Task MarkProcessedAsync(IncomingTransportMessage message, CancellationToken cancellationToken = default)
+    public async Task MarkProcessedAsync(IncomingTransportMessage message,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
 
         var set = databaseContext.Set<MessagingInboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
-            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+                    await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -85,6 +92,7 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         entry.UpdatedAt = DateTimeOffset.UtcNow;
         entry.Error = null;
         await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug("Marked inbox message as processed. Destination={Destination}.", message.Destination);
     }
 
     /// <inheritdoc />
@@ -98,7 +106,8 @@ internal sealed class DatabaseIncomingMessageInboxStore(
 
         var set = databaseContext.Set<MessagingInboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
-            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+                    await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
@@ -109,10 +118,13 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         entry.UpdatedAt = DateTimeOffset.UtcNow;
         entry.Error = exception.Message;
         await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug("Marked inbox message as failed. Destination={Destination}, ExceptionType={ExceptionType}.",
+            message.Destination, exception.GetType().FullName);
     }
 
     /// <inheritdoc />
-    public async Task<IncomingMessageInboxEntry?> GetAsync(string messageId, CancellationToken cancellationToken = default)
+    public async Task<IncomingMessageInboxEntry?> GetAsync(string messageId,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
@@ -150,12 +162,15 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         if ((IncomingMessageInboxStatus)existing.Status == IncomingMessageInboxStatus.Processed)
         {
+            logger?.LogDebug("Inbox message skipped because it is already processed. Destination={Destination}.",
+                message.Destination);
             return false;
         }
 
         if ((IncomingMessageInboxStatus)existing.Status == IncomingMessageInboxStatus.Processing)
         {
-            return await TryReclaimStaleProcessingEntryAsync(existing, message, cancellationToken).ConfigureAwait(false);
+            return await TryReclaimStaleProcessingEntryAsync(existing, message, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return await TryResumeFailedEntryAsync(message, cancellationToken).ConfigureAwait(false);
@@ -173,14 +188,16 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         var set = databaseContext.Set<MessagingInboxEntryEntity>();
         var entry = set.Local.SingleOrDefault(current => current.MessageId == message.MessageId) ??
-            await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken).ConfigureAwait(false);
+                    await set.SingleOrDefaultAsync(current => current.MessageId == message.MessageId, cancellationToken)
+                        .ConfigureAwait(false);
 
         if (entry is null)
         {
             return false;
         }
 
-        if ((IncomingMessageInboxStatus)entry.Status is IncomingMessageInboxStatus.Processing or IncomingMessageInboxStatus.Processed)
+        if ((IncomingMessageInboxStatus)entry.Status is IncomingMessageInboxStatus.Processing
+            or IncomingMessageInboxStatus.Processed)
         {
             return false;
         }
@@ -192,11 +209,14 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         try
         {
             await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            logger?.LogDebug("Resumed failed inbox entry. Destination={Destination}.", message.Destination);
             return true;
         }
         catch (DbUpdateConcurrencyException)
         {
             databaseContext.Entry(entry).State = EntityState.Unchanged;
+            logger?.LogDebug("Failed inbox entry resume lost due to optimistic concurrency. Destination={Destination}.",
+                message.Destination);
             return false;
         }
     }
@@ -231,6 +251,7 @@ internal sealed class DatabaseIncomingMessageInboxStore(
     {
         if (!IsProcessingLeaseStale(entry.UpdatedAt))
         {
+            logger?.LogDebug("Inbox processing lease is still active. Destination={Destination}.", message.Destination);
             return false;
         }
 
@@ -241,11 +262,15 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         try
         {
             await databaseContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            logger?.LogDebug("Reclaimed stale inbox processing lease. Destination={Destination}.", message.Destination);
             return true;
         }
         catch (DbUpdateConcurrencyException)
         {
             databaseContext.Entry(entry).State = EntityState.Unchanged;
+            logger?.LogDebug(
+                "Inbox processing lease reclaim lost due to optimistic concurrency. Destination={Destination}.",
+                message.Destination);
             return false;
         }
     }

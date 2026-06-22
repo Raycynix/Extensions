@@ -11,7 +11,7 @@ namespace Raycynix.Extensions.Messaging.Implementations;
 internal sealed class MessageOutboxRecoveryService(
     IServiceScopeFactory serviceScopeFactory,
     MessagingConfiguration configuration,
-    ILogger<MessageOutboxRecoveryService> logger) : BackgroundService
+    ILogger<MessageOutboxRecoveryService>? logger = null) : BackgroundService
 {
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,9 +22,12 @@ internal sealed class MessageOutboxRecoveryService(
             {
                 if (configuration.Outbox is { Enabled: true, EnableRecovery: true })
                 {
+                    logger?.LogDebug("Starting messaging outbox recovery cycle.");
                     await using var scope = serviceScopeFactory.CreateAsyncScope();
                     var processor = scope.ServiceProvider.GetRequiredService<MessageOutboxRecoveryProcessor>();
-                    await processor.ProcessAvailableAsync(stoppingToken).ConfigureAwait(false);
+                    var recovered = await processor.ProcessAvailableAsync(stoppingToken).ConfigureAwait(false);
+                    logger?.LogDebug("Messaging outbox recovery cycle completed. RecoveredCount={RecoveredCount}.",
+                        recovered);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -33,7 +36,7 @@ internal sealed class MessageOutboxRecoveryService(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "An error occurred while recovering outbox messages.");
+                logger?.LogError(exception, "An error occurred while recovering outbox messages.");
             }
 
             await Task.Delay(configuration.Outbox.RecoveryInterval, stoppingToken).ConfigureAwait(false);

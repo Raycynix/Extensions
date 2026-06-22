@@ -27,6 +27,7 @@
 - transport-neutral direct request/response abstractions
 - incoming dispatch pipeline with retry, deduplication, and idempotency foundations
 - optional metrics/observability integration
+- optional Microsoft `ILogger<T>` diagnostics for publish, dispatch, incoming processing, and outbox recovery
 - scoped envelope/request factories that can project ambient security context safely
 - in-memory inbox/outbox and outbox recovery foundation with dispatch leases
 
@@ -170,3 +171,9 @@ The base package also includes:
 - dispatch leasing to prevent duplicate outbox recovery publishes
 
 If you need durable inbox and outbox storage instead of the built-in in-memory implementation, add `Raycynix.Extensions.Messaging.Database` on top of the shared database infrastructure.
+
+## Logging
+
+The package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover message publishing decisions, dispatch attempts, retry decisions, incoming processing, inbox/outbox decisions, and outbox recovery cycles. Message payloads, header values, security header values, and serialized content are not logged.

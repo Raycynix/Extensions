@@ -61,3 +61,9 @@ Notes:
 - `destination` is a logical operation key, not a URL
 - the registered unary mapping decides which generated gRPC client and method are called
 - contract, correlation, trace, and security headers are added on the shared request envelope level
+
+## Logging
+
+The gRPC transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover request operation lookup, client sends, processor execution, mapped RPC statuses, and processing failures. Request/response payloads and header values are not logged.

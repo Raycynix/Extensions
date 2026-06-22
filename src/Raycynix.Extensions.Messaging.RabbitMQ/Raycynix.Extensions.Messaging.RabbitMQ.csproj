@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and adds optional Microsoft.Extensions.Logging diagnostics for RabbitMQ transport operations.</PackageReleaseNotes>
 
         <Description>RabbitMQ transport integration for Raycynix messaging with topology bootstrap, inbound consumer hosting, retry/dead-letter handling, and configuration-based setup.</Description>
         <PackageTags>raycynix;messaging;rabbitmq;amqp;events;consumer;topology;retry;dead-letter;configuration;dotnet</PackageTags>
@@ -13,15 +14,17 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
-        <PackageReference Include="System.Threading.RateLimiting" Version="10.0.9" />
+        <PackageReference Include="RabbitMQ.Client" Version="7.2.1"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
+        <PackageReference Include="System.Threading.RateLimiting" Version="10.0.9"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj"/>
     </ItemGroup>
 
 </Project>

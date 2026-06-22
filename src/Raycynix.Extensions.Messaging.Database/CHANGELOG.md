@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Starts unified versioning for Raycynix packages from this release.
+- Added optional Microsoft `ILogger<T>` diagnostics for inbox/outbox persistence, leases, and cleanup cycles.
+
 ## 1.0.1
 ### Added
 - Added package-level changelog tracking.

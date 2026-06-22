@@ -35,7 +35,7 @@ public sealed class MessagingDatabaseRegistrationTests
 
         try
         {
-            services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+            services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
             services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
             services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
                 .AddSqlite();
@@ -73,7 +73,8 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             await using (var provider = BuildProvider(databasePath))
             {
-                await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+                await provider.GetRequiredService<IDatabaseInitializer>()
+                    .InitializeAsync(TestContext.Current.CancellationToken);
                 await using var scope = provider.CreateAsyncScope();
                 var store = scope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 await store.EnqueueAsync(CreateSerializedMessage("msg-1"), TestContext.Current.CancellationToken);
@@ -107,7 +108,8 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             await using (var provider = BuildProvider(databasePath))
             {
-                await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+                await provider.GetRequiredService<IDatabaseInitializer>()
+                    .InitializeAsync(TestContext.Current.CancellationToken);
                 var state = provider.GetRequiredService<InboxHandlerState>();
                 await using var scope = provider.CreateAsyncScope();
                 var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
@@ -142,13 +144,16 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             await using (var provider = BuildProvider(databasePath))
             {
-                await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+                await provider.GetRequiredService<IDatabaseInitializer>()
+                    .InitializeAsync(TestContext.Current.CancellationToken);
                 await using var scope = provider.CreateAsyncScope();
                 var store = scope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
                 var processorType = typeof(Messaging)
                     .Assembly
                     .GetTypes()
-                    .Single(static type => type.Name == nameof(Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor));
+                    .Single(static type =>
+                        type.Name ==
+                        nameof(Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor));
                 var processor = scope.ServiceProvider.GetRequiredService(processorType);
 
                 await store.EnqueueAsync(CreateSerializedMessage("msg-3"), TestContext.Current.CancellationToken);
@@ -159,7 +164,8 @@ public sealed class MessagingDatabaseRegistrationTests
                     TestContext.Current.CancellationToken);
 
                 var processAvailableAsync = processor.GetType().GetMethod("ProcessAvailableAsync")!;
-                var result = await (Task<int>)processAvailableAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
+                var result =
+                    await (Task<int>)processAvailableAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
                 result.Should().Be(1);
             }
 
@@ -189,7 +195,8 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
             var message = CreateIncomingMessage("msg-concurrent");
             var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -231,7 +238,8 @@ public sealed class MessagingDatabaseRegistrationTests
                 {
                     ["MessagingConfiguration:IncomingProcessing:ProcessingLeaseTimeout"] = "00:00:01"
                 });
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
 
             var message = CreateIncomingMessage("msg-stale");
             await using (var processingScope = provider.CreateAsyncScope())
@@ -245,7 +253,8 @@ public sealed class MessagingDatabaseRegistrationTests
             {
                 var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var entry = await databaseContext.Set<MessagingInboxEntryEntity>()
-                    .SingleAsync(current => current.MessageId == message.MessageId, TestContext.Current.CancellationToken);
+                    .SingleAsync(current => current.MessageId == message.MessageId,
+                        TestContext.Current.CancellationToken);
                 entry.UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
                 await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
             }
@@ -273,7 +282,8 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
 
             var messageId = "msg-ambient-uow";
 
@@ -313,7 +323,8 @@ public sealed class MessagingDatabaseRegistrationTests
                 await using var beforeSaveScope = provider.CreateAsyncScope();
                 var beforeSaveContext = beforeSaveScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var beforeSaveStore = beforeSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
-                (await beforeSaveContext.Set<TestBusinessEntity>().AnyAsync(TestContext.Current.CancellationToken)).Should().BeFalse();
+                (await beforeSaveContext.Set<TestBusinessEntity>().AnyAsync(TestContext.Current.CancellationToken))
+                    .Should().BeFalse();
                 (await beforeSaveStore.GetAsync(messageId, TestContext.Current.CancellationToken)).Should().BeNull();
 
                 await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -323,7 +334,8 @@ public sealed class MessagingDatabaseRegistrationTests
             {
                 var afterSaveContext = afterSaveScope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var afterSaveStore = afterSaveScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
-                (await afterSaveContext.Set<TestBusinessEntity>().AnyAsync(entity => entity.Id == "order-ambient", TestContext.Current.CancellationToken))
+                (await afterSaveContext.Set<TestBusinessEntity>().AnyAsync(entity => entity.Id == "order-ambient",
+                        TestContext.Current.CancellationToken))
                     .Should()
                     .BeTrue();
 
@@ -334,7 +346,8 @@ public sealed class MessagingDatabaseRegistrationTests
 
             await using (var recoveryScope = provider.CreateAsyncScope())
             {
-                var recoveryProcessor = recoveryScope.ServiceProvider.GetRequiredService<Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor>();
+                var recoveryProcessor = recoveryScope.ServiceProvider
+                    .GetRequiredService<Raycynix.Extensions.Messaging.Implementations.MessageOutboxRecoveryProcessor>();
                 var processed = await recoveryProcessor.ProcessAvailableAsync(TestContext.Current.CancellationToken);
                 processed.Should().Be(1);
             }
@@ -359,11 +372,13 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
             await using (var seedScope = provider.CreateAsyncScope())
             {
                 var store = seedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
-                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-race"), TestContext.Current.CancellationToken);
+                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-race"),
+                    TestContext.Current.CancellationToken);
             }
 
             var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -403,11 +418,13 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
             await using (var seedScope = provider.CreateAsyncScope())
             {
                 var store = seedScope.ServiceProvider.GetRequiredService<IMessageOutboxStore>();
-                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-stale"), TestContext.Current.CancellationToken);
+                await store.EnqueueAsync(CreateSerializedMessage("msg-dispatch-stale"),
+                    TestContext.Current.CancellationToken);
                 var leased = await store.TryBeginDispatchAsync(
                     "msg-dispatch-stale",
                     DateTimeOffset.UtcNow.AddMinutes(10),
@@ -419,7 +436,8 @@ public sealed class MessagingDatabaseRegistrationTests
             {
                 var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
                 var entry = await databaseContext.Set<MessagingOutboxEntryEntity>()
-                    .SingleAsync(current => current.MessageId == "msg-dispatch-stale", TestContext.Current.CancellationToken);
+                    .SingleAsync(current => current.MessageId == "msg-dispatch-stale",
+                        TestContext.Current.CancellationToken);
                 entry.NextAttemptAt = DateTimeOffset.UtcNow.AddMinutes(-10);
                 await databaseContext.SaveChangesAsync(TestContext.Current.CancellationToken);
             }
@@ -450,7 +468,8 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
 
             await using (var scope = provider.CreateAsyncScope())
             {
@@ -481,7 +500,8 @@ public sealed class MessagingDatabaseRegistrationTests
                     .Single(static type => type.Name == nameof(MessagingDatabaseCleanupProcessor));
                 var processor = cleanupScope.ServiceProvider.GetRequiredService(processorType);
                 var processAsync = processorType.GetMethod(nameof(MessagingDatabaseCleanupProcessor.ProcessAsync))!;
-                var deletedCount = await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
+                var deletedCount =
+                    await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
                 deletedCount.Should().Be(1);
             }
 
@@ -515,7 +535,8 @@ public sealed class MessagingDatabaseRegistrationTests
         try
         {
             await using var provider = BuildProvider(databasePath);
-            await provider.GetRequiredService<IDatabaseInitializer>().InitializeAsync(TestContext.Current.CancellationToken);
+            await provider.GetRequiredService<IDatabaseInitializer>()
+                .InitializeAsync(TestContext.Current.CancellationToken);
 
             await using (var scope = provider.CreateAsyncScope())
             {
@@ -560,7 +581,8 @@ public sealed class MessagingDatabaseRegistrationTests
                     .Single(static type => type.Name == nameof(MessagingDatabaseCleanupProcessor));
                 var processor = cleanupScope.ServiceProvider.GetRequiredService(processorType);
                 var processAsync = processorType.GetMethod(nameof(MessagingDatabaseCleanupProcessor.ProcessAsync))!;
-                var deletedCount = await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
+                var deletedCount =
+                    await (Task<int>)processAsync.Invoke(processor, [TestContext.Current.CancellationToken])!;
                 deletedCount.Should().Be(1);
             }
 
@@ -588,7 +610,7 @@ public sealed class MessagingDatabaseRegistrationTests
         params IEnumerable<KeyValuePair<string, string?>>[] additionalConfiguration)
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton<InboxHandlerState>();
         services.AddSingleton<RecordingTransportPublisher>();
         services.AddSingleton<ITransportMessagePublisher>(serviceProvider =>
@@ -739,7 +761,7 @@ public sealed class MessagingDatabaseRegistrationTests
         }
     }
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {

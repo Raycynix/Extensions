@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -16,7 +17,8 @@ namespace Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 internal sealed class RabbitMqInboundConsumer(
     RabbitMqConnectionAccessor connectionAccessor,
     RabbitMqMessagingConfiguration configuration,
-    IServiceScopeFactory serviceScopeFactory) : BackgroundService
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<RabbitMqInboundConsumer>? logger = null) : BackgroundService
 {
     private const string DeliveryAttemptHeader = "X-Delivery-Attempt";
     private const string ErrorHeader = "X-Processing-Error";
@@ -27,14 +29,17 @@ internal sealed class RabbitMqInboundConsumer(
     {
         if (!configuration.Consumer.Enabled)
         {
+            logger?.LogDebug("RabbitMQ inbound consumer is disabled.");
             return;
         }
 
+        logger?.LogInformation("Starting RabbitMQ inbound consumer. Queue={Queue}.", configuration.Queue.Name);
         await using var channel = await connectionAccessor.CreateChannelAsync(stoppingToken).ConfigureAwait(false);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var delivery = await channel.BasicGetAsync(configuration.Queue.Name, autoAck: false, stoppingToken).ConfigureAwait(false);
+            var delivery = await channel.BasicGetAsync(configuration.Queue.Name, autoAck: false, stoppingToken)
+                .ConfigureAwait(false);
             if (delivery is null)
             {
                 await DelayWhenIdleAsync(stoppingToken).ConfigureAwait(false);
@@ -44,13 +49,26 @@ internal sealed class RabbitMqInboundConsumer(
             try
             {
                 var incomingMessage = CreateIncomingMessage(delivery);
+                logger?.LogDebug(
+                    "Processing RabbitMQ delivery. Queue={Queue}, RoutingKey={RoutingKey}, HeaderCount={HeaderCount}.",
+                    configuration.Queue.Name,
+                    delivery.RoutingKey,
+                    delivery.Headers.Count);
+
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
                 await processor.ProcessAsync(incomingMessage, stoppingToken).ConfigureAwait(false);
-                await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+                await channel
+                    .BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: CancellationToken.None)
+                    .ConfigureAwait(false);
+                logger?.LogDebug("RabbitMQ delivery acknowledged. Queue={Queue}, RoutingKey={RoutingKey}.",
+                    configuration.Queue.Name, delivery.RoutingKey);
             }
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             {
+                logger?.LogWarning(exception,
+                    "RabbitMQ delivery processing failed. Queue={Queue}, RoutingKey={RoutingKey}.",
+                    configuration.Queue.Name, delivery.RoutingKey);
                 await HandleFailureAsync(channel, delivery, exception, CancellationToken.None).ConfigureAwait(false);
             }
         }
@@ -85,6 +103,12 @@ internal sealed class RabbitMqInboundConsumer(
 
         if (configuration.Retry.Enabled && attempt < configuration.Retry.MaxAttempts)
         {
+            logger?.LogDebug(
+                "Republishing RabbitMQ delivery for retry. RoutingKey={RoutingKey}, Attempt={Attempt}, MaxAttempts={MaxAttempts}.",
+                delivery.RoutingKey,
+                attempt + 1,
+                configuration.Retry.MaxAttempts);
+
             if (configuration.Retry.DelayMilliseconds > 0)
             {
                 await Task.Delay(configuration.Retry.DelayMilliseconds, cancellationToken).ConfigureAwait(false);
@@ -100,12 +124,19 @@ internal sealed class RabbitMqInboundConsumer(
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return;
         }
 
         if (configuration.DeadLetter.Enabled)
         {
+            logger?.LogWarning(
+                exception,
+                "Republishing RabbitMQ delivery to dead-letter exchange. RoutingKey={RoutingKey}, Attempt={Attempt}.",
+                delivery.RoutingKey,
+                attempt);
+
             await RepublishAsync(
                     channel,
                     exchange: configuration.DeadLetter.Exchange,
@@ -116,11 +147,18 @@ internal sealed class RabbitMqInboundConsumer(
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await channel.BasicAckAsync(delivery.DeliveryTag, multiple: false, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return;
         }
 
-        await channel.BasicRejectAsync(delivery.DeliveryTag, requeue: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+        logger?.LogWarning(
+            exception,
+            "Rejecting RabbitMQ delivery without requeue. RoutingKey={RoutingKey}, Attempt={Attempt}.",
+            delivery.RoutingKey,
+            attempt);
+        await channel.BasicRejectAsync(delivery.DeliveryTag, requeue: false, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task RepublishAsync(
@@ -164,7 +202,8 @@ internal sealed class RabbitMqInboundConsumer(
 
     private static int GetDeliveryAttempt(IReadOnlyDictionary<string, string> headers)
     {
-        return headers.TryGetValue(DeliveryAttemptHeader, out var value) && int.TryParse(value, out var attempt) && attempt > 0
+        return headers.TryGetValue(DeliveryAttemptHeader, out var value) && int.TryParse(value, out var attempt) &&
+               attempt > 0
             ? attempt
             : 1;
     }

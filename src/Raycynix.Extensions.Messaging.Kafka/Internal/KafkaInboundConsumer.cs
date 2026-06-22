@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Constants;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
@@ -16,7 +17,8 @@ internal sealed class KafkaInboundConsumer(
     IKafkaConsumer consumer,
     ITransportMessagePublisher transportPublisher,
     KafkaMessagingConfiguration configuration,
-    IServiceScopeFactory serviceScopeFactory) : BackgroundService
+    IServiceScopeFactory serviceScopeFactory,
+    ILogger<KafkaInboundConsumer>? logger = null) : BackgroundService
 {
     private const string DeliveryAttemptHeader = "X-Delivery-Attempt";
     private const string ErrorHeader = "X-Processing-Error";
@@ -27,9 +29,12 @@ internal sealed class KafkaInboundConsumer(
     {
         if (!configuration.Consumer.Enabled)
         {
+            logger?.LogDebug("Kafka inbound consumer is disabled.");
             return;
         }
 
+        logger?.LogInformation("Starting Kafka inbound consumer. TopicCount={TopicCount}.",
+            configuration.Consumer.Topics.Count());
         consumer.Subscribe(configuration.Consumer.Topics);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -45,11 +50,17 @@ internal sealed class KafkaInboundConsumer(
             {
                 await using var scope = serviceScopeFactory.CreateAsyncScope();
                 var processor = scope.ServiceProvider.GetRequiredService<IIncomingMessageProcessor>();
+                logger?.LogDebug(
+                    "Processing Kafka message. Topic={Topic}, HeaderCount={HeaderCount}.",
+                    message.Topic,
+                    message.Headers.Count);
                 await processor.ProcessAsync(CreateIncomingMessage(message), stoppingToken).ConfigureAwait(false);
                 consumer.Commit(message);
+                logger?.LogDebug("Kafka message committed. Topic={Topic}.", message.Topic);
             }
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             {
+                logger?.LogWarning(exception, "Kafka message processing failed. Topic={Topic}.", message.Topic);
                 await HandleFailureAsync(message, exception, CancellationToken.None).ConfigureAwait(false);
                 consumer.Commit(message);
             }
@@ -84,6 +95,12 @@ internal sealed class KafkaInboundConsumer(
 
         if (configuration.Retry.Enabled && attempt < configuration.Retry.MaxAttempts)
         {
+            logger?.LogDebug(
+                "Republishing Kafka message for retry. Topic={Topic}, Attempt={Attempt}, MaxAttempts={MaxAttempts}.",
+                message.Topic,
+                attempt + 1,
+                configuration.Retry.MaxAttempts);
+
             if (configuration.Retry.DelayMilliseconds > 0)
             {
                 await Task.Delay(configuration.Retry.DelayMilliseconds, cancellationToken).ConfigureAwait(false);
@@ -98,6 +115,13 @@ internal sealed class KafkaInboundConsumer(
 
         if (configuration.DeadLetter.Enabled)
         {
+            logger?.LogWarning(
+                exception,
+                "Publishing Kafka message to dead-letter topic. Topic={Topic}, DeadLetterTopic={DeadLetterTopic}, Attempt={Attempt}.",
+                message.Topic,
+                configuration.DeadLetter.Topic,
+                attempt);
+
             await transportPublisher.PublishAsync(
                     CreateRetryMessage(message, configuration.DeadLetter.Topic, attempt, exception),
                     cancellationToken)
@@ -134,7 +158,8 @@ internal sealed class KafkaInboundConsumer(
 
     private static int GetDeliveryAttempt(IReadOnlyDictionary<string, string> headers)
     {
-        return headers.TryGetValue(DeliveryAttemptHeader, out var value) && int.TryParse(value, out var attempt) && attempt > 0
+        return headers.TryGetValue(DeliveryAttemptHeader, out var value) && int.TryParse(value, out var attempt) &&
+               attempt > 0
             ? attempt
             : 1;
     }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Database.Configurations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Messaging.Database.Implementations;
 /// </summary>
 public sealed class MessagingDatabaseCleanupProcessor(
     RaycynixDatabaseContext databaseContext,
-    MessagingDatabasePersistenceConfiguration configuration)
+    MessagingDatabasePersistenceConfiguration configuration,
+    ILogger<MessagingDatabaseCleanupProcessor>? logger = null)
 {
     /// <summary>
     /// Runs a single cleanup cycle for expired inbox and outbox rows.
@@ -23,6 +25,11 @@ public sealed class MessagingDatabaseCleanupProcessor(
         var now = DateTimeOffset.UtcNow;
         var deletedInbox = await CleanupInboxAsync(now, cancellationToken).ConfigureAwait(false);
         var deletedOutbox = await CleanupOutboxAsync(now, cancellationToken).ConfigureAwait(false);
+        logger?.LogDebug(
+            "Messaging database cleanup processed expired rows. DeletedInboxCount={DeletedInboxCount}, DeletedOutboxCount={DeletedOutboxCount}.",
+            deletedInbox,
+            deletedOutbox);
+
         return deletedInbox + deletedOutbox;
     }
 

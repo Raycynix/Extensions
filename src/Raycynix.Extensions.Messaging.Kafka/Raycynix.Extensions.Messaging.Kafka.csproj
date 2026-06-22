@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and adds optional Microsoft.Extensions.Logging diagnostics for Kafka transport operations.</PackageReleaseNotes>
 
         <Description>Kafka transport integration for Raycynix messaging with publisher registration, inbound consumer hosting, retry/dead-letter support, and configuration-based setup.</Description>
         <PackageTags>raycynix;messaging;kafka;events;producer;consumer;retry;dead-letter;configuration;dotnet</PackageTags>
@@ -13,14 +14,16 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="2.14.2" />
+        <PackageReference Include="Confluent.Kafka" Version="2.14.2"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj"/>
     </ItemGroup>
 
 </Project>

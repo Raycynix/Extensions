@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Implementations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Messaging.Kafka.Internal;
 /// </summary>
 internal sealed class KafkaMessagePublisher(
     IKafkaProducer producer,
-    MessageObservability observability) : ITransportMessagePublisher
+    MessageObservability observability,
+    ILogger<KafkaMessagePublisher>? logger = null) : ITransportMessagePublisher
 {
     /// <inheritdoc />
     public async ValueTask PublishAsync(SerializedMessage message, CancellationToken cancellationToken = default)
@@ -20,6 +22,11 @@ internal sealed class KafkaMessagePublisher(
 
         var format = message.Format.ToString().ToLowerInvariant();
         using var observation = observability.BeginPublish(format, message.Destination);
+        logger?.LogDebug(
+            "Publishing Kafka message. Topic={Topic}, Format={Format}, HeaderCount={HeaderCount}.",
+            message.Destination,
+            message.Format,
+            message.Headers.Count);
 
         try
         {
@@ -32,10 +39,12 @@ internal sealed class KafkaMessagePublisher(
 
             await producer.ProduceAsync(message.Destination, kafkaMessage, cancellationToken).ConfigureAwait(false);
             observability.RecordPublishSuccess(format, message.Destination);
+            logger?.LogDebug("Published Kafka message. Topic={Topic}.", message.Destination);
         }
-        catch
+        catch (Exception exception)
         {
             observability.RecordPublishFailure(format, message.Destination);
+            logger?.LogWarning(exception, "Kafka message publish failed. Topic={Topic}.", message.Destination);
             throw;
         }
     }

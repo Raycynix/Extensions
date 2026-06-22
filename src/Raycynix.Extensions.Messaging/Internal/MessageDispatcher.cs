@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -12,7 +13,8 @@ internal sealed class MessageDispatcher(
     MessagingConfiguration configuration,
     MessageObservability observability,
     IncomingSecurityContextAccessor securityContextAccessor,
-    IncomingSecurityContextFactory securityContextFactory) : IMessageDispatcher
+    IncomingSecurityContextFactory securityContextFactory,
+    ILogger<MessageDispatcher>? logger = null) : IMessageDispatcher
 {
     /// <inheritdoc />
     public async ValueTask<MessageDispatchResult> DispatchAsync<TMessage>(
@@ -33,6 +35,11 @@ internal sealed class MessageDispatcher(
         };
 
         using var observation = observability.BeginDispatch(context.MessageType, context.Destination);
+        logger?.LogDebug(
+            "Dispatching message. MessageType={MessageType}, Destination={Destination}, HeaderCount={HeaderCount}.",
+            context.MessageType.FullName,
+            context.Destination,
+            envelope.Headers.Count);
 
         var attemptCount = 0;
 
@@ -45,6 +52,12 @@ internal sealed class MessageDispatcher(
             {
                 var handlerCount = await DispatchSingleAttemptAsync(envelope, cancellationToken).ConfigureAwait(false);
                 observability.RecordDispatchSuccess(context.MessageType, context.Destination);
+                logger?.LogDebug(
+                    "Message dispatched. MessageType={MessageType}, Destination={Destination}, HandlerCount={HandlerCount}, AttemptCount={AttemptCount}.",
+                    context.MessageType.FullName,
+                    context.Destination,
+                    handlerCount,
+                    attemptCount);
 
                 return new MessageDispatchResult
                 {
@@ -56,14 +69,28 @@ internal sealed class MessageDispatcher(
             catch (Exception exception) when (ShouldRetry(exception, attemptCount, cancellationToken))
             {
                 var delay = GetRetryDelay(attemptCount);
+                logger?.LogWarning(
+                    exception,
+                    "Message dispatch failed transiently. MessageType={MessageType}, Destination={Destination}, Attempt={Attempt}, RetryDelayMilliseconds={RetryDelayMilliseconds}.",
+                    context.MessageType.FullName,
+                    context.Destination,
+                    attemptCount,
+                    delay.TotalMilliseconds);
+
                 if (delay > TimeSpan.Zero)
                 {
                     await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch
+            catch (Exception exception)
             {
                 observability.RecordDispatchFailure(context.MessageType, context.Destination);
+                logger?.LogError(
+                    exception,
+                    "Message dispatch failed. MessageType={MessageType}, Destination={Destination}, AttemptCount={AttemptCount}.",
+                    context.MessageType.FullName,
+                    context.Destination,
+                    attemptCount);
                 throw;
             }
         }
