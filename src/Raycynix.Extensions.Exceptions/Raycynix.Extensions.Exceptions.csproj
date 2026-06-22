@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and uses optional Microsoft.Extensions.Logging diagnostics.</PackageReleaseNotes>
 
         <Description>Core exception handling, mapping, masking, retry execution, and background task failure helpers for Raycynix applications.</Description>
         <PackageTags>raycynix;exceptions;error-handling;retry;mapping;masking;background;dotnet</PackageTags>
@@ -13,12 +14,16 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj"/>
         <ProjectReference Include="..\Raycynix.Extensions.Exceptions.Abstractions\Raycynix.Extensions.Exceptions.Abstractions.csproj"/>
-        <ProjectReference Include="..\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
     </ItemGroup>
 
 </Project>
