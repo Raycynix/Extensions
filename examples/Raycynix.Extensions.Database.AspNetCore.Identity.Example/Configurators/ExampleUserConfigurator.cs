@@ -4,10 +4,15 @@ using Raycynix.Extensions.Database.Implementations;
 
 namespace Raycynix.Extensions.Database.AspNetCore.Identity.Example.Configurators;
 
+/// <summary>
+/// Configures the example identity user entity for the shared Raycynix database model.
+/// </summary>
 public class ExampleUserConfigurator : GenericConfigurator<ExampleUser>
 {
+    /// <inheritdoc />
     public override Type[] DependsOn => [];
 
+    /// <inheritdoc />
     public override void Configure(ModelBuilder modelBuilder)
     {
         base.Configure(modelBuilder);
@@ -16,12 +21,13 @@ public class ExampleUserConfigurator : GenericConfigurator<ExampleUser>
 
         entity.Property(current => current.UserName).HasMaxLength(200)
             .IsRequired();
-        
+
         entity.Property(current => current.Email).HasMaxLength(200);
         entity.Property(current => current.CreatedAt).HasDefaultValue(DateTime.UtcNow).IsRequired();
         entity.Property(current => current.LastLoginAt);
     }
 
+    /// <inheritdoc />
     public override void Seed(ModelBuilder modelBuilder)
     {
         base.Seed(modelBuilder);
