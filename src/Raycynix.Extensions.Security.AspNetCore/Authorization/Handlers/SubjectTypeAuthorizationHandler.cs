@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Requirements;
 
@@ -10,14 +11,19 @@ namespace Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 public sealed class SubjectTypeAuthorizationHandler : AuthorizationHandler<SubjectTypeRequirement>
 {
     private readonly ISecurityContext _securityContext;
+    private readonly ILogger<SubjectTypeAuthorizationHandler>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubjectTypeAuthorizationHandler"/> class.
     /// </summary>
     /// <param name="securityContext">The current request security context.</param>
-    public SubjectTypeAuthorizationHandler(ISecurityContext securityContext)
+    /// <param name="logger">The optional logger used for authorization diagnostics.</param>
+    public SubjectTypeAuthorizationHandler(
+        ISecurityContext securityContext,
+        ILogger<SubjectTypeAuthorizationHandler>? logger = null)
     {
         _securityContext = securityContext;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -25,7 +31,14 @@ public sealed class SubjectTypeAuthorizationHandler : AuthorizationHandler<Subje
         AuthorizationHandlerContext context,
         SubjectTypeRequirement requirement)
     {
-        if (_securityContext.SubjectType == requirement.SubjectType)
+        var succeeded = _securityContext.SubjectType == requirement.SubjectType;
+        _logger?.LogDebug(
+            "Evaluated subject-type requirement. Succeeded={Succeeded}, IsAuthenticated={IsAuthenticated}, SubjectType={SubjectType}.",
+            succeeded,
+            _securityContext.IsAuthenticated,
+            _securityContext.SubjectType);
+
+        if (succeeded)
         {
             context.Succeed(requirement);
         }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Records;
@@ -10,17 +11,25 @@ namespace Raycynix.Extensions.Secrets.Implementations;
 public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
 {
     private readonly IReadOnlyCollection<ISecretProvider> _providers;
+    private readonly ILogger<CompositeSecretResolver>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CompositeSecretResolver"/> class.
     /// </summary>
     /// <param name="providers">The ordered list of secret providers to query.</param>
     /// <param name="options">The secret-resolution options.</param>
+    /// <param name="logger">The optional logger used for secret-resolution diagnostics.</param>
     public CompositeSecretResolver(
         IEnumerable<ISecretProvider> providers,
-        IOptions<SecretOptions>? options = null)
+        IOptions<SecretOptions>? options = null,
+        ILogger<CompositeSecretResolver>? logger = null)
     {
         _providers = OrderProviders(providers, options?.Value).ToArray();
+        _logger = logger;
+
+        _logger?.LogDebug(
+            "Initialized composite secret resolver. ProviderCount={ProviderCount}.",
+            _providers.Count);
     }
 
     /// <inheritdoc />
@@ -55,27 +64,45 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
+        _logger?.LogDebug(
+            "Starting secret resolution. ProviderCount={ProviderCount}.",
+            _providers.Count);
+
         var attempts = new List<SecretResolutionAttempt>(_providers.Count);
         foreach (var provider in _providers)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var providerName = provider.GetType().Name;
+            _logger?.LogDebug(
+                "Trying secret provider. ProviderName={ProviderName}.",
+                providerName);
+
             var value = await provider.GetSecretAsync(key, cancellationToken);
             var succeeded = !string.IsNullOrWhiteSpace(value);
             attempts.Add(new SecretResolutionAttempt(
-                ProviderName: provider.GetType().Name,
+                ProviderName: providerName,
                 Succeeded: succeeded));
 
             if (succeeded)
             {
+                _logger?.LogDebug(
+                    "Secret resolved by provider. ProviderName={ProviderName}, AttemptCount={AttemptCount}.",
+                    providerName,
+                    attempts.Count);
+
                 return new SecretResolutionDiagnostics(
                     new SecretResolutionResult(
                         Key: key,
                         Value: value,
-                        ProviderName: provider.GetType().Name),
+                        ProviderName: providerName),
                     attempts);
             }
         }
+
+        _logger?.LogWarning(
+            "Secret resolution failed. AttemptCount={AttemptCount}.",
+            attempts.Count);
 
         return new SecretResolutionDiagnostics(
             new SecretResolutionResult(key, Value: null, ProviderName: null),

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Requirements;
 
@@ -10,14 +11,19 @@ namespace Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 public sealed class RoleAuthorizationHandler : AuthorizationHandler<RoleRequirement>
 {
     private readonly ISecurityContext _securityContext;
+    private readonly ILogger<RoleAuthorizationHandler>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RoleAuthorizationHandler"/> class.
     /// </summary>
     /// <param name="securityContext">The current request security context.</param>
-    public RoleAuthorizationHandler(ISecurityContext securityContext)
+    /// <param name="logger">The optional logger used for authorization diagnostics.</param>
+    public RoleAuthorizationHandler(
+        ISecurityContext securityContext,
+        ILogger<RoleAuthorizationHandler>? logger = null)
     {
         _securityContext = securityContext;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -25,7 +31,14 @@ public sealed class RoleAuthorizationHandler : AuthorizationHandler<RoleRequirem
         AuthorizationHandlerContext context,
         RoleRequirement requirement)
     {
-        if (_securityContext.Roles.Contains(requirement.Role, StringComparer.OrdinalIgnoreCase))
+        var succeeded = _securityContext.Roles.Contains(requirement.Role, StringComparer.OrdinalIgnoreCase);
+        _logger?.LogDebug(
+            "Evaluated role requirement. Succeeded={Succeeded}, IsAuthenticated={IsAuthenticated}, RoleCount={RoleCount}.",
+            succeeded,
+            _securityContext.IsAuthenticated,
+            _securityContext.Roles.Count);
+
+        if (succeeded)
         {
             context.Succeed(requirement);
         }

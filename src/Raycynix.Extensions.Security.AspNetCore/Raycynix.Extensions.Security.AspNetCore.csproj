@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.2</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added an ASP.NET Core example with JWT registration, protected endpoints, request security context mapping, and dynamic authorization policy usage.</PackageReleaseNotes>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and adds optional Microsoft.Extensions.Logging diagnostics for authentication and authorization flows.</PackageReleaseNotes>
 
         <Description>ASP.NET Core JWT authentication, dynamic authorization policies, shared authorization-attribute integration, and request security context wiring for Raycynix applications.</Description>
         <PackageTags>raycynix;security;aspnetcore;jwt;authorization;authentication;policies;claims;web;dotnet</PackageTags>
@@ -14,19 +14,20 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Security\Raycynix.Extensions.Security.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Security\Raycynix.Extensions.Security.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
-        <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.19.1" />
-        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.1" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.19.1" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.19.1" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.19.1"/>
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.1"/>
+        <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.19.1"/>
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.19.1"/>
     </ItemGroup>
 
 </Project>

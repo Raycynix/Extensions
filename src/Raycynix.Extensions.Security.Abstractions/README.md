@@ -42,6 +42,10 @@ The secret model assumes:
 
 Permissions should use a stable `resource.action` format, for example `users.read` or `orders.approve`.
 
+## Logging
+
+This package contains contracts, attributes, constants, records, and enums only. Runtime diagnostics belong to implementation packages, so this package does not add a logging dependency.
+
 ## Usage
 
 ```csharp

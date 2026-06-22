@@ -91,3 +91,9 @@ The package expects JWT access tokens with:
 `subject_type` is mapped to `SecuritySubjectType`, allowing both `User` and `Service` request subjects to use the same `ISecurityContext`.
 
 Authentication and authorization failures return safe JSON responses without exposing internal policy details.
+
+## Logging
+
+The ASP.NET Core package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover JWT challenges, request security context mapping, dynamic policy resolution, authorization requirement outcomes, and generated 401/403 responses. Access tokens, subject identifiers, claim values, role names, permission names, and raw policy names are not logged.
