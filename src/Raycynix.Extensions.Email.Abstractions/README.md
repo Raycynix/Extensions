@@ -31,6 +31,10 @@ public interface IEmailProviderRegistration
 
 `EmailBody` is created through factory methods so it always contains sendable content. Sender implementations should call `EmailMessage.Validate()` before mapping a message to provider-specific APIs.
 
+## Logging
+
+This package contains contracts, models, and exceptions only. Runtime diagnostics belong to the provider packages, so this package does not add a logging dependency.
+
 ## Usage
 
 Libraries can depend on this package when they only need the sender contract and message models.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Starts unified versioning for Raycynix packages from this release.
+- Added optional Microsoft `ILogger<T>` diagnostics for email provider resolution.
+
 ## 2.0.0
 ### Added
 - Added shared Raycynix email registration infrastructure.

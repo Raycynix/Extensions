@@ -8,6 +8,7 @@ Shared email registration infrastructure for Raycynix applications.
 - `EmailConfiguration`
 - email provider resolution
 - email builder support for provider packages
+- optional Microsoft `ILogger<T>` diagnostics for provider resolution
 
 This package registers the shared email infrastructure. A provider package, such as `Raycynix.Extensions.Email.Smtp`, must be added to provide an `IEmailSender` implementation.
 
@@ -35,3 +36,9 @@ builder.Services
   }
 }
 ```
+
+## Logging
+
+The package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Provider resolution diagnostics include registration counts and provider selection flow only. Email addresses, subjects, bodies, and credentials are not logged.

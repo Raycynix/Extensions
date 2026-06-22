@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
-using Raycynix.Extensions.Logging.Abstractions;
 
 namespace Raycynix.Extensions.Email.Example;
 
@@ -18,17 +18,14 @@ internal sealed class EmailExampleWorker(
                       ?? new EmailExampleConfigurations();
         var message = CreateMessage(options);
 
-        logger.Information("Email example prepared message\n{Message}", new
-        {
-            To = string.Join(", ", message.To.Select(static recipient => recipient.Address)),
-            message.Subject,
-            HasHtml = !string.IsNullOrWhiteSpace(message.Body.Html),
-            Attachments = string.Join(", ", message.Attachments.Select(static attachment => attachment.FileName))
-        });
+        logger.LogInformation("Email example prepared message. ToCount={ToCount}, HasHtml={HasHtml}, AttachmentCount={AttachmentCount}.",
+            message.To.Count,
+            !string.IsNullOrWhiteSpace(message.Body.Html),
+            message.Attachments.Count);
 
         if (!options.Send)
         {
-            logger.Information("Email example finished in dry-run mode. Set EmailExample:Send to true to send.");
+            logger.LogInformation("Email example finished in dry-run mode. Set EmailExample:Send to true to send.");
             applicationLifetime.StopApplication();
             return;
         }
@@ -37,20 +34,17 @@ internal sealed class EmailExampleWorker(
 
         if (result.Succeeded)
         {
-            logger.Information("Email sent\n{Result}", new
-            {
+            logger.LogInformation(
+                "Email sent. Provider={Provider}, HasMessageId={HasMessageId}.",
                 result.Provider,
-                result.MessageId
-            });
+                !string.IsNullOrWhiteSpace(result.MessageId));
         }
         else
         {
-            logger.Warning("Email provider rejected the message\n{Result}", new
-            {
+            logger.LogWarning(
+                "Email provider rejected the message. Provider={Provider}, ErrorCode={ErrorCode}.",
                 result.Provider,
-                result.ErrorCode,
-                result.ErrorMessage
-            });
+                result.ErrorCode);
         }
 
         applicationLifetime.StopApplication();

@@ -18,8 +18,6 @@
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Email\Raycynix.Extensions.Email.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Email.Abstractions\Raycynix.Extensions.Email.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Email.Smtp\Raycynix.Extensions.Email.Smtp.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-        <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Secrets\Raycynix.Extensions.Secrets.csproj" />
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Security.Abstractions\Raycynix.Extensions.Security.Abstractions.csproj" />
     </ItemGroup>

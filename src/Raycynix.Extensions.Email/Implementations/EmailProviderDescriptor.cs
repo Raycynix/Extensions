@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Email.Implementations;
@@ -26,6 +27,11 @@ public sealed class EmailProviderDescriptor
     public static EmailProviderDescriptor Resolve(IServiceProvider serviceProvider)
     {
         var registrations = serviceProvider.GetServices<IEmailProviderRegistration>().ToArray();
+        var logger = serviceProvider.GetService<ILogger<EmailProviderDescriptor>>();
+
+        logger?.LogDebug(
+            "Found {ProviderCount} Raycynix email provider registration(s).",
+            registrations.Length);
 
         return registrations.Length switch
         {

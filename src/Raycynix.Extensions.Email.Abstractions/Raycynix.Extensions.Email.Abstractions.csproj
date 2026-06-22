@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.0.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added email sender, provider registration, builder, message, address, body, attachment, result, and exception abstractions.</PackageReleaseNotes>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
 
         <Description>Lightweight contracts and models for Raycynix email sender implementations, provider registration, message composition, attachments, and send results.</Description>
         <PackageTags>raycynix;email;abstractions;contracts;sender;provider;mail;smtp;dotnet</PackageTags>
