@@ -1,6 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
@@ -47,7 +47,7 @@ internal sealed class ObservabilityExampleWorker(
 
             using (durationHistogram.MeasureDuration("checkout.handle"))
             {
-                logger.Information("Handling checkout request correlationId:{CorrelationId}",
+                logger.LogInformation("Handling checkout request correlationId:{CorrelationId}",
                     operationContext.CorrelationId);
 
                 await Task.Delay(80, stoppingToken);
@@ -67,7 +67,7 @@ internal sealed class ObservabilityExampleWorker(
         }
 
         queueGauge.Set(0, "checkout");
-        logger.Information("Observability example finished");
+        logger.LogInformation("Observability example finished");
 
         applicationLifetime.StopApplication();
     }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Starts unified versioning for Raycynix packages from this release.
+
 ## 2.0.0
 ### Added
 - Added email sender, provider registration, and builder contracts.

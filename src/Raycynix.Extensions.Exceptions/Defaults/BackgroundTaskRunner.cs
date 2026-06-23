@@ -13,7 +13,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 public class BackgroundTaskRunner(
     IRetryExecutor retryExecutor,
     ITransientExceptionClassifier transientExceptionClassifier,
-    ILogger<BackgroundTaskRunner> logger) : IBackgroundTaskRunner
+    ILogger<BackgroundTaskRunner>? logger = null) : IBackgroundTaskRunner
 {
     private static readonly RetryExecutionOptions _defaultRetryOptions = new()
     {
@@ -58,12 +58,12 @@ public class BackgroundTaskRunner(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            logger.LogInformation("Background operation {OperationName} was canceled.", operationName);
+            logger?.LogInformation("Background operation {OperationName} was canceled.", operationName);
             throw;
         }
         catch (Exception ex) when (transientExceptionClassifier.IsTransient(ex))
         {
-            logger.LogError(ex,
+            logger?.LogError(ex,
                 "Background operation {OperationName} failed due to a transient error after retries were exhausted.",
                 operationName);
 
@@ -73,7 +73,7 @@ public class BackgroundTaskRunner(
         {
             var executionContext = ErrorExecutionContextAccessor.Current ?? BuildExecutionContext(operationName, isTransient: false);
 
-            logger.LogError(ex,
+            logger?.LogError(ex,
                 "Background operation {OperationName} failed with a non-transient error.",
                 operationName);
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+- Added optional `Microsoft.Extensions.Logging.ILogger<T>` diagnostics for database registration, initialization, and model configuration.
+- Added optional diagnostics for active database provider resolution.
+
+### Changed
+- Removed the automatic `AddRaycynixLogging(...)` registration from database setup so applications can choose any Microsoft-compatible logging provider or run without one.
+
 ## 2.1.0
 ### Added
 - Added explicit model and migrations assembly registration overloads.

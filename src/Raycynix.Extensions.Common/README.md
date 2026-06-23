@@ -18,3 +18,5 @@ var serviceVersion = AssemblyHelper.CurrentVersion();
 
 using var _ = NoopDisposable.Instance;
 ```
+
+`OperationContext.CorrelationId` and the fallback `TraceId` are generated lazily and remain stable for the same context instance. When `Activity.Current` exists, `TraceId` follows the active diagnostic activity.

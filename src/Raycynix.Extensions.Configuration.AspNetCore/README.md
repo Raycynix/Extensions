@@ -10,6 +10,7 @@
 - `[FeatureGate(...)]`
 - `RequireFeature(...)`
 - `RequireAnyFeature(...)`
+- optional Microsoft.Extensions.Logging diagnostics for feature gate middleware
 
 ## Usage
 
@@ -58,3 +59,21 @@ public sealed class DashboardController : ControllerBase
 ```
 
 When a required feature flag is disabled, the request returns `404 Not Found` by default. When a gated endpoint is reached without a registered `IFeatureFlagAccessor`, the middleware also returns `404 Not Found` by default. Both status codes can be changed through `AddRaycynixFeatureGateOptions(...)`.
+
+## Logging
+
+The feature gate middleware logs through the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger injection is optional, so the middleware can run without registering a logging provider. It works with any Microsoft-compatible logging provider and does not require `Raycynix.Extensions.Logging`.
+
+The middleware writes detailed gate evaluation flow at `Debug`, missing feature flag accessor diagnostics at `Warning`, and blocked feature-gated endpoints at `Information`.
+
+Enable Debug logs when troubleshooting feature-gated endpoints:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Raycynix.Extensions.Configuration.AspNetCore": "Debug"
+    }
+  }
+}
+```

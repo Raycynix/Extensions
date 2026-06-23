@@ -12,7 +12,7 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// </summary>
 public class RetryExecutor(
     ITransientExceptionClassifier transientExceptionClassifier,
-    ILogger<RetryExecutor> logger) : IRetryExecutor
+    ILogger<RetryExecutor>? logger = null) : IRetryExecutor
 {
     private static readonly Random _sharedRandom = new();
 
@@ -77,7 +77,7 @@ public class RetryExecutor(
                 var delay = CalculateDelay(options, attempt);
                 SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
 
-                logger.LogWarning(ex,
+                logger?.LogWarning(ex,
                     "Transient failure during {OperationName}. Attempt {Attempt}/{MaxAttempts}. Retrying in {DelayMs} ms.",
                     actualOperationName,
                     attempt,
@@ -93,7 +93,7 @@ public class RetryExecutor(
                 var executionContext = BuildExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
                 SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
 
-                logger.LogError(ex,
+                logger?.LogError(ex,
                     "Transient failure during {OperationName}. Retry limit reached after {Attempts} attempts.",
                     actualOperationName,
                     attempt);

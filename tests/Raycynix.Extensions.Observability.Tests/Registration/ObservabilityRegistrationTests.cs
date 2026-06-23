@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Logging.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
@@ -14,7 +13,7 @@ public class ObservabilityRegistrationTests
 {
     /// <summary>
     /// Verifies that the core observability extension registers metrics, tracing,
-    /// the logger abstraction descriptor, and the ambient operation context.
+    /// and the ambient operation context.
     /// </summary>
     [Fact]
     public void AddRaycynixObservability_ShouldRegisterCoreObservabilityServices()
@@ -29,13 +28,12 @@ public class ObservabilityRegistrationTests
         var metrics = scope.ServiceProvider.GetRequiredService<IMetricsService>();
         var tracer = scope.ServiceProvider.GetRequiredService<ITracer>();
         var operationContext = scope.ServiceProvider.GetRequiredService<IOperationContext>();
-        var loggerDescriptor = services.SingleOrDefault(x => x.ServiceType == typeof(ILogger<>));
 
         metrics.Should().NotBeNull();
         tracer.Should().NotBeNull();
         operationContext.Should().BeOfType<OperationContext>();
-        loggerDescriptor.Should().NotBeNull();
-        loggerDescriptor.ImplementationType.Should().NotBeNull();
+        services.Should().NotContain(service =>
+            service.ServiceType.FullName == "Raycynix.Extensions.Logging.Abstractions.ILogger`1");
     }
 
     /// <summary>

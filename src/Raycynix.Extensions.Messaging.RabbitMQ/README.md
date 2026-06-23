@@ -83,3 +83,9 @@ Published AMQP properties include:
 - `CorrelationId`
 - `ContentType`
 - contract/version headers from the base messaging layer
+
+## Logging
+
+The RabbitMQ transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover publish attempts, inbound consumer startup, delivery processing, acknowledgements, retry republishes, dead-letter republishes, and rejects. Message payloads, header values, credentials, and connection strings are not logged.

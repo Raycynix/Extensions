@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>Added MySQL provider registration with provider-specific validation, connection-string composition, retries, command timeout, pooling options, and migrations assembly support.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for MySQL provider configuration.</PackageReleaseNotes>
 
         <Description>MySQL provider integration for Raycynix.Extensions.Database with AddMySql registration, provider-specific validation, connection-string composition, and EF Core UseMySQL configuration.</Description>
         <PackageTags>raycynix;database;mysql;provider;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet</PackageTags>
@@ -19,17 +19,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.8"/>
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8"/>
-        <PackageReference Include="System.Security.Permissions" Version="10.0.8"/>
-        <PackageReference Include="ZstdSharp.Port" Version="0.8.8" />
-        <PackageReference Include="Google.Protobuf" Version="3.35.0" />
-        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.9"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.9"/>
+        <PackageReference Include="System.Security.Permissions" Version="10.0.9"/>
+        <PackageReference Include="ZstdSharp.Port" Version="0.8.8"/>
+        <PackageReference Include="Google.Protobuf" Version="3.35.1"/>
+        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
-        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj"/>
     </ItemGroup>
-
+    
 </Project>

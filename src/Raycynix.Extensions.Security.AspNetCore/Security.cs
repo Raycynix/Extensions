@@ -1,13 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -59,8 +59,10 @@ public static class Security
         {
             options.Conventions.Add(new RaycynixAuthorizationApplicationModelConvention());
         });
-        services.Replace(ServiceDescriptor.Singleton<IAuthorizationPolicyProvider, RaycynixAuthorizationPolicyProvider>());
-        services.Replace(ServiceDescriptor.Singleton<IAuthorizationMiddlewareResultHandler, RaycynixAuthorizationMiddlewareResultHandler>());
+        services.Replace(
+            ServiceDescriptor.Singleton<IAuthorizationPolicyProvider, RaycynixAuthorizationPolicyProvider>());
+        services.Replace(ServiceDescriptor
+            .Singleton<IAuthorizationMiddlewareResultHandler, RaycynixAuthorizationMiddlewareResultHandler>());
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, AllPermissionsAuthorizationHandler>();
@@ -72,7 +74,16 @@ public static class Security
         services.Replace(ServiceDescriptor.Scoped<ISecurityContext>(serviceProvider =>
         {
             var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-            return HttpSecurityContextFactory.Create(httpContextAccessor.HttpContext?.User);
+            var securityContext = HttpSecurityContextFactory.Create(httpContextAccessor.HttpContext?.User);
+            var logger = serviceProvider.GetService<ILogger<ISecurityContext>>();
+            logger?.LogDebug(
+                "Resolved HTTP security context. IsAuthenticated={IsAuthenticated}, SubjectType={SubjectType}, RoleCount={RoleCount}, PermissionCount={PermissionCount}.",
+                securityContext.IsAuthenticated,
+                securityContext.SubjectType,
+                securityContext.Roles.Count,
+                securityContext.Permissions.Count);
+
+            return securityContext;
         }));
 
         return services;
@@ -103,6 +114,13 @@ public static class Security
             OnChallenge = async context =>
             {
                 context.HandleResponse();
+                var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()
+                    ?.CreateLogger("Raycynix.Extensions.Security.AspNetCore.JwtBearer");
+
+                logger?.LogWarning(
+                    "JWT authentication challenge handled. Path={Path}, TraceId={TraceId}.",
+                    context.HttpContext.Request.Path.Value,
+                    context.HttpContext.TraceIdentifier);
 
                 if (!context.Response.HasStarted)
                 {

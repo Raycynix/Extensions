@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Hosting;
@@ -19,9 +20,23 @@ public static class DatabaseInitialization
         CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
+        var logger = scope.ServiceProvider.GetService<ILogger<IDatabaseInitializer>>();
         var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
 
-        await initializer.InitializeAsync(cancellationToken);
+        logger?.LogInformation("Starting Raycynix database initialization from service provider.");
+
+        try
+        {
+            await initializer.InitializeAsync(cancellationToken);
+            logger?.LogInformation("Raycynix database initialization from service provider completed.");
+        }
+        catch (Exception exception)
+        {
+            logger?.LogError(
+                exception,
+                "Raycynix database initialization from service provider failed.");
+            throw;
+        }
     }
 
     /// <summary>
@@ -33,6 +48,9 @@ public static class DatabaseInitialization
         this IHost host,
         CancellationToken cancellationToken = default)
     {
+        var logger = host.Services.GetService<ILogger<IHost>>();
+        logger?.LogDebug("Starting Raycynix database initialization from host services.");
+
         return host.Services.InitializeRaycynixDatabaseAsync(cancellationToken);
     }
 }

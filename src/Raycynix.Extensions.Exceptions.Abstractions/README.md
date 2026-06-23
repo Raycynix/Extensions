@@ -13,6 +13,10 @@
 
 This package lets other packages depend on Raycynix exception contracts without taking a dependency on the full implementation package.
 
+## Logging
+
+This package contains contracts, options, and shared models only. Runtime diagnostics belong to implementation packages, so this package does not add a logging dependency.
+
 ## Example
 
 Libraries can depend only on abstractions when they need retry or masking contracts:

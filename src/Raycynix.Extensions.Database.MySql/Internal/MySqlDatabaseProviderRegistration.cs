@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Database.MySql.Internal;
 /// <summary>
 /// Implements MySQL-specific connection and EF Core configuration for the shared database context.
 /// </summary>
-internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegistration
+internal sealed class MySqlDatabaseProviderRegistration(
+    ILogger<MySqlDatabaseProviderRegistration>? logger = null) : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
     public string ProviderName => "mysql";
@@ -21,6 +23,7 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Using configured raw MySQL connection string.");
             return configuration.ConnectionString;
         }
 
@@ -41,6 +44,12 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
             AllowUserVariables = settings?.AllowUserVariables ?? true,
             Pooling = settings?.Pooling ?? true
         };
+
+        logger?.LogDebug(
+            "Resolved MySQL connection string from structured configuration. Pooling: {Pooling}, AllowUserVariables: {AllowUserVariables}, CommandTimeoutConfigured: {CommandTimeoutConfigured}.",
+            builder.Pooling,
+            builder.AllowUserVariables,
+            settings?.CommandTimeoutSeconds is not null);
 
         return builder.ConnectionString;
     }
@@ -71,6 +80,12 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
                 mySqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+
+        logger?.LogDebug(
+            "Configured EF Core MySQL provider. Migrations assembly: {MigrationsAssembly}, RetryCount: {RetryCount}, RetryDelaySeconds: {RetryDelaySeconds}.",
+            migrationsAssembly.GetName().Name,
+            configuration.RetryCount,
+            configuration.RetryDelaySeconds);
     }
 
     /// <inheritdoc />
@@ -78,6 +93,7 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Skipping structured MySQL validation because a raw connection string is configured.");
             return;
         }
 
@@ -98,5 +114,7 @@ internal sealed class MySqlDatabaseProviderRegistration : IDatabaseProviderRegis
         {
             throw new InvalidOperationException("MySQL connection requires a username.");
         }
+
+        logger?.LogDebug("MySQL structured connection configuration validated.");
     }
 }

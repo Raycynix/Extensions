@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -27,19 +28,35 @@ public sealed class DatabaseProviderDescriptor
     /// <exception cref="InvalidOperationException">Thrown when more than one database provider is registered.</exception>
     public static DatabaseProviderDescriptor Resolve(IServiceProvider serviceProvider)
     {
+        var logger = serviceProvider.GetService<ILogger<DatabaseProviderDescriptor>>();
         var registrations = serviceProvider.GetServices<IDatabaseProviderRegistration>().ToArray();
+
+        logger?.LogDebug(
+            "Resolving database provider. Registered provider count: {ProviderCount}.",
+            registrations.Length);
 
         return registrations.Length switch
         {
-            1 => new DatabaseProviderDescriptor
-            {
-                ProviderName = registrations[0].ProviderName,
-                Registration = registrations[0]
-            },
+            1 => Create(registrations[0], logger),
             0 => throw new NotSupportedException(
                 "No database provider is registered. Add exactly one matching provider package, for example AddSqlite(), AddPostgreSql(), AddMsSql(), or AddMySql()."),
             _ => throw new InvalidOperationException(
                 $"Multiple database providers are registered ({string.Join(", ", registrations.Select(static registration => registration.ProviderName))}). Register exactly one database provider package.")
+        };
+    }
+
+    private static DatabaseProviderDescriptor Create(
+        IDatabaseProviderRegistration registration,
+        ILogger<DatabaseProviderDescriptor>? logger)
+    {
+        logger?.LogDebug(
+            "Resolved active database provider {ProviderName}.",
+            registration.ProviderName);
+
+        return new DatabaseProviderDescriptor
+            {
+                ProviderName = registration.ProviderName,
+                Registration = registration
         };
     }
 }

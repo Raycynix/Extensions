@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.0.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added MailKit-based SMTP email provider integration for Raycynix.Extensions.Email.</PackageReleaseNotes>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and adds optional Microsoft.Extensions.Logging diagnostics for SMTP delivery phases.</PackageReleaseNotes>
 
         <Description>MailKit-based SMTP provider integration for Raycynix email, including SMTP configuration binding, validation, and message delivery.</Description>
         <PackageTags>raycynix;email;smtp;mail;sender;provider;dotnet</PackageTags>
@@ -26,5 +26,6 @@
 
     <ItemGroup>
         <PackageReference Include="MailKit" Version="4.17.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
     </ItemGroup>
 </Project>

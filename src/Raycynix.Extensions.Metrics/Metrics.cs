@@ -14,47 +14,46 @@ namespace Raycynix.Extensions.Metrics;
 /// </summary>
 public static class Metrics
 {
-    /// <summary>
-    /// Registers the metrics service together with the typed metrics configuration model.
-    /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration source.</param>
-    /// <param name="setup">An optional callback for adjusting the bound metrics configuration.</param>
-    /// <param name="healthSetup">An optional callback for configuring health checks.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixMetrics(
-        this IServiceCollection services,
-        Microsoft.Extensions.Configuration.IConfiguration configuration,
-        Action<MetricsConfiguration>? setup = null,
-        Action<IHealthChecksBuilder>? healthSetup = null)
+    extension(IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
+        /// <summary>
+        /// Registers the metrics service together with the typed metrics configuration model.
+        /// </summary>
+        /// <param name="configuration">The application configuration source.</param>
+        /// <param name="setup">An optional callback for adjusting the bound metrics configuration.</param>
+        /// <param name="healthSetup">An optional callback for configuring health checks.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixMetrics(Microsoft.Extensions.Configuration.IConfiguration configuration,
+            Action<MetricsConfiguration>? setup = null,
+            Action<IHealthChecksBuilder>? healthSetup = null)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddRaycynixConfiguration<MetricsConfiguration>(configuration, configurePostBind: setup);
-        services.AddRaycynixConfigurationValidator<MetricsConfiguration, MetricsConfigurationValidator>();
-        services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<MetricsConfiguration>>().Current);
+            services.AddRaycynixConfiguration<MetricsConfiguration>(configuration, configurePostBind: setup);
+            services.AddRaycynixConfigurationValidator<MetricsConfiguration, MetricsConfigurationValidator>();
+            services.AddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IConfigurationAccessor<MetricsConfiguration>>().Current);
 
-        return services.AddRaycynixMetrics(healthSetup);
-    }
+            return services.AddRaycynixMetrics(healthSetup);
+        }
 
-    /// <summary>
-    /// Registers the metrics service and optional health checks.
-    /// </summary>
-    /// <param name="services">The service collection to update.</param>
-    /// <param name="healthSetup">An optional callback for configuring health checks.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixMetrics(this IServiceCollection services,
-        Action<IHealthChecksBuilder>? healthSetup = null)
-    {
-        ArgumentNullException.ThrowIfNull(services);
+        /// <summary>
+        /// Registers the metrics service and optional health checks.
+        /// </summary>
+        /// <param name="healthSetup">An optional callback for configuring health checks.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+        public IServiceCollection AddRaycynixMetrics(Action<IHealthChecksBuilder>? healthSetup = null)
+        {
+            ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<IMetricsService, MetricsService>();
+            services.TryAddSingleton<IMetricsService, MetricsService>();
 
-        var healthBuilder = services.AddHealthChecks();
-        healthSetup?.Invoke(healthBuilder);
-        
-        return services;
+            var healthBuilder = services.AddHealthChecks();
+            healthSetup?.Invoke(healthBuilder);
+
+            return services;
+        }
     }
 }

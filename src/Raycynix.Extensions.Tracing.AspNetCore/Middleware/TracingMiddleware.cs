@@ -1,17 +1,17 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace Raycynix.Extensions.Tracing.AspNetCore.Middleware;
 
 /// <summary>
-/// Middleware that enriches the Serilog logging context with trace identifiers
+/// Middleware that exposes trace identifiers through a standard logging scope
 /// resolved from the current diagnostic activity.
 /// </summary>
-public class TracingMiddleware(RequestDelegate next)
+public class TracingMiddleware(RequestDelegate next, ILoggerFactory? loggerFactory = null)
 {
     /// <summary>
-    /// Adds <c>TraceId</c> and <c>SpanId</c> values to the logging context for the
+    /// Adds <c>TraceId</c> and <c>SpanId</c> values to the logging scope for the
     /// current request and then passes execution to the next middleware component.
     /// </summary>
     /// <param name="context">The HTTP context for the current request.</param>
@@ -22,9 +22,18 @@ public class TracingMiddleware(RequestDelegate next)
         var traceId = activity?.TraceId.ToString() ?? context.TraceIdentifier;
         var spanId = activity?.SpanId.ToString();
 
-        using (LogContext.PushProperty("TraceId", traceId))
-        using (LogContext.PushProperty("SpanId", spanId))
+        var logger = loggerFactory?.CreateLogger<TracingMiddleware>();
+        using (logger?.BeginScope(new Dictionary<string, object?>
+               {
+                   ["TraceId"] = traceId,
+                   ["SpanId"] = spanId
+               }))
         {
+            logger?.LogDebug(
+                "Resolved request trace context. HasActivity:{HasActivity} HasSpanId:{HasSpanId}",
+                activity is not null,
+                !string.IsNullOrWhiteSpace(spanId));
+
             await next(context);
         }
     }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+
 ## 2.1.0
 
 - Added ASP.NET Core Identity database integration for `Raycynix.Extensions.Database`.

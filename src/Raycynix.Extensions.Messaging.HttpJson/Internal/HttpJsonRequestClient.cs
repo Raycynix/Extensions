@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
@@ -8,7 +9,8 @@ namespace Raycynix.Extensions.Messaging.HttpJson.Internal;
 
 internal sealed class HttpJsonRequestClient(
     IHttpJsonTransport transport,
-    IMessageCodecResolver codecResolver) : IHttpJsonRequestClient
+    IMessageCodecResolver codecResolver,
+    ILogger<HttpJsonRequestClient>? logger = null) : IHttpJsonRequestClient
 {
     public async ValueTask<ResponseEnvelope<TResponse>> SendAsync<TRequest, TResponse>(
         RequestEnvelope<TRequest> request,
@@ -23,11 +25,16 @@ internal sealed class HttpJsonRequestClient(
 
         var codec = codecResolver.Resolve(typeof(TRequest), request.Format);
         var payload = codec.Serialize(request.Request!, typeof(TRequest));
+        logger?.LogDebug(
+            "Sending HTTP JSON request. Destination={Destination}, RequestType={RequestType}, ResponseType={ResponseType}, HeaderCount={HeaderCount}, TimeoutConfigured={TimeoutConfigured}.",
+            request.Destination,
+            typeof(TRequest).FullName,
+            typeof(TResponse).FullName,
+            request.Headers.Count,
+            request.Timeout is not null);
 
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, request.Destination)
-        {
-            Content = new ByteArrayContent(payload)
-        };
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, request.Destination);
+        httpRequest.Content = new ByteArrayContent(payload);
 
         httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(codec.ContentType);
         httpRequest.Headers.TryAddWithoutValidation("X-Request-Id", request.RequestId);
@@ -58,6 +65,11 @@ internal sealed class HttpJsonRequestClient(
         var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
         var responseCodec = codecResolver.Resolve(typeof(TResponse), MessageFormat.Json);
         var model = (TResponse)responseCodec.Deserialize(bytes, typeof(TResponse));
+        logger?.LogDebug(
+            "Received HTTP JSON response. Destination={Destination}, StatusCode={StatusCode}, ResponseHeaderCount={ResponseHeaderCount}.",
+            request.Destination,
+            (int)response.StatusCode,
+            response.Headers.Count() + response.Content.Headers.Count());
 
         return new ResponseEnvelope<TResponse>
         {

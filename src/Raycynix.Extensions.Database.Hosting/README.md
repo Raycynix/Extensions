@@ -46,3 +46,7 @@ Register `Raycynix.Extensions.Database`, exactly one provider package, and any r
   }
 }
 ```
+
+## Logging
+
+The hosting initializer emits optional `Microsoft.Extensions.Logging` diagnostics for startup database initialization. It logs start, completion, and failure events, but does not log connection strings or credentials.

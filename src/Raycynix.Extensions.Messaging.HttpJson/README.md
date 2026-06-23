@@ -64,3 +64,9 @@ Notes:
 - `destination` is used as the relative request path
 - payload serialization uses the shared `Newtonsoft.Json` codec from `Raycynix.Extensions.Messaging`
 - contract, correlation, trace, and security headers are propagated automatically
+
+## Logging
+
+The HTTP JSON transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover request send/receive status, inbound processing, mapped failure statuses, and handler lookup failures. Request and response payloads, header values, and authorization data are not logged.

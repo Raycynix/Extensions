@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.0.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Expanded persistence test coverage for inbox and outbox concurrency, stale lease recovery, and cleanup behavior.</PackageReleaseNotes>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and adds optional Microsoft.Extensions.Logging diagnostics for messaging persistence.</PackageReleaseNotes>
 
         <Description>Database-backed messaging inbox and outbox persistence with ambient unit-of-work support, optimistic concurrency leasing, retention cleanup, and configuration-based setup on the shared Raycynix DatabaseContext.</Description>
         <PackageTags>raycynix;messaging;database;efcore;outbox;inbox;unitofwork;cleanup;retention;configuration;sqlite;postgresql;sqlserver;mysql;dotnet</PackageTags>
@@ -18,8 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj" />
-        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Raycynix.Extensions.Database\Raycynix.Extensions.Database.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Messaging\Raycynix.Extensions.Messaging.csproj"/>
     </ItemGroup>
 
 </Project>

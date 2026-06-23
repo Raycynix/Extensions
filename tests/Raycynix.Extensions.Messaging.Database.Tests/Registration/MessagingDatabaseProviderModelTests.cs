@@ -102,7 +102,7 @@ public sealed class MessagingDatabaseProviderModelTests
         Func<IDatabaseBuilder, IDatabaseBuilder> registerProvider)
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
 
         var builder = services.AddRaycynixDatabase(
@@ -135,7 +135,7 @@ public sealed class MessagingDatabaseProviderModelTests
     /// Provides a no-op logger for registration tests that only inspect metadata.
     /// </summary>
     /// <typeparam name="T">The log category type.</typeparam>
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         /// <inheritdoc />
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull

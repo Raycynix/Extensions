@@ -2,7 +2,9 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Common.Context;
+using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Tests.Registration;
@@ -48,5 +50,24 @@ public class ObservabilityRegistrationTests
         services.AddRaycynixAspNetCoreObservability();
 
         services.Count(service => service.ServiceType == typeof(IHttpMessageHandlerBuilderFilter)).Should().Be(1);
+    }
+
+    /// <summary>
+    /// Verifies that ASP.NET Core observability options can be configured during registration.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixAspNetCoreObservability_ShouldConfigureOptions()
+    {
+        var services = new ServiceCollection();
+
+        services.AddRaycynixAspNetCoreObservability(options =>
+        {
+            options.IncludeIdentityInLoggingScope = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<ObservabilityAspNetCoreConfiguration>>().Value;
+
+        options.IncludeIdentityInLoggingScope.Should().BeFalse();
     }
 }

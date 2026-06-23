@@ -20,6 +20,8 @@
 builder.Services.AddRaycynixTracing();
 ```
 
+The tracer emits optional diagnostics through `Microsoft.Extensions.Logging` when a logger provider is available. Tag and baggage values are not written by the package logs.
+
 ```csharp
 public sealed class OrderService(ITracer tracer)
 {

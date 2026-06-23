@@ -89,6 +89,12 @@ builder.Services.AddRaycynixSecrets(options =>
 
 Providers not listed in `SecretOptions.ProviderOrder` are still evaluated afterward in their registration order.
 
+## Logging
+
+The package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover provider chain initialization, provider attempts, successful provider selection, and missing-secret outcomes. Secret keys, normalized keys, secret values, configuration values, and environment variable values are not logged.
+
 Examples:
 
 - `ConnectionStrings:Main` can be resolved from `IConfiguration["ConnectionStrings:Main"]`

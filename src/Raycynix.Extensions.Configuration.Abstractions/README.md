@@ -25,6 +25,8 @@
 
 This package allows applications and libraries to provide their own typed access, feature-flag access, diagnostics, redaction, default-value, validation, reload-governance, and change-handling strategies for typed configuration models without depending on the configuration implementation package.
 
+The abstractions are aligned with the standard Microsoft.Extensions model. Packages that implement runtime diagnostics should use optional `Microsoft.Extensions.Logging.ILogger<T>` dependencies so applications can choose any compatible logging provider or run without one.
+
 ## Example
 
 Libraries can depend only on abstractions and consume the current typed configuration through `IConfigurationAccessor<TOptions>`:

@@ -46,6 +46,7 @@ public class OperationContext : IOperationContext
 {
     private static readonly AsyncLocal<IOperationContext?> _current = new();
     private string? _correlationId;
+    private string? _traceId;
     private string? _userId;
     private string? _subjectId;
     private string? _subjectType;
@@ -67,7 +68,17 @@ public class OperationContext : IOperationContext
     }
 
     /// <inheritdoc />
-    public string TraceId => Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
+    public string TraceId
+    {
+        get
+        {
+            var activityTraceId = Activity.Current?.TraceId.ToString();
+            return string.IsNullOrWhiteSpace(activityTraceId)
+                ? _traceId ??= Guid.NewGuid().ToString("N")
+                : activityTraceId;
+        }
+        set => _traceId = string.IsNullOrWhiteSpace(value) ? Guid.NewGuid().ToString("N") : value;
+    }
 
     /// <inheritdoc/>
     public string? UserId

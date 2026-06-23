@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+- Added optional `Microsoft.Extensions.Logging.ILogger<T>` diagnostics for SQL Server provider validation, connection-string source selection, and EF Core provider configuration.
+
 ## 2.1.0
 ### Added
 - Added SQL Server provider registration with provider-specific validation.

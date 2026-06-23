@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Models;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
@@ -9,10 +10,11 @@ namespace Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
 /// <summary>
 /// Provides a consistent HTTP response for authorization failures without exposing internal policy details.
 /// </summary>
-public sealed class RaycynixAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
+public sealed class RaycynixAuthorizationMiddlewareResultHandler(
+    ILogger<RaycynixAuthorizationMiddlewareResultHandler>? logger = null) : IAuthorizationMiddlewareResultHandler
 {
-    private static readonly AuthorizationMiddlewareResultHandler DefaultHandler = new();
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+    private static readonly AuthorizationMiddlewareResultHandler _defaultHandler = new();
+    private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
 
     /// <inheritdoc />
     public async Task HandleAsync(
@@ -23,6 +25,11 @@ public sealed class RaycynixAuthorizationMiddlewareResultHandler : IAuthorizatio
     {
         if (authorizeResult.Forbidden)
         {
+            logger?.LogWarning(
+                "Authorization forbidden response handled. Path={Path}, TraceId={TraceId}.",
+                context.Request.Path.Value,
+                context.TraceIdentifier);
+
             await WriteResponseAsync(
                 context,
                 StatusCodes.Status403Forbidden,
@@ -34,6 +41,11 @@ public sealed class RaycynixAuthorizationMiddlewareResultHandler : IAuthorizatio
 
         if (authorizeResult.Challenged)
         {
+            logger?.LogWarning(
+                "Authorization challenge response handled. Path={Path}, TraceId={TraceId}.",
+                context.Request.Path.Value,
+                context.TraceIdentifier);
+
             await WriteResponseAsync(
                 context,
                 StatusCodes.Status401Unauthorized,
@@ -43,7 +55,7 @@ public sealed class RaycynixAuthorizationMiddlewareResultHandler : IAuthorizatio
             return;
         }
 
-        await DefaultHandler.HandleAsync(next, context, policy, authorizeResult);
+        await _defaultHandler.HandleAsync(next, context, policy, authorizeResult);
     }
 
     private static async Task WriteResponseAsync(
@@ -61,7 +73,7 @@ public sealed class RaycynixAuthorizationMiddlewareResultHandler : IAuthorizatio
             Message: message,
             TraceId: context.TraceIdentifier);
 
-        var json = JsonSerializer.Serialize(response, SerializerOptions);
+        var json = JsonSerializer.Serialize(response, _serializerOptions);
         await context.Response.WriteAsync(json);
     }
 }

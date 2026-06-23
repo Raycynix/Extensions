@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FluentAssertions;
 using Raycynix.Extensions.Common.Context;
 
@@ -17,6 +18,43 @@ public sealed class OperationContextTests
         var context = new OperationContext();
 
         context.CorrelationId.Should().NotBeNullOrWhiteSpace();
+    }
+
+    /// <summary>
+    /// Verifies that fallback trace identifiers remain stable for the same context instance.
+    /// </summary>
+    [Fact]
+    public void TraceId_ShouldRemainStable_WhenActivityIsMissing()
+    {
+        var previousActivity = Activity.Current;
+        Activity.Current = null;
+
+        try
+        {
+            var context = new OperationContext();
+
+            var first = context.TraceId;
+            var second = context.TraceId;
+
+            first.Should().NotBeNullOrWhiteSpace();
+            second.Should().Be(first);
+        }
+        finally
+        {
+            Activity.Current = previousActivity;
+        }
+    }
+
+    /// <summary>
+    /// Verifies that the current diagnostic activity trace identifier takes precedence.
+    /// </summary>
+    [Fact]
+    public void TraceId_ShouldUseCurrentActivity_WhenActivityExists()
+    {
+        using var activity = new Activity("test").Start();
+        var context = new OperationContext();
+
+        context.TraceId.Should().Be(activity.TraceId.ToString());
     }
 
     /// <summary>

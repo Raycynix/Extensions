@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    
+
     <PropertyGroup>
-        <Version>1.0.1</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and uses provider-agnostic Microsoft.Extensions.Logging scopes for trace diagnostics.</PackageReleaseNotes>
 
         <Description>ASP.NET Core middleware integration for Raycynix tracing, request-level trace enrichment, and distributed correlation propagation.</Description>
         <PackageTags>raycynix;tracing;aspnetcore;middleware;http;correlation;propagation;activitysource;dotnet</PackageTags>
@@ -13,14 +14,15 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj" />
+        <ProjectReference Include="..\Raycynix.Extensions.Tracing\Raycynix.Extensions.Tracing.csproj"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
-    
+
 </Project>

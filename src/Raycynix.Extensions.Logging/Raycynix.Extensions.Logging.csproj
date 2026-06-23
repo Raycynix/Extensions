@@ -1,41 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Logging 2.1.0 modularizes optional sinks: Elasticsearch support now lives in Raycynix.Extensions.Logging.Elastic, while the base package provides typed logging, Serilog host integration, configuration binding, and console output.</PackageReleaseNotes>
-        
+        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
+
         <Description>Structured logging registration, Serilog-based host integration, typed logger adapters, and configurable console logging for Raycynix applications.</Description>
         <PackageTags>raycynix;logging;serilog;structured-logging;host;console;typed-logger;infrastructure;dotnet</PackageTags>
-        
+
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="false" PackagePath="\"/>
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj" />
-      <ProjectReference Include="..\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj" />
+        <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="false" PackagePath="\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.8" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
-        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-        <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
-        <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
-        <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj"/>
+        <ProjectReference Include="..\Raycynix.Extensions.Logging.Abstractions\Raycynix.Extensions.Logging.Abstractions.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.9"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
+        <PackageReference Include="Serilog.Exceptions" Version="8.4.0"/>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
     </ItemGroup>
 
 </Project>

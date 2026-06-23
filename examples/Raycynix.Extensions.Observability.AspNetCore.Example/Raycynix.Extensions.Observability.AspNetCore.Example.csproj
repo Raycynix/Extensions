@@ -11,17 +11,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj" />
-      <ProjectReference Include="..\..\src\Raycynix.Extensions.Observability.AspNetCore\Raycynix.Extensions.Observability.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Observability.AspNetCore\Raycynix.Extensions.Observability.AspNetCore.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="appsettings.Development.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="appsettings.Development.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

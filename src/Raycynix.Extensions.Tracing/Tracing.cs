@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Helpers;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Implementations;
@@ -22,7 +23,8 @@ public static class Tracing
 
         var serviceName = AssemblyHelper.CurrentName();
 
-        services.TryAddSingleton<ITracer>(new Tracer(serviceName));
+        services.TryAddSingleton<ITracer>(serviceProvider =>
+            new Tracer(serviceName, serviceProvider.GetService<ILogger<Tracer>>()));
 
         return services;
     }

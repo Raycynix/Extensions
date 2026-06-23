@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Configurations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Database.MsSql.Internal;
 /// <summary>
 /// Implements SQL Server-specific connection and EF Core configuration for the shared database context.
 /// </summary>
-internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProviderRegistration
+internal sealed class MsSqlServerDatabaseProviderRegistration(
+    ILogger<MsSqlServerDatabaseProviderRegistration>? logger = null) : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
     public string ProviderName => "sqlserver";
@@ -21,6 +23,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Using configured raw SQL Server connection string.");
             return configuration.ConnectionString;
         }
 
@@ -41,6 +44,12 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
             TrustServerCertificate = settings?.TrustServerCertificate ?? false,
             MultipleActiveResultSets = settings?.MultipleActiveResultSets ?? false
         };
+
+        logger?.LogDebug(
+            "Resolved SQL Server connection string from structured configuration. TrustServerCertificate: {TrustServerCertificate}, MultipleActiveResultSets: {MultipleActiveResultSets}, CommandTimeoutConfigured: {CommandTimeoutConfigured}.",
+            builder.TrustServerCertificate,
+            builder.MultipleActiveResultSets,
+            settings?.CommandTimeoutSeconds is not null);
 
         return builder.ConnectionString;
     }
@@ -72,6 +81,12 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
                 sqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+
+        logger?.LogDebug(
+            "Configured EF Core SQL Server provider. Migrations assembly: {MigrationsAssembly}, RetryCount: {RetryCount}, RetryDelaySeconds: {RetryDelaySeconds}.",
+            migrationsAssembly.GetName().Name,
+            configuration.RetryCount,
+            configuration.RetryDelaySeconds);
     }
 
     /// <inheritdoc />
@@ -79,6 +94,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Skipping structured SQL Server validation because a raw connection string is configured.");
             return;
         }
 
@@ -94,5 +110,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration : IDatabaseProvide
         {
             throw new InvalidOperationException("SQL Server connection requires a database name.");
         }
+
+        logger?.LogDebug("SQL Server structured connection configuration validated.");
     }
 }

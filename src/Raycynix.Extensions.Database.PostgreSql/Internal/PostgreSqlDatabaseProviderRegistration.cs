@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Database.PostgreSql.Internal;
 /// <summary>
 /// Implements PostgreSQL-specific connection and EF Core configuration for the shared database context.
 /// </summary>
-internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProviderRegistration
+internal sealed class PostgreSqlDatabaseProviderRegistration(
+    ILogger<PostgreSqlDatabaseProviderRegistration>? logger = null) : IDatabaseProviderRegistration
 {
     /// <inheritdoc />
     public string ProviderName => "postgresql";
@@ -21,6 +23,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Using configured raw PostgreSQL connection string.");
             return configuration.ConnectionString;
         }
 
@@ -57,6 +60,13 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
             builder.CommandTimeout = settings.CommandTimeoutSeconds.Value;
         }
 
+        logger?.LogDebug(
+            "Resolved PostgreSQL connection string from structured configuration. Pooling: {Pooling}, MinimumPoolSizeConfigured: {MinimumPoolSizeConfigured}, MaximumPoolSizeConfigured: {MaximumPoolSizeConfigured}, CommandTimeoutConfigured: {CommandTimeoutConfigured}.",
+            builder.Pooling,
+            settings?.MinimumPoolSize is not null,
+            settings?.MaximumPoolSize is not null,
+            settings?.CommandTimeoutSeconds is not null);
+
         return builder.ConnectionString;
     }
 
@@ -86,6 +96,12 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
                 npgsqlOptions.CommandTimeout(settings.CommandTimeoutSeconds.Value);
             }
         });
+
+        logger?.LogDebug(
+            "Configured EF Core PostgreSQL provider. Migrations assembly: {MigrationsAssembly}, RetryCount: {RetryCount}, RetryDelaySeconds: {RetryDelaySeconds}.",
+            migrationsAssembly.GetName().Name,
+            configuration.RetryCount,
+            configuration.RetryDelaySeconds);
     }
 
     /// <inheritdoc />
@@ -93,6 +109,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
+            logger?.LogDebug("Skipping structured PostgreSQL validation because a raw connection string is configured.");
             return;
         }
 
@@ -113,5 +130,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration : IDatabaseProvider
         {
             throw new InvalidOperationException("PostgreSQL connection requires a username.");
         }
+
+        logger?.LogDebug("PostgreSQL structured connection configuration validated.");
     }
 }

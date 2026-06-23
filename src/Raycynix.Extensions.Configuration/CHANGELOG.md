@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.0
+### Added
+- Started unified versioning for Raycynix packages from this release.
+- Added optional `Microsoft.Extensions.Logging.ILogger<T>` diagnostics that do not require a logger provider to be registered.
+- Added detailed `LogDebug` diagnostics for configuration change tracking startup, registrations, reload policy decisions, and change handler execution.
+- Added optional diagnostics for configuration validation and redacted snapshot access.
+
 ## 2.0.0
 ### Added
 - Added required-section validation for typed configuration and feature flags.

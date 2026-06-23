@@ -10,6 +10,7 @@
 - transient exception classification
 - retry execution services
 - background task execution helpers
+- optional Microsoft `ILogger<T>` diagnostics for retry and background execution
 - common Raycynix exception types
 
 ## What it does not contain
@@ -43,3 +44,9 @@ builder.Services.AddRaycynixExceptions(options =>
 ```
 
 For ASP.NET Core request pipeline integration, add `Raycynix.Extensions.Exceptions.AspNetCore`.
+
+## Logging
+
+The package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover retry attempts, retry exhaustion, background operation cancellation, and background operation failures. The package avoids logging secure detail payloads directly.

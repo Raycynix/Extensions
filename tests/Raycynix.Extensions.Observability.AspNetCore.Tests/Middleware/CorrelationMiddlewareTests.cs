@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Common.Context;
+using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Middleware;
 using Raycynix.Extensions.Observability.AspNetCore.Tests.Http;
 using Raycynix.Extensions.Security.Abstractions.Enums;
@@ -107,6 +110,94 @@ public class CorrelationMiddlewareTests
     }
 
     /// <summary>
+    /// Verifies that downstream log events keep the identity values resolved by the correlation middleware.
+    /// </summary>
+    [Fact]
+    public async Task CorrelationMiddleware_ShouldPreserveUserAndSubjectData_InLoggingScope()
+    {
+        var loggerProvider = new CollectingLoggerProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, "alice")], "test")),
+            TraceIdentifier = "trace-identifier"
+        };
+
+        var operationContext = new OperationContext();
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.AddProvider(loggerProvider));
+        services.AddSingleton<ISecurityContext>(new TestSecurityContext(true, "subject-42", SecuritySubjectType.User));
+        httpContext.RequestServices = services.BuildServiceProvider();
+
+        var middleware = new CorrelationMiddleware(context =>
+        {
+            context.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("downstream")
+                .LogInformation("handled");
+
+            return Task.CompletedTask;
+        });
+
+        using var activity = new Activity("test-request").Start();
+        var expectedTraceId = Activity.Current?.TraceId.ToString();
+
+        await middleware.InvokeAsync(httpContext, operationContext, httpContext.RequestServices);
+
+        loggerProvider.Entries.Should().Contain(entry => ScopeExists(
+            entry,
+            "trace-identifier",
+            expectedTraceId,
+            "alice",
+            "subject-42",
+            nameof(SecuritySubjectType.User)));
+    }
+
+    /// <summary>
+    /// Verifies that identity values can be omitted from logging scopes without changing operation context enrichment.
+    /// </summary>
+    [Fact]
+    public async Task CorrelationMiddleware_ShouldOmitUserAndSubjectData_FromLoggingScope_WhenDisabled()
+    {
+        var loggerProvider = new CollectingLoggerProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.Name, "alice")], "test")),
+            TraceIdentifier = "trace-identifier"
+        };
+
+        var operationContext = new OperationContext();
+        var services = new ServiceCollection();
+        services.AddLogging(builder => builder.AddProvider(loggerProvider));
+        services.AddSingleton<ISecurityContext>(new TestSecurityContext(true, "subject-42", SecuritySubjectType.User));
+        httpContext.RequestServices = services.BuildServiceProvider();
+
+        var middleware = new CorrelationMiddleware(
+            context =>
+            {
+                context.RequestServices.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("downstream")
+                    .LogInformation("handled");
+
+                return Task.CompletedTask;
+            },
+            Options.Create(new ObservabilityAspNetCoreConfiguration
+            {
+                IncludeIdentityInLoggingScope = false
+            }));
+
+        using var activity = new Activity("test-request").Start();
+        var expectedTraceId = Activity.Current?.TraceId.ToString();
+
+        await middleware.InvokeAsync(httpContext, operationContext, httpContext.RequestServices);
+
+        operationContext.UserId.Should().Be("alice");
+        operationContext.SubjectId.Should().Be("subject-42");
+        loggerProvider.Entries.Should().Contain(entry => ScopeExistsWithoutIdentity(
+            entry,
+            "trace-identifier",
+            expectedTraceId));
+    }
+
+    /// <summary>
     /// Verifies that the observability endpoint mapping exposes both health and metrics endpoints.
     /// </summary>
     [Fact]
@@ -145,6 +236,96 @@ public class CorrelationMiddlewareTests
         string? SubjectTag,
         string? SubjectTypeTag,
         string? AmbientCorrelationId);
+
+    private sealed class CollectingLoggerProvider : ILoggerProvider, ISupportExternalScope
+    {
+        private IExternalScopeProvider _scopeProvider = new LoggerExternalScopeProvider();
+
+        public List<LogEntry> Entries { get; } = [];
+
+        public ILogger CreateLogger(string categoryName) => new CollectingLogger(this);
+
+        public void Dispose()
+        {
+        }
+
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
+        }
+
+        private sealed class CollectingLogger(CollectingLoggerProvider provider) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull =>
+                provider._scopeProvider.Push(state);
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(
+                LogLevel logLevel,
+                EventId eventId,
+                TState state,
+                Exception? exception,
+                Func<TState, Exception?, string> formatter)
+            {
+                var scopes = new List<IReadOnlyDictionary<string, object?>>();
+
+                provider._scopeProvider.ForEachScope(
+                    (scope, state) =>
+                    {
+                        if (scope is IEnumerable<KeyValuePair<string, object?>> values)
+                            state.Add(values.ToDictionary(pair => pair.Key, pair => pair.Value));
+                    },
+                    scopes);
+
+                provider.Entries.Add(new LogEntry(scopes));
+            }
+        }
+    }
+
+    private sealed record LogEntry(IReadOnlyCollection<IReadOnlyDictionary<string, object?>> Scopes);
+
+    private static bool ScopeExists(
+        LogEntry entry,
+        string expectedCorrelationId,
+        string? expectedTraceId,
+        string expectedUserId,
+        string expectedSubjectId,
+        string expectedSubjectType)
+    {
+        return entry.Scopes.Any(scope =>
+        {
+            scope.TryGetValue("CorrelationId", out var correlationId);
+            scope.TryGetValue("TraceId", out var traceId);
+            scope.TryGetValue("UserId", out var userId);
+            scope.TryGetValue("SubjectId", out var subjectId);
+            scope.TryGetValue("SubjectType", out var subjectType);
+
+            return correlationId?.ToString() == expectedCorrelationId &&
+                   traceId?.ToString() == expectedTraceId &&
+                   userId?.ToString() == expectedUserId &&
+                   subjectId?.ToString() == expectedSubjectId &&
+                   subjectType?.ToString() == expectedSubjectType;
+        });
+    }
+
+    private static bool ScopeExistsWithoutIdentity(
+        LogEntry entry,
+        string expectedCorrelationId,
+        string? expectedTraceId)
+    {
+        return entry.Scopes.Any(scope =>
+        {
+            scope.TryGetValue("CorrelationId", out var correlationId);
+            scope.TryGetValue("TraceId", out var traceId);
+
+            return correlationId?.ToString() == expectedCorrelationId &&
+                   traceId?.ToString() == expectedTraceId &&
+                   !scope.ContainsKey("UserId") &&
+                   !scope.ContainsKey("SubjectId") &&
+                   !scope.ContainsKey("SubjectType");
+        });
+    }
 
     /// <summary>
     /// Provides a minimal authenticated security context for middleware tests.

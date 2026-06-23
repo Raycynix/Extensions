@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Added explicit model and migrations assembly registration, provider-specific validation hooks, safer DbContext registration, improved configurator dependency diagnostics, and default no-op database observability.</PackageReleaseNotes>
+        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for database registration, initialization, and model configuration.</PackageReleaseNotes>
 
         <Description>Core Raycynix EF Core database infrastructure with shared DbContext registration, custom context support, model assembly discovery, provider validation, initialization, and model-cache integration.</Description>
         <PackageTags>raycynix;database;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet</PackageTags>
@@ -20,11 +20,11 @@
     <ItemGroup>
         <ProjectReference Include="..\Raycynix.Extensions.Database.Abstractions\Raycynix.Extensions.Database.Abstractions.csproj"/>
         <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
-        <ProjectReference Include="..\Raycynix.Extensions.Logging\Raycynix.Extensions.Logging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
     </ItemGroup>
 
 </Project>

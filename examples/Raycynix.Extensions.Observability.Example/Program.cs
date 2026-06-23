@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Logging;
 using Raycynix.Extensions.Observability;
 using Raycynix.Extensions.Observability.Example;
 
@@ -16,18 +15,10 @@ ActivitySource.AddActivityListener(activityListener);
 
 var builder = Host.CreateDefaultBuilder(args);
 
-builder
-    .UseRaycynixLogging(options =>
-    {
-        options.MinimumLevel = Microsoft.Extensions.Logging.LogLevel.Debug;
-        options.OutputTemplate =
-            "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] [Trace:{TraceId}] [Corr:{CorrelationId}] {Message:lj}{NewLine}{Exception}";
-    })
-    .ConfigureServices((context, services) =>
-    {
-        services.AddRaycynixObservability();
-        services.AddRaycynixLogging(context.Configuration);
-        services.AddHostedService<ObservabilityExampleWorker>();
-    });
+builder.ConfigureServices(services =>
+{
+    services.AddRaycynixObservability();
+    services.AddHostedService<ObservabilityExampleWorker>();
+});
 
 await builder.RunConsoleAsync();

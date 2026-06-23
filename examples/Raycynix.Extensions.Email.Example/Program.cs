@@ -5,7 +5,6 @@ using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Email;
 using Raycynix.Extensions.Email.Example;
 using Raycynix.Extensions.Email.Smtp;
-using Raycynix.Extensions.Logging;
 using Raycynix.Extensions.Secrets;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
@@ -24,10 +23,8 @@ var builder = Host.CreateDefaultBuilder(args)
     });
 
 builder
-    .UseRaycynixLogging()
     .ConfigureServices((context, services) =>
     {
-        services.AddRaycynixLogging(context.Configuration);
         services.AddRaycynixSecrets();
 
         services

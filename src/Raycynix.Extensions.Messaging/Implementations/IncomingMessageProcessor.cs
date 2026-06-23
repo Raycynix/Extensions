@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Configurations;
@@ -14,12 +15,20 @@ internal sealed class IncomingMessageProcessor(
     MessagingConfiguration configuration,
     IIncomingMessageInboxStore inboxStore,
     IncomingSecurityHeadersValidator securityHeadersValidator,
-    IncomingMessageTypeResolver typeResolver) : IIncomingMessageProcessor
+    IncomingMessageTypeResolver typeResolver,
+    ILogger<IncomingMessageProcessor>? logger = null) : IIncomingMessageProcessor
 {
     /// <inheritdoc />
     public async Task ProcessAsync(IncomingTransportMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
+
+        logger?.LogDebug(
+            "Processing incoming message. Destination={Destination}, Format={Format}, HeaderCount={HeaderCount}, UsesInbox={UsesInbox}.",
+            message.Destination,
+            message.Format,
+            message.Headers.Count,
+            ShouldUseInbox());
 
         if (configuration.IncomingProcessing.ValidateSecurityHeaders)
         {
@@ -28,16 +37,25 @@ internal sealed class IncomingMessageProcessor(
 
         if (ShouldUseInbox())
         {
-            var shouldProcess = await inboxStore.TryBeginProcessingAsync(message, cancellationToken).ConfigureAwait(false);
+            var shouldProcess =
+                await inboxStore.TryBeginProcessingAsync(message, cancellationToken).ConfigureAwait(false);
             if (!shouldProcess)
             {
+                logger?.LogDebug(
+                    "Incoming message skipped by inbox deduplication/idempotency. Destination={Destination}.",
+                    message.Destination);
                 return;
             }
         }
 
         var messageType = typeResolver.Resolve(message);
+        logger?.LogDebug(
+            "Resolved incoming message type. Destination={Destination}, MessageType={MessageType}.",
+            message.Destination,
+            messageType.FullName);
         var method = GetType()
-            .GetMethod(nameof(ProcessTypedAsync), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetMethod(nameof(ProcessTypedAsync),
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .MakeGenericMethod(messageType);
 
         try
@@ -48,19 +66,32 @@ internal sealed class IncomingMessageProcessor(
             {
                 await inboxStore.MarkProcessedAsync(message, cancellationToken).ConfigureAwait(false);
             }
+
+            logger?.LogDebug(
+                "Incoming message processed. Destination={Destination}, MessageType={MessageType}.",
+                message.Destination,
+                messageType.FullName);
         }
         catch (Exception exception)
         {
             if (ShouldUseInbox())
             {
-                await inboxStore.MarkFailedAsync(message, UnwrapInvocationException(exception), cancellationToken).ConfigureAwait(false);
+                await inboxStore.MarkFailedAsync(message, UnwrapInvocationException(exception), cancellationToken)
+                    .ConfigureAwait(false);
             }
+
+            logger?.LogWarning(
+                UnwrapInvocationException(exception),
+                "Incoming message processing failed. Destination={Destination}, MessageType={MessageType}.",
+                message.Destination,
+                messageType.FullName);
 
             throw;
         }
     }
 
-    private async Task ProcessTypedAsync<TMessage>(IncomingTransportMessage message, CancellationToken cancellationToken)
+    private async Task ProcessTypedAsync<TMessage>(IncomingTransportMessage message,
+        CancellationToken cancellationToken)
     {
         var codec = codecResolver.Resolve(typeof(TMessage), message.Format);
         var payload = codec.Deserialize(message.Payload, typeof(TMessage));
@@ -82,7 +113,8 @@ internal sealed class IncomingMessageProcessor(
 
     private bool ShouldUseInbox()
     {
-        return configuration.IncomingProcessing.EnableDeduplication || configuration.IncomingProcessing.EnableIdempotency;
+        return configuration.IncomingProcessing.EnableDeduplication ||
+               configuration.IncomingProcessing.EnableIdempotency;
     }
 
     private static Exception UnwrapInvocationException(Exception exception)

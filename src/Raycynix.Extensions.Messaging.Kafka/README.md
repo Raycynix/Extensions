@@ -72,3 +72,9 @@ The envelope destination is used as the Kafka topic name, and the package publis
 - serialized payload bytes
 - `message-id`, `correlation-id`, `causation-id`
 - contract/version headers from the base messaging layer
+
+## Logging
+
+The Kafka transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover publish attempts, inbound consumer startup, message processing, commits, retry republishes, and dead-letter publishes. Message payloads, header values, credentials, and connection strings are not logged.

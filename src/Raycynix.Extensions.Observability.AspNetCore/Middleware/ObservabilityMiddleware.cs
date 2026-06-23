@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Raycynix.Extensions.Metrics.AspNetCore;
 using Raycynix.Extensions.Tracing.AspNetCore;
-using Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 

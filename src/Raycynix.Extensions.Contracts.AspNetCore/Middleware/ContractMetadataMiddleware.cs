@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Contracts.AspNetCore.Extensions;
 using Raycynix.Extensions.Contracts.Models;
 
@@ -10,14 +11,19 @@ namespace Raycynix.Extensions.Contracts.AspNetCore.Middleware;
 public sealed class ContractMetadataMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ContractMetadataMiddleware>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContractMetadataMiddleware"/> class.
     /// </summary>
     /// <param name="next">The next middleware in the pipeline.</param>
-    public ContractMetadataMiddleware(RequestDelegate next)
+    /// <param name="logger">The optional logger.</param>
+    public ContractMetadataMiddleware(
+        RequestDelegate next,
+        ILogger<ContractMetadataMiddleware>? logger = null)
     {
         _next = next;
+        _logger = logger;
     }
 
     /// <summary>
@@ -31,14 +37,34 @@ public sealed class ContractMetadataMiddleware
 
         if (context.TryGetEndpointContractMetadata(out var metadata))
         {
+            _logger?.LogDebug(
+                "Contract metadata found for endpoint {Endpoint}. Contract: {ContractName}, Version: {ContractVersion}.",
+                context.GetEndpoint()?.DisplayName,
+                metadata!.Name,
+                metadata.Version);
+
             context.Response.OnStarting(
                 static state =>
                 {
-                    var (httpContext, contractMetadata) = ((HttpContext, ContractMetadata))state;
+                    var (httpContext, contractMetadata, logger) =
+                        ((HttpContext, ContractMetadata, ILogger<ContractMetadataMiddleware>?))state;
+
                     httpContext.Response.WriteContractMetadata(contractMetadata);
+                    logger?.LogDebug(
+                        "Wrote contract metadata headers for endpoint {Endpoint}. Contract: {ContractName}, Version: {ContractVersion}.",
+                        httpContext.GetEndpoint()?.DisplayName,
+                        contractMetadata.Name,
+                        contractMetadata.Version);
+
                     return Task.CompletedTask;
                 },
-                (context, metadata!));
+                (context, metadata!, _logger));
+        }
+        else
+        {
+            _logger?.LogDebug(
+                "No contract metadata found for endpoint {Endpoint}.",
+                context.GetEndpoint()?.DisplayName);
         }
 
         return _next(context);

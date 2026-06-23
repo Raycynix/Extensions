@@ -50,3 +50,9 @@ The package binds settings from the `SecurityConfiguration` section and allows o
 For ASP.NET Core request binding and web-specific integration, use `Raycynix.Extensions.Security.AspNetCore`.
 
 For secret resolution, use `Raycynix.Extensions.Secrets`.
+
+## Logging
+
+This package contains host-agnostic registration, configuration, and the default security context model. Runtime
+authentication and authorization diagnostics belong to host integration packages, so this package does not add a logging
+dependency.

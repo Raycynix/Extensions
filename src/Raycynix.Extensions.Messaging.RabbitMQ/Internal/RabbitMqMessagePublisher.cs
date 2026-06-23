@@ -1,4 +1,5 @@
 using RabbitMQ.Client;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
 using Raycynix.Extensions.Messaging.Implementations;
@@ -11,7 +12,8 @@ namespace Raycynix.Extensions.Messaging.RabbitMQ.Internal;
 internal sealed class RabbitMqMessagePublisher(
     RabbitMqConnectionAccessor connectionAccessor,
     Configurations.RabbitMqMessagingConfiguration configuration,
-    MessageObservability observability) : ITransportMessagePublisher
+    MessageObservability observability,
+    ILogger<RabbitMqMessagePublisher>? logger = null) : ITransportMessagePublisher
 {
     /// <inheritdoc />
     public async ValueTask PublishAsync(SerializedMessage message, CancellationToken cancellationToken = default)
@@ -20,10 +22,17 @@ internal sealed class RabbitMqMessagePublisher(
 
         var format = message.Format.ToString().ToLowerInvariant();
         using var observation = observability.BeginPublish(format, message.Destination);
+        logger?.LogDebug(
+            "Publishing RabbitMQ message. Exchange={Exchange}, RoutingKey={RoutingKey}, Format={Format}, HeaderCount={HeaderCount}.",
+            configuration.Exchange.Name,
+            message.Destination,
+            message.Format,
+            message.Headers.Count);
 
         try
         {
-            await using var channel = await connectionAccessor.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+            await using var channel =
+                await connectionAccessor.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
             var properties = new BasicProperties
             {
@@ -50,10 +59,15 @@ internal sealed class RabbitMqMessagePublisher(
                 .ConfigureAwait(false);
 
             observability.RecordPublishSuccess(format, message.Destination);
+            logger?.LogDebug("Published RabbitMQ message. Exchange={Exchange}, RoutingKey={RoutingKey}.",
+                configuration.Exchange.Name, message.Destination);
         }
-        catch
+        catch (Exception exception)
         {
             observability.RecordPublishFailure(format, message.Destination);
+            logger?.LogWarning(exception,
+                "RabbitMQ message publish failed. Exchange={Exchange}, RoutingKey={RoutingKey}.",
+                configuration.Exchange.Name, message.Destination);
             throw;
         }
     }

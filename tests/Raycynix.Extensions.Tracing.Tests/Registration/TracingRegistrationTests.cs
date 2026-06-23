@@ -25,7 +25,7 @@ public sealed class TracingRegistrationTests
             .Subject;
 
         descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
-        descriptor.ImplementationInstance.Should().BeOfType<Tracer>();
+        descriptor.ImplementationFactory.Should().NotBeNull();
     }
 
     /// <summary>

@@ -28,6 +28,10 @@
 - RabbitMQ publisher implementation
 - hosted services
 
+## Logging
+
+This package contains contracts, attributes, models, and shared configuration-facing abstractions only. Runtime diagnostics belong to implementation and transport packages, so this package does not add runtime logging behavior.
+
 ## Usage
 
 Declare a message contract:

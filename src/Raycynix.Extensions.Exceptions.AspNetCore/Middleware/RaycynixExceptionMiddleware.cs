@@ -17,7 +17,7 @@ public class RaycynixExceptionMiddleware(
     RequestDelegate next,
     IExceptionMapper mapper,
     IExceptionDataMasker masker,
-    ILogger<RaycynixExceptionMiddleware> logger)
+    ILogger<RaycynixExceptionMiddleware>? logger = null)
 {
     private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -35,7 +35,7 @@ public class RaycynixExceptionMiddleware(
         }
         catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
         {
-            logger.LogWarning("Request was canceled by the client. TraceId: {TraceId}", httpContext.TraceIdentifier);
+            logger?.LogWarning("Request was canceled by the client. TraceId: {TraceId}", httpContext.TraceIdentifier);
         }
         catch (Exception ex)
         {
@@ -68,8 +68,8 @@ public class RaycynixExceptionMiddleware(
                 QueryString: queryString,
                 IsTransient: isTransient);
 
-            logger.LogError(ex,
-                "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. SpanId: {SpanId}. CorrelationId: {CorrelationId}. Method: {Method}. Path: {Path}. Endpoint: {Endpoint}. Query: {Query}. Details: {@Details}",
+            logger?.LogError(ex,
+                "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. SpanId: {SpanId}. CorrelationId: {CorrelationId}. Method: {Method}. Path: {Path}. Endpoint: {Endpoint}. HasQueryString: {HasQueryString}. Details: {@Details}",
                 raycynixException.ErrorCode,
                 raycynixException.Message,
                 raycynixException.Category,
@@ -79,12 +79,12 @@ public class RaycynixExceptionMiddleware(
                 method,
                 path,
                 endpoint,
-                queryString,
+                queryString is not null,
                 safeDetails);
 
             if (httpContext.Response.HasStarted)
             {
-                logger.LogWarning(
+                logger?.LogWarning(
                     "The response has already started, the error response middleware will not be executed. TraceId: {TraceId}",
                     traceId);
 

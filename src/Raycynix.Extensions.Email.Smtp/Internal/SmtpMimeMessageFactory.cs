@@ -1,4 +1,5 @@
 using MimeKit;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Email.Abstractions.Enums;
 using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Models;
@@ -6,7 +7,9 @@ using Raycynix.Extensions.Email.Configurations;
 
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 
-internal sealed class SmtpMimeMessageFactory(EmailConfiguration emailConfiguration)
+internal sealed class SmtpMimeMessageFactory(
+    EmailConfiguration emailConfiguration,
+    ILogger<SmtpMimeMessageFactory>? logger = null)
 {
     public async Task<MimeMessage> CreateAsync(
         EmailMessage message,
@@ -32,12 +35,33 @@ internal sealed class SmtpMimeMessageFactory(EmailConfiguration emailConfigurati
         var bodyBuilder = new BodyBuilder();
         AddBody(bodyBuilder, message.Body);
 
+        var linkedResourceCount = 0;
+        var attachmentCount = 0;
         foreach (var attachment in message.Attachments)
         {
             await AddAttachmentAsync(bodyBuilder, attachment, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(attachment.ContentId))
+            {
+                attachmentCount++;
+            }
+            else
+            {
+                linkedResourceCount++;
+            }
         }
 
         mimeMessage.Body = bodyBuilder.ToMessageBody();
+        logger?.LogDebug(
+            "Created SMTP MIME message. BodyFormat={BodyFormat}, ToCount={ToCount}, CcCount={CcCount}, BccCount={BccCount}, AttachmentCount={AttachmentCount}, LinkedResourceCount={LinkedResourceCount}, HeaderCount={HeaderCount}.",
+            message.Body.PreferredFormat,
+            message.To.Count,
+            message.Cc.Count,
+            message.Bcc.Count,
+            attachmentCount,
+            linkedResourceCount,
+            message.Headers.Count);
+
         return mimeMessage;
     }
 

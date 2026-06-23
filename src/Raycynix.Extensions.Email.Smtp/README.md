@@ -8,6 +8,7 @@ SMTP provider integration for `Raycynix.Extensions.Email`.
 - `SmtpConfiguration`
 - SMTP provider-specific validation
 - `IEmailSender` implementation backed by MailKit
+- optional Microsoft `ILogger<T>` diagnostics for SMTP delivery phases
 
 The provider is selected by calling `.AddSmtp(...)`.
 
@@ -48,3 +49,9 @@ builder.Services
   }
 }
 ```
+
+## Logging
+
+The SMTP provider uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
+
+Diagnostics cover configuration validation, MIME message composition counts, connection, authentication, send, disconnect, and provider failures. Message bodies, subjects, recipient addresses, attachment file names, usernames, passwords, and other credential values are not logged.
