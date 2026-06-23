@@ -14,10 +14,10 @@ public static class AssemblyHelper
     /// <returns>The assembly version, or <c>Unknown Version</c> when it is not defined.</returns>
     public static string CurrentVersion() => ResolveAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-        .InformationalVersion?.Split('+')[0] ?? "Unknown Version";
+        .InformationalVersion.Split('+')[0] ?? "Unknown Version";
 
     /// <summary>
-    /// Returns the name of the entry assembly, or the executing assembly when
+    /// Returns the name of the entry assembly or the executing assembly when
     /// the entry assembly is unavailable.
     /// </summary>
     /// <returns>The assembly name, or <c>Unknown Service</c> when it is not defined.</returns>
