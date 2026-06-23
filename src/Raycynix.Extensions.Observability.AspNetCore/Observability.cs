@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
+using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
 
 namespace Raycynix.Extensions.Observability.AspNetCore;
@@ -14,12 +15,16 @@ public static class Observability
     /// Registers the core observability services and ASP.NET Core-specific integrations such as correlation propagation.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
+    /// <param name="setup">An optional callback for adjusting ASP.NET Core observability options.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixAspNetCoreObservability(this IServiceCollection services)
+    public static IServiceCollection AddRaycynixAspNetCoreObservability(
+        this IServiceCollection services,
+        Action<ObservabilityAspNetCoreConfiguration>? setup = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddRaycynixObservability();
+        services.Configure<ObservabilityAspNetCoreConfiguration>(options => setup?.Invoke(options));
         
         services.AddHttpContextAccessor();
 

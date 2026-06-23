@@ -10,7 +10,7 @@ namespace Raycynix.Extensions.Observability.AspNetCore;
 public static class ObservabilityEndpoints
 {
     /// <summary>
-    /// Maps health check and metrics endpoints.
+    /// Maps, health check and metrics endpoints.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="healthPath">The health checks endpoint path.</param>

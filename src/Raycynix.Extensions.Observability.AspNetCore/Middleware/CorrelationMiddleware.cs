@@ -2,7 +2,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Common.Context;
+using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -12,7 +14,9 @@ namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 /// <summary>
 /// Resolves correlation data for the current request and enriches logs and tracing context.
 /// </summary>
-public class CorrelationMiddleware(RequestDelegate next)
+public class CorrelationMiddleware(
+    RequestDelegate next,
+    IOptions<ObservabilityAspNetCoreConfiguration>? options = null)
 {
     /// <summary>
     /// Adds correlation, trace, and user identifiers to the current request context.
@@ -74,15 +78,21 @@ public class CorrelationMiddleware(RequestDelegate next)
             activity?.SetTag("subject.type", operationContext.SubjectType);
         }
 
+        var scopeValues = new Dictionary<string, object?>
+        {
+            ["TraceId"] = traceId,
+            ["CorrelationId"] = operationContext.CorrelationId
+        };
+
+        if (options?.Value.IncludeIdentityInLoggingScope ?? true)
+        {
+            scopeValues["UserId"] = operationContext.UserId;
+            scopeValues["SubjectId"] = operationContext.SubjectId;
+            scopeValues["SubjectType"] = operationContext.SubjectType;
+        }
+
         var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<CorrelationMiddleware>();
-        using (logger?.BeginScope(new Dictionary<string, object?>
-               {
-                   ["TraceId"] = traceId,
-                   ["CorrelationId"] = operationContext.CorrelationId,
-                   ["UserId"] = operationContext.UserId,
-                   ["SubjectId"] = operationContext.SubjectId,
-                   ["SubjectType"] = operationContext.SubjectType
-               }))
+        using (logger?.BeginScope(scopeValues))
         {
             logger?.LogDebug(
                 "Resolved request correlation context. HasUserId:{HasUserId} HasSubjectId:{HasSubjectId} SubjectType:{SubjectType}",

@@ -33,3 +33,12 @@ app.MapRaycynixObservabilityEndpoints("/internal/health", "/internal/metrics");
 ```
 
 The middleware uses standard `Microsoft.Extensions.Logging` scopes for correlation diagnostics when a logger provider is registered. It does not require `Raycynix.Extensions.Logging`.
+
+By default, the request logging scope includes `CorrelationId`, `TraceId`, `UserId`, `SubjectId`, and `SubjectType` to preserve the previous enrichment behavior. Applications that do not want user or subject identifiers in log scopes can disable that part:
+
+```csharp
+builder.Services.AddRaycynixAspNetCoreObservability(options =>
+{
+    options.IncludeIdentityInLoggingScope = false;
+});
+```

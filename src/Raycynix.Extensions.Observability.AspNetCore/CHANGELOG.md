@@ -4,6 +4,7 @@
 ### Added
 - Starts unified versioning for Raycynix packages from this release.
 - Added provider-agnostic correlation diagnostics through standard `Microsoft.Extensions.Logging` scopes.
+- Added `ObservabilityAspNetCoreConfiguration.IncludeIdentityInLoggingScope` for disabling user and subject values in request logging scopes.
 
 ### Changed
 - Removed Serilog-specific log context usage from correlation middleware.
