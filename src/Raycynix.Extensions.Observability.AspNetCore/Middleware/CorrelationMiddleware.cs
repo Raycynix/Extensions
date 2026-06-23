@@ -77,8 +77,11 @@ public class CorrelationMiddleware(RequestDelegate next)
         var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<CorrelationMiddleware>();
         using (logger?.BeginScope(new Dictionary<string, object?>
                {
+                   ["TraceId"] = traceId,
                    ["CorrelationId"] = operationContext.CorrelationId,
-                   ["TraceId"] = traceId
+                   ["UserId"] = operationContext.UserId,
+                   ["SubjectId"] = operationContext.SubjectId,
+                   ["SubjectType"] = operationContext.SubjectType
                }))
         {
             logger?.LogDebug(
