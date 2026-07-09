@@ -2,6 +2,12 @@
 
 `Raycynix.Extensions.Configuration` contains the core typed-configuration registration helpers for Raycynix applications.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Built on `Microsoft.Extensions.Configuration` and `Microsoft.Extensions.Options` 10.x
+
 ## What it contains
 
 - `AddRaycynixEnvironment()`
@@ -34,6 +40,7 @@
 - diagnostics through `IConfigurationDiagnostics`
 - redacted configuration snapshots through `IConfigurationRedactor`
 - optional Microsoft.Extensions.Logging diagnostics for configuration reload tracking
+- source setup customization through `ConfigurationSourcesOptions`
 
 ## What it does not contain
 

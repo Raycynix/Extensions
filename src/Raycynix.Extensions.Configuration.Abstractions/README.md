@@ -2,6 +2,12 @@
 
 `Raycynix.Extensions.Configuration.Abstractions` contains the contracts used by the Raycynix configuration packages.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Built on Microsoft.Extensions abstractions 10.x
+
 ## What it contains
 
 - `ConfigurationReloadBehaviorAttribute`

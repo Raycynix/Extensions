@@ -2,6 +2,12 @@
 
 `Raycynix.Extensions.Configuration.AspNetCore` adds ASP.NET Core-specific integrations for Raycynix configuration and feature flags.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Built on ASP.NET Core 10.x
+
 ## What it contains
 
 - `AddRaycynixAspNetCoreConfiguration(...)`
@@ -11,6 +17,7 @@
 - `RequireFeature(...)`
 - `RequireAnyFeature(...)`
 - optional Microsoft.Extensions.Logging diagnostics for feature gate middleware
+- source setup customization through `ConfigurationSourcesOptions`
 
 ## Usage
 

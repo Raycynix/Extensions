@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Aligned the package version with the net10.0 / Microsoft.Extensions 10 package line.
+- Renamed the source setup options type from `ConfigurationSourcesConfiguration` to `ConfigurationSourcesOptions` to follow the Options naming convention for setup objects.
+- Updated package description, tags, release notes, and README content for the current typed options, diagnostics, feature flag, reload, and logging behavior.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

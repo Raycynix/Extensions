@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Aligned the package version with the net10.0 ASP.NET Core package line.
+- Updated ASP.NET Core configuration setup APIs to use `ConfigurationSourcesOptions` naming through the core configuration package.
+- Updated package description, tags, release notes, and README content for feature gate options, middleware diagnostics, endpoint metadata, and Minimal API feature gates.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

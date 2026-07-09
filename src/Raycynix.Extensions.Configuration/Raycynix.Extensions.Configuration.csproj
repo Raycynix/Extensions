@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core typed-configuration registration, named options, diagnostics with redacted snapshots, feature flags, validation, reload governance, change handling, and environment-aware source composition for Raycynix applications.</Description>
-        <PackageTags>raycynix;configuration;options;named-options;binding;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;appsettings;dotnet</PackageTags>
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for validation, diagnostics snapshots, and configuration reload tracking.</PackageReleaseNotes>
+        <Description>Core Raycynix typed-options registration for Microsoft.Extensions.Configuration, with named options, feature flags, validation, reload governance, change handlers, diagnostics, redacted snapshots, and standard appsettings source composition.</Description>
+        <PackageTags>raycynix;configuration;options;typed-options;named-options;configuration-sources;binding;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;appsettings;dotnet;net10</PackageTags>
+        <PackageReleaseNotes>v3.0.0 aligns the package with net10.0/Microsoft.Extensions 10, updates source setup APIs to use ConfigurationSourcesOptions naming, and documents the current typed options, diagnostics, feature flag, reload, and logging behavior.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
