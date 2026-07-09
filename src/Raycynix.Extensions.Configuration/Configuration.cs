@@ -29,11 +29,11 @@ public static class Configuration
         /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
         public IConfigurationBuilder AddRaycynixConfigurationSources(
-            Action<ConfigurationSourcesConfiguration>? setup = null)
+            Action<ConfigurationSourcesOptions>? setup = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            var config = new ConfigurationSourcesConfiguration();
+            var config = new ConfigurationSourcesOptions();
             setup?.Invoke(config);
 
             ValidateSourcesConfiguration(config);
@@ -48,7 +48,7 @@ public static class Configuration
         /// <param name="setup">An optional callback for adjusting source registration behavior.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
         public IConfigurationBuilder UseRaycynixConfigurationSources(
-            Action<ConfigurationSourcesConfiguration>? setup = null)
+            Action<ConfigurationSourcesOptions>? setup = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
 
@@ -389,7 +389,7 @@ public static class Configuration
         }
     }
 
-    private static void RegisterSources(IConfigurationBuilder builder, ConfigurationSourcesConfiguration config)
+    private static void RegisterSources(IConfigurationBuilder builder, ConfigurationSourcesOptions config)
     {
         builder.SetBasePath(config.BasePath);
         builder.AddJsonFile(GetBaseJsonFileName(config.BaseFileName), config.BaseJsonOptional, config.ReloadOnChange);
@@ -414,7 +414,7 @@ public static class Configuration
         }
     }
 
-    private static void ValidateSourcesConfiguration(ConfigurationSourcesConfiguration config)
+    private static void ValidateSourcesConfiguration(ConfigurationSourcesOptions config)
     {
         if (string.IsNullOrWhiteSpace(config.BasePath))
         {

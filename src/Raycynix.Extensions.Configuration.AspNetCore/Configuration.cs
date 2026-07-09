@@ -41,7 +41,7 @@ public static class Configuration
     /// <returns>The same <see cref="WebApplicationBuilder"/> instance for chaining.</returns>
     public static WebApplicationBuilder AddRaycynixAspNetCoreConfiguration(
         this WebApplicationBuilder builder,
-        Action<ConfigurationSourcesConfiguration>? setup = null)
+        Action<ConfigurationSourcesOptions>? setup = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

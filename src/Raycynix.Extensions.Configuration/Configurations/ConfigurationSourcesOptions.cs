@@ -5,7 +5,7 @@ namespace Raycynix.Extensions.Configuration.Configurations;
 /// <summary>
 /// Describes the standard Raycynix configuration sources and their registration behavior.
 /// </summary>
-public sealed class ConfigurationSourcesConfiguration
+public sealed class ConfigurationSourcesOptions
 {
     /// <summary>
     /// Gets or sets the base path used for JSON configuration files.
