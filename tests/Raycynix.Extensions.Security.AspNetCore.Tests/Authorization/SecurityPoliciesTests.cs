@@ -2,6 +2,7 @@ using FluentAssertions;
 using Raycynix.Extensions.Security.Abstractions.Attributes;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.AspNetCore.Authorization;
+using Raycynix.Extensions.Security.AspNetCore.Authorization.Requirements;
 
 namespace Raycynix.Extensions.Security.AspNetCore.Tests.Authorization;
 
@@ -47,5 +48,43 @@ public class SecurityPoliciesTests
             SecurityPolicies.AnyRole("admin", "support"),
             SecurityPolicies.Subject(SecuritySubjectType.Service)
         ]);
+    }
+
+    [Fact]
+    public void Permission_ShouldRejectBlankValue()
+    {
+        var act = () => SecurityPolicies.Permission(" ");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AnyPermission_ShouldRejectEmptyValues()
+    {
+        var act = () => SecurityPolicies.AnyPermission();
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AuthorizationAttributes_ShouldSupportMethods()
+    {
+        var usage = typeof(RequirePermissionAttribute)
+            .GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
+            .Cast<AttributeUsageAttribute>()
+            .Single();
+
+        usage.ValidOn.Should().HaveFlag(AttributeTargets.Method);
+    }
+
+    [Fact]
+    public void Requirement_ShouldSnapshotAndNormalizeValues()
+    {
+        var permissions = new List<string> { " users.read ", "USERS.READ" };
+
+        var requirement = new AnyPermissionRequirement(permissions);
+        permissions.Add("users.write");
+
+        requirement.Permissions.Should().ContainSingle().Which.Should().Be("users.read");
     }
 }

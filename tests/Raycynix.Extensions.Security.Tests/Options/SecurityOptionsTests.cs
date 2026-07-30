@@ -1,12 +1,12 @@
 using FluentAssertions;
-using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.Options;
 
-namespace Raycynix.Extensions.Security.Tests.Configuration;
+namespace Raycynix.Extensions.Security.Tests.Options;
 
 /// <summary>
 /// Covers validation behavior for the root security configuration.
 /// </summary>
-public class SecurityConfigurationTests
+public class SecurityOptionsTests
 {
     /// <summary>
     /// Verifies that the root security configuration starts with a non-null JWT section.
@@ -14,9 +14,9 @@ public class SecurityConfigurationTests
     [Fact]
     public void Constructor_ShouldInitializeJwtSection()
     {
-        var configuration = new SecurityConfiguration();
+        var configuration = new SecurityOptions();
 
-        configuration.Jwt.Should().NotBeNull();
+        configuration.JwtOptions.Should().NotBeNull();
     }
 
     /// <summary>
@@ -25,9 +25,9 @@ public class SecurityConfigurationTests
     [Fact]
     public void Validate_ShouldDelegateToJwtValidation()
     {
-        var configuration = new SecurityConfiguration
+        var configuration = new SecurityOptions
         {
-            Jwt = new JwtConfiguration
+            JwtOptions = new JwtOptions
             {
                 Issuer = string.Empty,
                 Audience = "raycynix-services"
@@ -38,6 +38,20 @@ public class SecurityConfigurationTests
 
         action.Should().Throw<InvalidOperationException>()
             .WithMessage("*JWT issuer must be provided.*");
+    }
+
+    [Fact]
+    public void Validate_ShouldRejectMissingJwtOptions()
+    {
+        var options = new SecurityOptions
+        {
+            JwtOptions = null!
+        };
+
+        var action = () => options.Validate();
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*JWT options must be provided.*");
     }
 
 }

@@ -30,8 +30,7 @@ public sealed class SecretResolverIntegrationTests
             .Build();
 
         var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        services.AddRaycynixSecrets();
+        services.AddRaycynixSecrets(configuration);
 
         Environment.SetEnvironmentVariable(key, environmentValue);
 
@@ -68,12 +67,11 @@ public sealed class SecretResolverIntegrationTests
             .Build();
 
         var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        services.AddRaycynixSecrets(options =>
+        services.AddRaycynixSecrets(configuration, options =>
         {
             options.ProviderOrder.Clear();
-            options.ProviderOrder.Add(typeof(GitHubSecretProvider));
-            options.ProviderOrder.Add(typeof(ConfigurationSecretProvider));
+            options.ProviderOrder.Add(SecretProviderNames.GitHub);
+            options.ProviderOrder.Add(SecretProviderNames.Configuration);
         });
 
         Environment.SetEnvironmentVariable("CONNECTIONSTRINGS_MAIN", gitHubValue);
@@ -110,8 +108,7 @@ public sealed class SecretResolverIntegrationTests
             .Build();
 
         var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        services.AddRaycynixSecrets();
+        services.AddRaycynixSecrets(configuration);
 
         await using var serviceProvider = services.BuildServiceProvider();
         var resolver = serviceProvider.GetRequiredService<ISecretResolver>();
@@ -131,8 +128,9 @@ public sealed class SecretResolverIntegrationTests
         const string key = "ConnectionStrings:Main";
         const string gitHubValue = "Server=github;Database=main;";
 
+        var configuration = new ConfigurationBuilder().Build();
         var services = new ServiceCollection();
-        services.AddRaycynixSecrets();
+        services.AddRaycynixSecrets(configuration);
 
         Environment.SetEnvironmentVariable("CONNECTIONSTRINGS_MAIN", gitHubValue);
 

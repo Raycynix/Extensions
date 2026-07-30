@@ -1,12 +1,12 @@
 using FluentAssertions;
-using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.Options;
 
-namespace Raycynix.Extensions.Security.Tests.Configuration;
+namespace Raycynix.Extensions.Security.Tests.Options;
 
 /// <summary>
 /// Covers validation behavior for JWT configuration.
 /// </summary>
-public class JwtConfigurationTests
+public class JwtOptionsTests
 {
     /// <summary>
     /// Verifies that the JWT configuration starts with the expected package defaults.
@@ -14,7 +14,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Constructor_ShouldExposeExpectedDefaults()
     {
-        var configuration = new JwtConfiguration();
+        var configuration = new JwtOptions();
 
         configuration.AccessTokenLifetime.Should().Be(TimeSpan.FromMinutes(15));
         configuration.RefreshTokenLifetime.Should().Be(TimeSpan.FromDays(14));
@@ -28,7 +28,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldSucceedForValidConfiguration()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
 
         var action = () => configuration.Validate();
 
@@ -41,7 +41,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldRejectMissingIssuer()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
         configuration.Issuer = string.Empty;
 
         var action = () => configuration.Validate();
@@ -56,7 +56,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldRejectMissingAudience()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
         configuration.Audience = string.Empty;
 
         var action = () => configuration.Validate();
@@ -71,7 +71,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldRejectNonPositiveAccessTokenLifetime()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
         configuration.AccessTokenLifetime = TimeSpan.Zero;
 
         var action = () => configuration.Validate();
@@ -86,7 +86,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldRejectNonPositiveRefreshTokenLifetime()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
         configuration.RefreshTokenLifetime = TimeSpan.Zero;
 
         var action = () => configuration.Validate();
@@ -101,7 +101,7 @@ public class JwtConfigurationTests
     [Fact]
     public void Validate_ShouldRejectNegativeClockSkew()
     {
-        var configuration = CreateValidJwtConfiguration();
+        var configuration = CreateValidJwtOptions();
         configuration.ClockSkew = TimeSpan.FromSeconds(-1);
 
         var action = () => configuration.Validate();
@@ -110,9 +110,34 @@ public class JwtConfigurationTests
             .WithMessage("*Clock skew cannot be negative.*");
     }
 
-    private static JwtConfiguration CreateValidJwtConfiguration()
+    [Fact]
+    public void Validate_ShouldRejectRelativeAuthority()
     {
-        return new JwtConfiguration
+        var configuration = CreateValidJwtOptions();
+        configuration.Authority = "/identity";
+
+        var action = () => configuration.Validate();
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*absolute HTTP or HTTPS URI*");
+    }
+
+    [Fact]
+    public void Validate_ShouldRejectHttpAuthority_WhenHttpsMetadataIsRequired()
+    {
+        var configuration = CreateValidJwtOptions();
+        configuration.Authority = "http://auth.raycynix.local";
+        configuration.RequireHttpsMetadata = true;
+
+        var action = () => configuration.Validate();
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*must use HTTPS*");
+    }
+
+    private static JwtOptions CreateValidJwtOptions()
+    {
+        return new JwtOptions
         {
             Issuer = "raycynix-auth",
             Audience = "raycynix-services",

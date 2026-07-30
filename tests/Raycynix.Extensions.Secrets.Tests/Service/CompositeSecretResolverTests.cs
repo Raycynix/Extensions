@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Secrets.Implementations;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
+using SecretOptions = Raycynix.Extensions.Secrets.Options.SecretOptions;
 
 namespace Raycynix.Extensions.Secrets.Tests.Service;
 
@@ -56,18 +56,37 @@ public sealed class CompositeSecretResolverTests
             new TestEnvironmentProvider(),
             new TestConfigurationProvider()
         ],
-        Options.Create(new SecretOptions
+        new SecretOptions
         {
             ProviderOrder =
-            {
-                typeof(TestConfigurationProvider),
-                typeof(TestEnvironmentProvider)
-            }
-        }));
+            [
+                nameof(TestConfigurationProvider),
+                nameof(TestEnvironmentProvider)
+            ]
+        });
 
         var result = await resolver.GetSecretAsync("Api:Token", TestContext.Current.CancellationToken);
 
         result.Should().Be("config-secret");
+    }
+
+    /// <summary>
+    /// Verifies that an unknown configured provider is rejected instead of being silently ignored.
+    /// </summary>
+    [Fact]
+    public void Constructor_ShouldRejectUnknownConfiguredProvider()
+    {
+        var action = () => new CompositeSecretResolver(
+        [
+            new TestConfigurationProvider()
+        ],
+        new SecretOptions
+        {
+            ProviderOrder = ["MissingProvider"]
+        });
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*not registered*MissingProvider*");
     }
 
     /// <summary>

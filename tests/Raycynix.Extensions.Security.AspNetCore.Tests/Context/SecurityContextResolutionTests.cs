@@ -109,12 +109,12 @@ public class SecurityContextResolutionTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Authority"] = "https://auth.raycynix.local",
-                ["SecurityConfiguration:Jwt:Issuer"] = "raycynix-auth",
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services",
-                ["SecurityConfiguration:Jwt:AccessTokenLifetime"] = "00:15:00",
-                ["SecurityConfiguration:Jwt:RefreshTokenLifetime"] = "14.00:00:00",
-                ["SecurityConfiguration:Jwt:ClockSkew"] = "00:01:00"
+                ["SecurityOptions:JwtOptions:Authority"] = "https://auth.raycynix.local",
+                ["SecurityOptions:JwtOptions:Issuer"] = "raycynix-auth",
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services",
+                ["SecurityOptions:JwtOptions:AccessTokenLifetime"] = "00:15:00",
+                ["SecurityOptions:JwtOptions:RefreshTokenLifetime"] = "14.00:00:00",
+                ["SecurityOptions:JwtOptions:ClockSkew"] = "00:01:00"
             })
             .Build();
     }

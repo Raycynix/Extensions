@@ -15,7 +15,7 @@ public sealed class TeamCitySecretProviderTests
     public async Task GetSecretAsync_ShouldNormalizeKeyToTeamCityEnvironmentFormat()
     {
         const string key = "TeamCity:Token";
-        const string normalizedKey = "env.TeamCity.Token";
+        const string normalizedKey = "TeamCity.Token";
         const string value = "teamcity-secret";
         Environment.SetEnvironmentVariable(normalizedKey, value);
 
