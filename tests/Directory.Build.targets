@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+        <Compile Include="$(MSBuildThisFileDirectory)FluentAssertionsInitializer.cs"
+                 Link="FluentAssertionsInitializer.cs" />
+    </ItemGroup>
+</Project>
