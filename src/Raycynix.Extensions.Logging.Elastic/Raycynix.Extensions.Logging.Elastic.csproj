@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces ElasticConfiguration with ElasticOptions, uses conventional nested section binding, validates HTTP or HTTPS endpoints, and prevents dependency cycles during Serilog startup.</PackageReleaseNotes>
 
-        <Description>Elasticsearch sink integration for Raycynix Serilog-based logging.</Description>
-        <PackageTags>raycynix;logging;serilog;elasticsearch;elastic;structured-logging;sink;integration;dotnet</PackageTags>
+        <Description>Validated Elasticsearch sink options and integration for the Raycynix Serilog logging pipeline.</Description>
+        <PackageTags>raycynix;logging;serilog;elasticsearch;elastic;options;structured-logging;sink;integration;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

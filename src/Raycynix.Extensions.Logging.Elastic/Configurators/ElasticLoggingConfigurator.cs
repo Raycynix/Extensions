@@ -1,12 +1,12 @@
 using Elastic.CommonSchema.Serilog;
 using Elastic.Ingest.Elasticsearch.DataStreams;
 using Elastic.Serilog.Sinks;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
+using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Abstractions.Configurations;
-using Raycynix.Extensions.Logging.Elastic.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Options;
+using Raycynix.Extensions.Logging.Elastic.Options;
 using Serilog;
 
 namespace Raycynix.Extensions.Logging.Elastic.Configurators;
@@ -14,32 +14,36 @@ namespace Raycynix.Extensions.Logging.Elastic.Configurators;
 /// <summary>
 /// Configures the Serilog Elasticsearch sink from Raycynix logging settings.
 /// </summary>
-public class ElasticLoggingConfigurator : IRaycynixLoggingConfigurator
+public class ElasticLoggingConfigurator(
+    IConfiguration configuration,
+    Action<ElasticOptions>? configure = null) : IRaycynixLoggingConfigurator
 {
     /// <inheritdoc />
     public void Configure(
         HostBuilderContext context,
         IServiceProvider services,
         LoggerConfiguration loggerConfiguration,
-        LoggingConfiguration configuration)
+        LoggingOptions options)
     {
-        var elasticConfiguration = services.GetRequiredService<IConfigurationAccessor<ElasticConfiguration>>().Current;
+        var elasticOptions = configuration
+                                 .GetSection(ConfigurationSectionPath.Combine<LoggingOptions, ElasticOptions>())
+                                 .Get<ElasticOptions>()
+                             ?? new ElasticOptions();
 
-        if (elasticConfiguration is null)
-            throw new InvalidOperationException("Elastic configuration is not set");
+        configure?.Invoke(elasticOptions);
+        elasticOptions.Validate();
 
-
-        if (!elasticConfiguration.Enabled)
+        if (!elasticOptions.Enabled)
             return;
 
-        loggerConfiguration.WriteTo.Elasticsearch([new Uri(elasticConfiguration.Url)], options =>
+        loggerConfiguration.WriteTo.Elasticsearch([new Uri(elasticOptions.Url)], sinkOptions =>
         {
-            options.DataStream = new DataStreamName(
+            sinkOptions.DataStream = new DataStreamName(
                 "logs",
-                configuration.ServiceName.ToLowerInvariant(),
-                configuration.Environment.ToLowerInvariant()
+                options.ServiceName.ToLowerInvariant(),
+                options.Environment.ToLowerInvariant()
             );
-            options.TextFormatting = new EcsTextFormatterConfiguration<LogEventEcsDocument>();
+            sinkOptions.TextFormatting = new EcsTextFormatterConfiguration<LogEventEcsDocument>();
         });
     }
 }

@@ -4,10 +4,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Abstractions.Configurations;
-using Raycynix.Extensions.Logging.Elastic.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Options;
 using Raycynix.Extensions.Logging.Elastic.Configurators;
 using Raycynix.Extensions.Logging.Elastic.Internal;
+using Raycynix.Extensions.Logging.Elastic.Options;
 
 namespace Raycynix.Extensions.Logging.Elastic;
 
@@ -22,7 +22,7 @@ public static class Elastic
     /// <param name="builder">The Raycynix logging builder to extend.</param>
     /// <param name="configure">An optional callback for adjusting the bound Elasticsearch logging configuration.</param>
     /// <returns>The same <see cref="LoggingBuilder"/> instance for chaining.</returns>
-    public static LoggingBuilder AddElastic(this LoggingBuilder builder, Action<ElasticConfiguration>? configure = null)
+    public static LoggingBuilder AddElastic(this LoggingBuilder builder, Action<ElasticOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         
@@ -41,23 +41,24 @@ public static class Elastic
     /// <param name="configure">An optional callback for adjusting the bound Elasticsearch logging configuration.</param>
     /// <returns>The same <see cref="LoggingBuilder"/> instance for chaining.</returns>
     public static LoggingBuilder AddElastic(this LoggingBuilder builder, IConfiguration configuration,
-        Action<ElasticConfiguration>? configure = null)
+        Action<ElasticOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        builder.Services.AddRaycynixConfiguration<ElasticConfiguration>(
+        builder.Services.AddRaycynixConfiguration<ElasticOptions>(
             configuration,
-            $"{nameof(LoggingConfiguration)}:{nameof(ElasticConfiguration)}",
+            ConfigurationSectionPath.Combine<LoggingOptions, ElasticOptions>(),
             configurePostBind: configure);
 
-        builder.Services.AddRaycynixConfigurationValidator<ElasticConfiguration, ElasticConfigurationValidator>();
+        builder.Services.AddRaycynixConfigurationValidator<ElasticOptions, ElasticOptionsValidator>();
 
         builder.Services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<ElasticConfiguration>>().Current);
+            serviceProvider.GetRequiredService<IConfigurationAccessor<ElasticOptions>>().Current);
 
         builder.Services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IRaycynixLoggingConfigurator, ElasticLoggingConfigurator>());
+            ServiceDescriptor.Singleton<IRaycynixLoggingConfigurator>(
+                new ElasticLoggingConfigurator(configuration, configure)));
 
         return builder;
     }

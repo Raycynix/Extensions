@@ -1,16 +1,16 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Logging.Abstractions.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Options;
 
 namespace Raycynix.Extensions.Logging.Internal;
 
 /// <summary>
-/// Validates the typed Raycynix logging configuration model.
+/// Validates the typed Raycynix logging options.
 /// </summary>
-internal sealed class LoggingConfigurationValidator : IConfigurationValidator<LoggingConfiguration>
+internal sealed class LoggingOptionsValidator : IConfigurationValidator<LoggingOptions>
 {
     /// <inheritdoc />
-    public ConfigurationValidationResult Validate(LoggingConfiguration options)
+    public ConfigurationValidationResult Validate(LoggingOptions options)
     {
         try
         {

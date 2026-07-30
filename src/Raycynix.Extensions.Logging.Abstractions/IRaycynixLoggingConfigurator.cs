@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Logging.Abstractions.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Options;
 using Serilog;
 
 namespace Raycynix.Extensions.Logging.Abstractions;
@@ -15,10 +15,10 @@ public interface IRaycynixLoggingConfigurator
     /// <param name="context">The host builder context for the application being configured.</param>
     /// <param name="services">The application service provider.</param>
     /// <param name="loggerConfiguration">The Serilog logger configuration to update.</param>
-    /// <param name="configuration">The resolved Raycynix logging configuration.</param>
+    /// <param name="options">The resolved Raycynix logging options.</param>
     void Configure(
         HostBuilderContext context,
         IServiceProvider services,
         LoggerConfiguration loggerConfiguration,
-        LoggingConfiguration configuration);
+        LoggingOptions options);
 }

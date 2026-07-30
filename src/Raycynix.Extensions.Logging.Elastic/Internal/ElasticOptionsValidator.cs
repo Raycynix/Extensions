@@ -1,21 +1,21 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Logging.Elastic.Configurations;
+using Raycynix.Extensions.Logging.Elastic.Options;
 
 namespace Raycynix.Extensions.Logging.Elastic.Internal;
 
-internal sealed class ElasticConfigurationValidator : IConfigurationValidator<ElasticConfiguration>
+internal sealed class ElasticOptionsValidator : IConfigurationValidator<ElasticOptions>
 {
-    public ConfigurationValidationResult Validate(ElasticConfiguration options)
+    public ConfigurationValidationResult Validate(ElasticOptions options)
     {
         try
         {
             options.Validate();
             return ConfigurationValidationResult.Success();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            return ConfigurationValidationResult.Failure(ex.Message);
+            return ConfigurationValidationResult.Failure(exception.Message);
         }
     }
 }

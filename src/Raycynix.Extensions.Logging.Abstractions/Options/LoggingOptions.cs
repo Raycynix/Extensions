@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Helpers;
 
-namespace Raycynix.Extensions.Logging.Abstractions.Configurations;
+namespace Raycynix.Extensions.Logging.Abstractions.Options;
 
 /// <summary>
-/// Represents configuration settings for Raycynix logging.
+/// Represents options for Raycynix logging.
 /// </summary>
-public class LoggingConfiguration
+public sealed class LoggingOptions
 {
     /// <summary>
     /// Gets or sets the service name written to log events.
@@ -35,7 +35,7 @@ public class LoggingConfiguration
         "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] [Trace:{TraceId}] [Span:{SpanId}] [Corr:{CorrelationId}] {Message:lj}{NewLine}{Exception}";
 
     /// <summary>
-    /// Validates the logging configuration.
+    /// Validates the logging options.
     /// </summary>
     public void Validate()
     {

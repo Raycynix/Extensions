@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces LoggingConfiguration with LoggingOptions and updates optional Serilog integration contracts to use the options convention.</PackageReleaseNotes>
 
-        <Description>Abstractions, configuration models, and extension contracts for Raycynix typed logging and optional Serilog integrations.</Description>
-        <PackageTags>raycynix;logging;abstractions;contracts;typed-logger;structured-logging;serilog;configuration;dotnet</PackageTags>
+        <Description>Typed logger abstractions, validated logging options, and extension contracts for Raycynix Serilog integrations.</Description>
+        <PackageTags>raycynix;logging;abstractions;contracts;options;typed-logger;structured-logging;serilog;configuration;dotnet</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
