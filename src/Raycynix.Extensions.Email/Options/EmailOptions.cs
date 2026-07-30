@@ -1,11 +1,11 @@
 using Raycynix.Extensions.Email.Abstractions.Models;
 
-namespace Raycynix.Extensions.Email.Configurations;
+namespace Raycynix.Extensions.Email.Options;
 
 /// <summary>
 /// Represents shared email settings used by all providers.
 /// </summary>
-public sealed class EmailConfiguration
+public sealed class EmailOptions
 {
     /// <summary>
     /// Gets or sets the default sender email address used when a message does not specify <see cref="EmailMessage.From"/>.

@@ -76,6 +76,7 @@ public sealed class EmailMessage
         ArgumentNullException.ThrowIfNull(Attachments);
         ArgumentNullException.ThrowIfNull(Headers);
         ArgumentNullException.ThrowIfNull(Metadata);
+        ThrowIfContainsLineBreak(Subject, nameof(Subject));
 
         if (!HasRecipients)
         {
@@ -89,6 +90,14 @@ public sealed class EmailMessage
         ValidateAttachments();
         ValidateDictionary(Headers, nameof(Headers));
         ValidateDictionary(Metadata, nameof(Metadata));
+    }
+
+    private static void ThrowIfContainsLineBreak(string value, string parameterName)
+    {
+        if (value.ContainsAny('\r', '\n'))
+        {
+            throw new ArgumentException($"{parameterName} cannot contain line breaks.", parameterName);
+        }
     }
 
     private static void ThrowIfContainsNull<T>(IEnumerable<T> values, string parameterName)
@@ -121,6 +130,19 @@ public sealed class EmailMessage
             if (value is null)
             {
                 throw new InvalidOperationException($"{parameterName} cannot contain null values.");
+            }
+
+            if (parameterName == nameof(Headers))
+            {
+                if (key.Any(static character => character <= ' ' || character >= '\u007f' || character == ':'))
+                {
+                    throw new InvalidOperationException("Headers contains an invalid header name.");
+                }
+
+                if (value.ContainsAny('\r', '\n'))
+                {
+                    throw new InvalidOperationException("Headers cannot contain values with line breaks.");
+                }
             }
         }
     }

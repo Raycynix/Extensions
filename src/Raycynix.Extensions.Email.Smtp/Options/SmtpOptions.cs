@@ -1,11 +1,11 @@
 using Raycynix.Extensions.Email.Smtp.Enums;
 
-namespace Raycynix.Extensions.Email.Smtp.Configurations;
+namespace Raycynix.Extensions.Email.Smtp.Options;
 
 /// <summary>
 /// Represents SMTP provider settings.
 /// </summary>
-public sealed class SmtpConfiguration
+public sealed class SmtpOptions
 {
     /// <summary>
     /// Gets or sets the SMTP server host name.

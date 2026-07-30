@@ -1,13 +1,13 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Abstractions.Models;
 
 namespace Raycynix.Extensions.Email.Internal;
 
-internal sealed class EmailConfigurationValidator : IConfigurationValidator<EmailConfiguration>
+internal sealed class EmailOptionsValidator : IConfigurationValidator<EmailOptions>
 {
-    public ConfigurationValidationResult Validate(EmailConfiguration options)
+    public ConfigurationValidationResult Validate(EmailOptions options)
     {
         var errors = new List<string>();
 
@@ -15,6 +15,18 @@ internal sealed class EmailConfigurationValidator : IConfigurationValidator<Emai
         ValidateEmailAddress(options.DefaultReplyToAddress, nameof(options.DefaultReplyToAddress), errors);
         ValidateDisplayName(options.DefaultFromDisplayName, nameof(options.DefaultFromDisplayName), errors);
         ValidateDisplayName(options.DefaultReplyToDisplayName, nameof(options.DefaultReplyToDisplayName), errors);
+        ValidateDisplayNameRequiresAddress(
+            options.DefaultFromAddress,
+            options.DefaultFromDisplayName,
+            nameof(options.DefaultFromDisplayName),
+            nameof(options.DefaultFromAddress),
+            errors);
+        ValidateDisplayNameRequiresAddress(
+            options.DefaultReplyToAddress,
+            options.DefaultReplyToDisplayName,
+            nameof(options.DefaultReplyToDisplayName),
+            nameof(options.DefaultReplyToAddress),
+            errors);
 
         return errors.Count == 0
             ? ConfigurationValidationResult.Success()
@@ -43,6 +55,19 @@ internal sealed class EmailConfigurationValidator : IConfigurationValidator<Emai
         if (displayName?.Length > 255)
         {
             errors.Add($"{name} cannot exceed 255 characters.");
+        }
+    }
+
+    private static void ValidateDisplayNameRequiresAddress(
+        string? address,
+        string? displayName,
+        string displayNameProperty,
+        string addressProperty,
+        List<string> errors)
+    {
+        if (!string.IsNullOrWhiteSpace(displayName) && string.IsNullOrWhiteSpace(address))
+        {
+            errors.Add($"{displayNameProperty} requires {addressProperty}.");
         }
     }
 }

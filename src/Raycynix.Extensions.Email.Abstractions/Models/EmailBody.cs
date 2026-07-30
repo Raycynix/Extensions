@@ -57,6 +57,11 @@ public sealed class EmailBody
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(html);
 
+        if (plainText is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(plainText);
+        }
+
         return new EmailBody(
             plainText: plainText,
             html: html,

@@ -69,6 +69,7 @@ public sealed class EmailSendResult
         IReadOnlyDictionary<string, string>? metadata = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ThrowIfWhitespace(messageId, nameof(messageId));
 
         return new EmailSendResult(
             succeeded: true,
@@ -95,6 +96,7 @@ public sealed class EmailSendResult
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(provider);
         ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+        ThrowIfWhitespace(errorCode, nameof(errorCode));
 
         return new EmailSendResult(
             succeeded: false,
@@ -113,7 +115,28 @@ public sealed class EmailSendResult
             return _emptyMetadata;
         }
 
+        foreach (var (key, value) in metadata)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Metadata cannot contain null or whitespace keys.", nameof(metadata));
+            }
+
+            if (value is null)
+            {
+                throw new ArgumentException("Metadata cannot contain null values.", nameof(metadata));
+            }
+        }
+
         return new ReadOnlyDictionary<string, string>(
             new Dictionary<string, string>(metadata));
+    }
+
+    private static void ThrowIfWhitespace(string? value, string parameterName)
+    {
+        if (value is not null && string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"{parameterName} cannot be whitespace.", parameterName);
+        }
     }
 }

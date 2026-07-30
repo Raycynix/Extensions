@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Implementations;
 using Raycynix.Extensions.Email.Internal;
 
@@ -24,22 +24,22 @@ public static class Email
         /// <summary>
         /// Registers the shared Raycynix email infrastructure.
         /// </summary>
-        /// <param name="configuration">The application configuration used to bind <see cref="EmailConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="EmailOptions"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound email configuration.</param>
         /// <returns>A builder that can be used to register an email provider.</returns>
         public IEmailBuilder AddRaycynixEmail(
             IConfiguration configuration,
-            Action<EmailConfiguration>? setup = null)
+            Action<EmailOptions>? setup = null)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
-            services.AddRaycynixConfiguration<EmailConfiguration>(
+            services.AddRaycynixConfiguration<EmailOptions>(
                 configuration,
                 configurePostBind: setup);
-            services.AddRaycynixConfigurationValidator<EmailConfiguration, EmailConfigurationValidator>();
+            services.AddRaycynixConfigurationValidator<EmailOptions, EmailOptionsValidator>();
             services.TryAddSingleton(serviceProvider =>
-                serviceProvider.GetRequiredService<IConfigurationAccessor<EmailConfiguration>>().Current);
+                serviceProvider.GetRequiredService<IConfigurationAccessor<EmailOptions>>().Current);
             services.TryAddSingleton(static serviceProvider =>
                 EmailProviderDescriptor.Resolve(serviceProvider));
 

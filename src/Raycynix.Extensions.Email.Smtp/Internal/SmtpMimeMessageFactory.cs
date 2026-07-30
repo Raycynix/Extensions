@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Email.Abstractions.Enums;
 using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Models;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 
 internal sealed class SmtpMimeMessageFactory(
-    EmailConfiguration emailConfiguration,
+    EmailOptions emailConfiguration,
     ILogger<SmtpMimeMessageFactory>? logger = null)
 {
     public async Task<MimeMessage> CreateAsync(
@@ -18,7 +18,7 @@ internal sealed class SmtpMimeMessageFactory(
         var sender = message.From
                      ?? emailConfiguration.ResolveDefaultFrom()
                      ?? throw new EmailSendException(
-                         "Email message requires a sender address. Set EmailConfiguration.DefaultFromAddress or EmailMessage.From.");
+                         "Email message requires a sender address. Set EmailOptions.DefaultFromAddress or EmailMessage.From.");
 
         var mimeMessage = new MimeMessage
         {

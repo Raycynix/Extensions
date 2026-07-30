@@ -1,12 +1,12 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Smtp.Options;
 
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 
-internal sealed class SmtpConfigurationValidator : IConfigurationValidator<SmtpConfiguration>
+internal sealed class SmtpOptionsValidator : IConfigurationValidator<SmtpOptions>
 {
-    public ConfigurationValidationResult Validate(SmtpConfiguration options)
+    public ConfigurationValidationResult Validate(SmtpOptions options)
     {
         var errors = new List<string>();
 
@@ -25,15 +25,21 @@ internal sealed class SmtpConfigurationValidator : IConfigurationValidator<SmtpC
             errors.Add("SMTP secure socket options value is not supported.");
         }
 
-        if (options.TimeoutMilliseconds < 0)
+        if (options.TimeoutMilliseconds <= 0)
         {
-            errors.Add("SMTP timeout cannot be negative.");
+            errors.Add("SMTP timeout must be greater than zero.");
         }
 
         if (options.UseDefaultCredentials && (!string.IsNullOrWhiteSpace(options.Username) ||
                                              !string.IsNullOrWhiteSpace(options.Password)))
         {
             errors.Add("SMTP default credentials cannot be combined with explicit username or password.");
+        }
+
+        if (!options.UseDefaultCredentials &&
+            string.IsNullOrWhiteSpace(options.Username) != string.IsNullOrWhiteSpace(options.Password))
+        {
+            errors.Add("SMTP username and password must be configured together.");
         }
 
         return errors.Count == 0
