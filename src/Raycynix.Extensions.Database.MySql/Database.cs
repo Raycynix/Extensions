@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.MySql.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.MySql.Options;
 using Raycynix.Extensions.Database.MySql.Internal;
 
 namespace Raycynix.Extensions.Database.MySql;
@@ -22,17 +22,18 @@ public static class Database
     /// <returns>The same builder instance for chaining.</returns>
     public static IDatabaseBuilder AddMySql(
         this IDatabaseBuilder builder,
-        Action<MySqlConfiguration>? configure = null)
+        Action<MySqlOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddRaycynixConfiguration<MySqlConfiguration>(
+        builder.Services.AddRaycynixConfiguration<MySqlOptions>(
             builder.Configuration,
-            $"{nameof(DatabaseConfiguration)}:{nameof(MySqlConfiguration)}",
+            $"{nameof(DatabaseOptions)}:{nameof(MySqlOptions)}",
             configurePostBind: configure);
+        builder.Services.AddRaycynixConfigurationValidator<MySqlOptions, MySqlOptionsValidator>();
 
-        builder.Services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<MySqlConfiguration>>().Current);
+        builder.Services.TryAddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<MySqlOptions>>().Current);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<IDatabaseProviderRegistration, MySqlDatabaseProviderRegistration>());

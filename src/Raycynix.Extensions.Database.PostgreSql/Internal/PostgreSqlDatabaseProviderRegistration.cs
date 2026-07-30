@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.PostgreSql.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.PostgreSql.Options;
 
 namespace Raycynix.Extensions.Database.PostgreSql.Internal;
 
@@ -19,7 +19,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration(
     public string ProviderName => "postgresql";
 
     /// <inheritdoc />
-    public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
+    public string ResolveConnectionString(DatabaseOptions configuration, IServiceProvider serviceProvider)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -27,11 +27,11 @@ internal sealed class PostgreSqlDatabaseProviderRegistration(
             return configuration.ConnectionString;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new ArgumentException("Connection configuration is missing.");
 
         var providerConfig = serviceProvider
-            .GetService(typeof(IConfigurationAccessor<PostgreSqlConfiguration>)) as IConfigurationAccessor<PostgreSqlConfiguration>;
+            .GetService(typeof(IConfigurationAccessor<PostgreSqlOptions>)) as IConfigurationAccessor<PostgreSqlOptions>;
 
         var settings = providerConfig?.Current;
         var builder = new NpgsqlConnectionStringBuilder
@@ -74,12 +74,12 @@ internal sealed class PostgreSqlDatabaseProviderRegistration(
     public void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
         var providerConfig = serviceProvider
-            .GetService(typeof(IConfigurationAccessor<PostgreSqlConfiguration>)) as IConfigurationAccessor<PostgreSqlConfiguration>;
+            .GetService(typeof(IConfigurationAccessor<PostgreSqlOptions>)) as IConfigurationAccessor<PostgreSqlOptions>;
 
         options.UseNpgsql(connectionString, npgsqlOptions =>
         {
@@ -105,7 +105,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration(
     }
 
     /// <inheritdoc />
-    public void Validate(DatabaseConfiguration configuration)
+    public void Validate(DatabaseOptions configuration)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -113,7 +113,7 @@ internal sealed class PostgreSqlDatabaseProviderRegistration(
             return;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new InvalidOperationException("PostgreSQL connection configuration is missing.");
 
         if (string.IsNullOrWhiteSpace(connection.Host))

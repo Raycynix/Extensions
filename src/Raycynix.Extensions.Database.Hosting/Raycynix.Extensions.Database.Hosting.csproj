@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for startup database initialization.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 updates generic-host database initialization for the DatabaseOptions-based 3.0 database contracts.</PackageReleaseNotes>
 
-        <Description>Generic host startup integration for running Raycynix database initialization through IDatabaseInitializer in workers, services, and console applications.</Description>
-        <PackageTags>raycynix;database;hosting;generic-host;startup;initialization;migrations;workers;services;dotnet</PackageTags>
+        <Description>Generic host integration for validated Raycynix database creation and migration initialization through IDatabaseInitializer.</Description>
+        <PackageTags>raycynix;database;hosting;generic-host;startup;initialization;migrations;options;workers;services;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

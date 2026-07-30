@@ -1,9 +1,9 @@
-namespace Raycynix.Extensions.Database.MySql.Configurations;
+namespace Raycynix.Extensions.Database.MySql.Options;
 
 /// <summary>
 /// Represents MySQL-specific connection settings.
 /// </summary>
-public class MySqlConfiguration
+public sealed class MySqlOptions
 {
     /// <summary>
     /// Gets the command timeout in seconds.
@@ -19,4 +19,15 @@ public class MySqlConfiguration
     /// Gets a value indicating whether connection pooling is enabled.
     /// </summary>
     public bool Pooling { get; set; } = true;
+
+    /// <summary>
+    /// Validates MySQL-specific settings.
+    /// </summary>
+    public void Validate()
+    {
+        if (CommandTimeoutSeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(CommandTimeoutSeconds), "Command timeout cannot be negative.");
+        }
+    }
 }

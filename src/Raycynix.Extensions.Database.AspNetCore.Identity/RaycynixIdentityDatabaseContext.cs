@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 
 namespace Raycynix.Extensions.Database.AspNetCore.Identity;
@@ -24,7 +24,7 @@ public sealed class RaycynixIdentityDatabaseContext : IdentityDbContext, IRaycyn
     /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixIdentityDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)
@@ -68,7 +68,7 @@ public sealed class RaycynixIdentityDatabaseContext<TUser> : IdentityDbContext<T
     /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixIdentityDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)
@@ -117,7 +117,7 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey>
     /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixIdentityDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)
@@ -178,7 +178,7 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey, TUserCla
     /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixIdentityDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)
@@ -206,12 +206,12 @@ public sealed class RaycynixIdentityDatabaseContext<TUser, TRole, TKey, TUserCla
 
 internal sealed class RaycynixIdentityDatabaseContextServices
 {
-    private readonly DatabaseConfiguration _config;
+    private readonly DatabaseOptions _config;
     private readonly IDatabaseModelConfigurator _modelConfigurator;
     private readonly string _providerName;
 
     public RaycynixIdentityDatabaseContextServices(
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
     {

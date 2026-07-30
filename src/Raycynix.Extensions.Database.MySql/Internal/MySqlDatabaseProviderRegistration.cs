@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using MySqlConfiguration = Raycynix.Extensions.Database.MySql.Configurations.MySqlConfiguration;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using MySqlOptions = Raycynix.Extensions.Database.MySql.Options.MySqlOptions;
 
 namespace Raycynix.Extensions.Database.MySql.Internal;
 
@@ -19,7 +19,7 @@ internal sealed class MySqlDatabaseProviderRegistration(
     public string ProviderName => "mysql";
 
     /// <inheritdoc />
-    public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
+    public string ResolveConnectionString(DatabaseOptions configuration, IServiceProvider serviceProvider)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -27,11 +27,11 @@ internal sealed class MySqlDatabaseProviderRegistration(
             return configuration.ConnectionString;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new ArgumentException("Connection configuration is missing.");
         
         var providerConfig = serviceProvider
-            .GetService(typeof(IConfigurationAccessor<MySqlConfiguration>)) as IConfigurationAccessor<MySqlConfiguration>;
+            .GetService(typeof(IConfigurationAccessor<MySqlOptions>)) as IConfigurationAccessor<MySqlOptions>;
 
         var settings = providerConfig?.Current;
         var builder = new MySqlConnectionStringBuilder
@@ -58,12 +58,12 @@ internal sealed class MySqlDatabaseProviderRegistration(
     public void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
         var providerConfig = serviceProvider
-            .GetService(typeof(IConfigurationAccessor<MySqlConfiguration>)) as IConfigurationAccessor<MySqlConfiguration>;
+            .GetService(typeof(IConfigurationAccessor<MySqlOptions>)) as IConfigurationAccessor<MySqlOptions>;
         
         options.UseMySQL(connectionString, mySqlOptions =>
         {
@@ -89,7 +89,7 @@ internal sealed class MySqlDatabaseProviderRegistration(
     }
 
     /// <inheritdoc />
-    public void Validate(DatabaseConfiguration configuration)
+    public void Validate(DatabaseOptions configuration)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -97,7 +97,7 @@ internal sealed class MySqlDatabaseProviderRegistration(
             return;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new InvalidOperationException("MySQL connection configuration is missing.");
 
         if (string.IsNullOrWhiteSpace(connection.Host))

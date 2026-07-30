@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for database observability setup and recording.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 updates database metrics and tracing integration for the DatabaseOptions-based 3.0 database contracts.</PackageReleaseNotes>
 
-        <Description>Optional Raycynix database observability integration that records initialization, creation, migration, and model-building operations through tracing and metrics abstractions.</Description>
-        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;initialization;migrations;model-building;dotnet</PackageTags>
+        <Description>Database observability integration for recording initialization, creation, migration, and model-building operations through tracing and metrics.</Description>
+        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;options;initialization;migrations;model-building;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

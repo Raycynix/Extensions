@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for SQLite provider configuration.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces SqliteConfiguration with SqliteOptions, binds from DatabaseOptions:SqliteOptions, and validates mode, cache, and command timeout during options resolution.</PackageReleaseNotes>
 
-        <Description>SQLite provider integration for Raycynix.Extensions.Database with AddSqlite registration, provider-specific validation, SQLite connection-string composition, and EF Core UseSqlite configuration.</Description>
-        <PackageTags>raycynix;database;sqlite;provider;provider-validation;efcore;entityframework;migrations;connection-string;embedded-database;dotnet</PackageTags>
+        <Description>SQLite EF Core integration with typed SqliteOptions, validated mode and cache settings, connection-string composition, and migrations.</Description>
+        <PackageTags>raycynix;database;sqlite;provider;options;configuration;provider-validation;efcore;entityframework;migrations;connection-string;embedded-database;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

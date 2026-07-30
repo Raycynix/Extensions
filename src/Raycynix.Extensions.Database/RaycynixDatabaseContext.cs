@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 
 namespace Raycynix.Extensions.Database;
@@ -11,7 +11,7 @@ namespace Raycynix.Extensions.Database;
 /// </summary>
 public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContext
 {
-    private readonly DatabaseConfiguration _config;
+    private readonly DatabaseOptions _config;
     private readonly IDatabaseModelConfigurator _modelConfigurator;
     private readonly string _providerName;
 
@@ -24,7 +24,7 @@ public sealed class RaycynixDatabaseContext : DbContext, IRaycynixDatabaseContex
     /// <param name="serviceProvider">The service provider used to resolve database infrastructure services.</param>
     public RaycynixDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)

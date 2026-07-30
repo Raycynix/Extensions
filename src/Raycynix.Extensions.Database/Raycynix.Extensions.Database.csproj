@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for database registration, initialization, and model configuration.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 adopts DatabaseOptions and ConnectionOptions, binds from DatabaseOptions through the shared configuration pipeline, and preserves fail-fast database registration and initialization validation.</PackageReleaseNotes>
 
-        <Description>Core Raycynix EF Core database infrastructure with shared DbContext registration, custom context support, model assembly discovery, provider validation, initialization, and model-cache integration.</Description>
-        <PackageTags>raycynix;database;efcore;entityframework;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet</PackageTags>
+        <Description>Core Raycynix EF Core infrastructure with typed DatabaseOptions, shared and custom DbContext registration, provider validation, initialization, and model discovery.</Description>
+        <PackageTags>raycynix;database;efcore;entityframework;options;configuration;dbcontext;custom-context;configurators;model-cache;migrations;assembly-discovery;initialization;provider-validation;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

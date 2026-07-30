@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Internal;
 
@@ -33,7 +33,7 @@ public class DatabaseRegistrationExtensions
         IServiceCollection services,
         IConfiguration configuration,
         Assembly migrationsAssembly,
-        Action<DatabaseConfiguration>? setup,
+        Action<DatabaseOptions>? setup,
         Assembly? modelAssembly)
         where TContext : DbContext, IRaycynixDatabaseContext
     {
@@ -54,19 +54,19 @@ public class DatabaseRegistrationExtensions
             if (setup is not null)
             {
                 throw new InvalidOperationException(
-                    "Raycynix database is already registered. Configure DatabaseConfiguration only on the first AddRaycynixDatabase call.");
+                    "Raycynix database is already registered. Configure DatabaseOptions only on the first AddRaycynixDatabase call.");
             }
 
             return new DatabaseBuilder(services, configuration, migrationsAssembly);
         }
 
-        services.AddRaycynixConfiguration<DatabaseConfiguration>(
+        services.AddRaycynixConfiguration<DatabaseOptions>(
             configuration,
             configurePostBind: setup);
 
-        services.AddRaycynixConfigurationValidator<DatabaseConfiguration, DatabaseConfigurationValidator>();
+        services.AddRaycynixConfigurationValidator<DatabaseOptions, DatabaseOptionsValidator>();
         services.TryAddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>().Current);
+            serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseOptions>>().Current);
 
         services.TryAddSingleton<IDatabaseModelAssemblyRegistry>(modelAssemblyRegistry);
         services.TryAddSingleton(static serviceProvider =>
@@ -81,7 +81,7 @@ public class DatabaseRegistrationExtensions
             services.AddDbContext<TContext>((serviceProvider, options) =>
             {
                 var logger = serviceProvider.GetService<ILogger<TContext>>();
-                var config = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+                var config = serviceProvider.GetRequiredService<DatabaseOptions>();
                 var providerDescriptor = serviceProvider.GetRequiredService<DatabaseProviderDescriptor>();
                 var providerRegistration = providerDescriptor.Registration;
 

@@ -1,19 +1,19 @@
-namespace Raycynix.Extensions.Database.Abstractions.Configurations;
+namespace Raycynix.Extensions.Database.Abstractions.Options;
 
 /// <summary>
 /// Represents the database settings used by the Raycynix database extensions.
 /// </summary>
-public class DatabaseConfiguration
+public sealed class DatabaseOptions
 {
     /// <summary>
     /// Gets the raw connection string.
     /// </summary>
-    public string? ConnectionString { get; init; }
+    public string? ConnectionString { get; set; }
 
     /// <summary>
     /// Gets the structured connection settings used when a raw connection string is not supplied.
     /// </summary>
-    public ConnectionConfiguration? ConnectionConfiguration { get; init; }
+    public ConnectionOptions? ConnectionOptions { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether EF Core migrations should be applied during initialization.
@@ -77,17 +77,17 @@ public class DatabaseConfiguration
         }
 
         var hasConnectionString = !string.IsNullOrWhiteSpace(ConnectionString);
-        var hasConnectionConfig = ConnectionConfiguration is not null;
+        var hasConnectionOptions = ConnectionOptions is not null;
 
-        if (!hasConnectionString && !hasConnectionConfig)
+        if (!hasConnectionString && !hasConnectionOptions)
         {
             throw new InvalidOperationException(
-                "Either ConnectionString or ConnectionConfiguration must be provided.");
+                "Either ConnectionString or ConnectionOptions must be provided.");
         }
 
-        if (hasConnectionConfig)
+        if (hasConnectionOptions)
         {
-            ConnectionConfiguration!.Validate("Database");
+            ConnectionOptions!.Validate("Database");
         }
     }
 }
