@@ -92,6 +92,39 @@ public sealed class EmailAttachmentTests
             .WithMessage("Attachment content type must be a valid MIME content type.*");
     }
 
+    /// <summary>
+    /// Verifies that attachment factories honor cancellation before opening content.
+    /// </summary>
+    [Fact]
+    public async Task FromBytes_ShouldThrow_WhenReadIsCancelled()
+    {
+        var attachment = EmailAttachment.FromBytes("data.bin", [1, 2, 3]);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        await cancellationTokenSource.CancelAsync();
+
+        var act = async () => await attachment.OpenReadAsync(cancellationTokenSource.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    /// <summary>
+    /// Verifies that MIME-facing attachment values cannot inject additional headers.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenFileNameContainsLineBreak()
+    {
+        var attachment = new EmailAttachment
+        {
+            FileName = "data.bin\r\nX-Test: value",
+            OpenReadAsync = _ => ValueTask.FromResult<Stream>(new MemoryStream([1, 2, 3]))
+        };
+
+        var act = attachment.Validate;
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("FileName cannot contain line breaks.*");
+    }
+
     private static async Task<byte[]> ReadAllAsync(Stream stream)
     {
         using var memory = new MemoryStream();

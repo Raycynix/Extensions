@@ -1,7 +1,7 @@
 using FluentAssertions;
 using MimeKit;
 using Raycynix.Extensions.Email.Abstractions.Models;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Smtp.Internal;
 
 namespace Raycynix.Extensions.Email.Tests.Smtp;
@@ -17,7 +17,7 @@ public sealed class SmtpMimeMessageFactoryTests
     [Fact]
     public async Task CreateAsync_ShouldPutContentIdAttachmentsIntoLinkedResources()
     {
-        var factory = new SmtpMimeMessageFactory(new EmailConfiguration
+        var factory = new SmtpMimeMessageFactory(new EmailOptions
         {
             DefaultFromAddress = "sender@example.com"
         });

@@ -1,6 +1,6 @@
 using FluentAssertions;
 using MailKit.Security;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Smtp.Options;
 using Raycynix.Extensions.Email.Smtp.Enums;
 using Raycynix.Extensions.Email.Smtp.Internal;
 
@@ -17,7 +17,7 @@ public sealed class SmtpSecureSocketOptionsMapperTests
     [Fact]
     public void Map_ShouldPreserveAuto()
     {
-        var configuration = new SmtpConfiguration
+        var configuration = new SmtpOptions
         {
             Port = 587
         };
@@ -39,7 +39,7 @@ public sealed class SmtpSecureSocketOptionsMapperTests
         SmtpSecureSocketOptions configured,
         SecureSocketOptions expected)
     {
-        var configuration = new SmtpConfiguration
+        var configuration = new SmtpOptions
         {
             SecureSocketOptions = configured
         };

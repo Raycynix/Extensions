@@ -1,13 +1,13 @@
 using FluentAssertions;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Internal;
 
-namespace Raycynix.Extensions.Email.Tests.Configuration;
+namespace Raycynix.Extensions.Email.Tests.Options;
 
 /// <summary>
 /// Covers shared email configuration validation.
 /// </summary>
-public sealed class EmailConfigurationValidatorTests
+public sealed class EmailOptionsValidatorTests
 {
     /// <summary>
     /// Verifies that valid default sender configuration is accepted.
@@ -15,8 +15,8 @@ public sealed class EmailConfigurationValidatorTests
     [Fact]
     public void Validate_ShouldSucceed_WhenDefaultsAreValid()
     {
-        var validator = new EmailConfigurationValidator();
-        var configuration = new EmailConfiguration
+        var validator = new EmailOptionsValidator();
+        var configuration = new EmailOptions
         {
             DefaultFromAddress = "sender@example.com",
             DefaultFromDisplayName = "Sender",
@@ -38,9 +38,9 @@ public sealed class EmailConfigurationValidatorTests
     [InlineData(false)]
     public void Validate_ShouldFail_WhenDefaultDisplayNameIsTooLong(bool fromDisplayName)
     {
-        var validator = new EmailConfigurationValidator();
+        var validator = new EmailOptionsValidator();
         var displayName = new string('a', 256);
-        var configuration = new EmailConfiguration
+        var configuration = new EmailOptions
         {
             DefaultFromAddress = "sender@example.com",
             DefaultReplyToAddress = "reply@example.com",
@@ -62,8 +62,8 @@ public sealed class EmailConfigurationValidatorTests
     [InlineData(false)]
     public void Validate_ShouldFail_WhenDefaultAddressContainsDisplayNameMailbox(bool fromAddress)
     {
-        var validator = new EmailConfigurationValidator();
-        var configuration = new EmailConfiguration
+        var validator = new EmailOptionsValidator();
+        var configuration = new EmailOptions
         {
             DefaultFromAddress = fromAddress ? "Sender <sender@example.com>" : "sender@example.com",
             DefaultReplyToAddress = fromAddress ? "reply@example.com" : "Reply <reply@example.com>"
@@ -73,5 +73,24 @@ public sealed class EmailConfigurationValidatorTests
 
         result.Succeeded.Should().BeFalse();
         result.Errors.Should().ContainSingle(error => error.Contains("must be a valid email address."));
+    }
+
+    /// <summary>
+    /// Verifies that display names cannot be configured without their corresponding addresses.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldFail_WhenDisplayNameHasNoAddress()
+    {
+        var validator = new EmailOptionsValidator();
+        var options = new EmailOptions
+        {
+            DefaultFromDisplayName = "Sender"
+        };
+
+        var result = validator.Validate(options);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().ContainSingle(
+            error => error == "DefaultFromDisplayName requires DefaultFromAddress.");
     }
 }

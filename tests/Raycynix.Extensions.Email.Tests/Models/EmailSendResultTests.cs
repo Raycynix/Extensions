@@ -51,4 +51,21 @@ public sealed class EmailSendResultTests
 
         result.Metadata["trace"].Should().Be("first");
     }
+
+    /// <summary>
+    /// Verifies that provider metadata cannot contain invalid entries.
+    /// </summary>
+    [Fact]
+    public void Success_ShouldThrow_WhenMetadataContainsNullValue()
+    {
+        var metadata = new Dictionary<string, string>
+        {
+            ["trace"] = null!
+        };
+
+        var act = () => EmailSendResult.Success("smtp", metadata: metadata);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Metadata cannot contain null values.*");
+    }
 }
