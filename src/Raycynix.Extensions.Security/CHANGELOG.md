@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Renamed `SecurityConfiguration` to `SecurityOptions` and moved it to `Raycynix.Extensions.Security.Options`.
+- Renamed `JwtConfiguration` to `JwtOptions` and moved it to `Raycynix.Extensions.Security.Options`.
+- Changed the root configuration section from `SecurityConfiguration` to `SecurityOptions`.
+- Registered `JwtOptions` directly from the bound `SecurityOptions.JwtOptions` snapshot, fixing empty JWT settings when the nested type is injected.
+- JWT authority values must be absolute HTTP or HTTPS URIs and must use HTTPS when metadata HTTPS is required.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

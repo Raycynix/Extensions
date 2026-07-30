@@ -44,7 +44,7 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
     options.IncludeUserSecrets = builder.Environment.IsDevelopment();
 });
 
-builder.Services.AddRaycynixSecrets();
+builder.Services.AddRaycynixSecrets(builder.Configuration);
 
 public sealed class GitHubTokenLoader(ISecretResolver secrets)
 {
@@ -76,18 +76,41 @@ This allows applications to keep using the standard configuration pipeline, incl
 
 You can customize the provider order when the default precedence is not appropriate:
 
+```json
+{
+  "SecretOptions": {
+    "ProviderOrder": [
+      "GitHub",
+      "Configuration",
+      "Environment",
+      "TeamCity"
+    ]
+  }
+}
+```
+
 ```csharp
-builder.Services.AddRaycynixSecrets(options =>
+builder.Services.AddRaycynixSecrets(builder.Configuration, options =>
 {
     options.ProviderOrder.Clear();
-    options.ProviderOrder.Add(typeof(GitHubSecretProvider));
-    options.ProviderOrder.Add(typeof(ConfigurationSecretProvider));
-    options.ProviderOrder.Add(typeof(EnvironmentSecretProvider));
-    options.ProviderOrder.Add(typeof(TeamCitySecretProvider));
+    options.ProviderOrder.Add(SecretProviderNames.GitHub);
+    options.ProviderOrder.Add(SecretProviderNames.Configuration);
+    options.ProviderOrder.Add(SecretProviderNames.Environment);
+    options.ProviderOrder.Add(SecretProviderNames.TeamCity);
 });
 ```
 
 Providers not listed in `SecretOptions.ProviderOrder` are still evaluated afterward in their registration order.
+Custom providers can be referenced by their short name, CLR type name, or fully qualified type name. Unknown and duplicate configured names are rejected.
+
+For environment-based configuration, use indexed keys:
+
+```dotenv
+SecretOptions__ProviderOrder__0=GitHub
+SecretOptions__ProviderOrder__1=Configuration
+SecretOptions__ProviderOrder__2=Environment
+SecretOptions__ProviderOrder__3=TeamCity
+```
 
 ## Logging
 
@@ -100,7 +123,7 @@ Examples:
 - `ConnectionStrings:Main` can be resolved from `IConfiguration["ConnectionStrings:Main"]`
 - or from the exact environment variable `ConnectionStrings:Main`
 - or from `CONNECTIONSTRINGS_MAIN` in GitHub Actions-style environments
-- or from `env.ConnectionStrings.Main` in TeamCity-style environments
+- or from `ConnectionStrings.Main` in the process environment when the TeamCity parameter is named `env.ConnectionStrings.Main`
 
 You can also use the convenience APIs for required secrets and diagnostics:
 
@@ -135,3 +158,11 @@ ResolveWithSourceAsync.ProviderName: GitHubSecretProvider
 ExplainSecretResolutionAsync:
 - GitHubSecretProvider: True
 ```
+
+## Migrating From 2.x
+
+- Pass `IConfiguration` to `AddRaycynixSecrets(builder.Configuration)`.
+- Import `SecretOptions` from `Raycynix.Extensions.Secrets.Options`.
+- Replace `typeof(GitHubSecretProvider)` entries in `ProviderOrder` with stable names such as `SecretProviderNames.GitHub`.
+- Provider order can now be bound from `SecretOptions:ProviderOrder` in any registered configuration source.
+- TeamCity provider lookup now correctly removes the TeamCity parameter prefix: `env.ConnectionStrings.Main` is read from the process variable `ConnectionStrings.Main`.

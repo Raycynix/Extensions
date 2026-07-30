@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.0
+### Added
+- Added configuration binding for `SecretOptions` through the shared Raycynix Configuration pipeline.
+- Added stable `SecretProviderNames` values for built-in provider ordering.
+- Added validation for duplicate, empty, and unregistered provider names.
+
+### Changed
+- Moved `SecretOptions` to `Raycynix.Extensions.Secrets.Options`.
+- Changed `ProviderOrder` from CLR `Type` values to configuration-friendly provider names.
+- Changed `AddRaycynixSecrets(...)` to require `IConfiguration`.
+- Changed `ConfigurationSecretProvider` to use direct `IConfiguration` injection.
+- Standardized secret key and cancellation validation across built-in providers.
+- Fixed TeamCity provider lookup to read the process environment variable without the build-parameter `env.` prefix.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.
