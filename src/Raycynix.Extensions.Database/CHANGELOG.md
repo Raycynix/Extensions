@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Adopted `DatabaseOptions` and the `DatabaseOptions` configuration section.
+- Renamed the nested structured connection key to `ConnectionOptions`.
+- Updated database registration, contexts, initialization, and provider contracts to the 3.0 options API.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

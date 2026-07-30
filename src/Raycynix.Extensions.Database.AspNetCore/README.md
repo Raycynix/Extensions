@@ -34,11 +34,11 @@ Register `Raycynix.Extensions.Database`, exactly one provider package, and any r
 
 ```json
 {
-  "DatabaseConfiguration": {
+  "DatabaseOptions": {
     "ConnectionString": "Host=localhost;Port=5432;Database=app;Username=app;Password=secret",
     "UseMigrations": true,
     "EnsureCreated": false,
-    "PostgreSqlConfiguration": {
+    "PostgreSqlOptions": {
       "CommandTimeoutSeconds": 30,
       "IncludeErrorDetail": false
     }

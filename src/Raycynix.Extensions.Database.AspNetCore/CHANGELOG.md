@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Updated ASP.NET Core initialization for the Database 3.0 options contracts.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

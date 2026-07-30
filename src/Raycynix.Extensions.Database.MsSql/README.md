@@ -5,7 +5,7 @@ SQL Server provider integration for `Raycynix.Extensions.Database`.
 ## What It Provides
 
 - `AddMsSql(...)`
-- `MsSqlServerConfiguration`
+- `MsSqlServerOptions`
 - SQL Server structured connection-string composition
 - SQL Server provider-specific validation
 - EF Core `UseSqlServer(...)` configuration with retries, command timeout, and migrations assembly support
@@ -32,8 +32,8 @@ builder.Services
 
 ```json
 {
-  "DatabaseConfiguration": {
-    "ConnectionConfiguration": {
+  "DatabaseOptions": {
+    "ConnectionOptions": {
       "Host": "localhost",
       "Name": "app",
       "Username": "sa",
@@ -41,7 +41,7 @@ builder.Services
     },
     "UseMigrations": true,
     "EnsureCreated": false,
-    "MsSqlServerConfiguration": {
+    "MsSqlServerOptions": {
       "TrustServerCertificate": false,
       "MultipleActiveResultSets": false,
       "CommandTimeoutSeconds": 30
@@ -55,3 +55,10 @@ When a raw `ConnectionString` is not supplied, structured SQL Server configurati
 ## Logging
 
 The provider emits optional `Microsoft.Extensions.Logging` diagnostics for validation, connection-string source selection, and EF Core provider configuration. Connection strings, usernames, and passwords are never logged.
+
+## Migrating From 2.x
+
+- Replace `MsSqlServerConfiguration` with `MsSqlServerOptions`.
+- Import it from `Raycynix.Extensions.Database.MsSql.Options`.
+- Rename the section from `DatabaseConfiguration:MsSqlServerConfiguration` to `DatabaseOptions:MsSqlServerOptions`.
+- Negative command timeouts now fail during options validation.

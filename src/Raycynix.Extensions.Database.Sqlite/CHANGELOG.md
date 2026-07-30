@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Renamed `SqliteConfiguration` to `SqliteOptions` and moved it to the `Options` namespace.
+- Changed the provider section to `DatabaseOptions:SqliteOptions`.
+- Added fail-fast validation for mode, cache, and command timeout.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

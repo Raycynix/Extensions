@@ -4,7 +4,7 @@ Contracts and configuration models shared by the Raycynix database packages.
 
 ## What It Provides
 
-- `DatabaseConfiguration` and `ConnectionConfiguration`
+- `DatabaseOptions` and `ConnectionOptions`
 - `IDatabaseBuilder`
 - `IDatabaseInitializer`
 - `IDatabaseProviderRegistration`
@@ -22,22 +22,22 @@ public interface IDatabaseProviderRegistration
 {
     string ProviderName { get; }
 
-    void Validate(DatabaseConfiguration configuration);
+    void Validate(DatabaseOptions configuration);
 
     string ResolveConnectionString(
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         IServiceProvider serviceProvider);
 
     void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider);
 }
 ```
 
-Common validation stays in `DatabaseConfiguration`. Provider-specific rules, such as whether `Host` or `Username` is required, belong in the provider implementation.
+Common validation stays in `DatabaseOptions`. Provider-specific rules, such as whether `Host` or `Username` is required, belong in the provider implementation.
 
 ## Configurators
 
@@ -71,3 +71,10 @@ If a configurator changes the model shape from runtime values, include those val
 ## Usage
 
 This package is intended for provider packages, optional feature packages, and reusable modules that need database contracts without depending on the core runtime registration package.
+
+## Migrating From 2.x
+
+- `DatabaseConfiguration` is now `DatabaseOptions`.
+- `ConnectionConfiguration` is now `ConnectionOptions`.
+- Both types are available from `Raycynix.Extensions.Database.Abstractions.Options`.
+- Connection properties are now settable from registration callbacks as well as configuration binding.

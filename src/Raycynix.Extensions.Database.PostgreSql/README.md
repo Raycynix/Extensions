@@ -5,7 +5,7 @@ PostgreSQL provider integration for `Raycynix.Extensions.Database`.
 ## What It Provides
 
 - `AddPostgreSql(...)`
-- `PostgreSqlConfiguration`
+- `PostgreSqlOptions`
 - PostgreSQL structured connection-string composition
 - PostgreSQL provider-specific validation
 - EF Core `UseNpgsql(...)` configuration with retries, command timeout, pooling, and migrations assembly support
@@ -32,8 +32,8 @@ builder.Services
 
 ```json
 {
-  "DatabaseConfiguration": {
-    "ConnectionConfiguration": {
+  "DatabaseOptions": {
+    "ConnectionOptions": {
       "Host": "localhost",
       "Port": 5432,
       "Name": "app",
@@ -42,7 +42,7 @@ builder.Services
     },
     "UseMigrations": true,
     "EnsureCreated": false,
-    "PostgreSqlConfiguration": {
+    "PostgreSqlOptions": {
       "Pooling": true,
       "MinimumPoolSize": 5,
       "MaximumPoolSize": 50,
@@ -58,3 +58,10 @@ When a raw `ConnectionString` is not supplied, structured PostgreSQL configurati
 ## Logging
 
 The provider emits optional `Microsoft.Extensions.Logging` diagnostics for validation, connection-string source selection, and EF Core provider configuration. Connection strings, usernames, and passwords are never logged.
+
+## Migrating From 2.x
+
+- Replace `PostgreSqlConfiguration` with `PostgreSqlOptions`.
+- Import it from `Raycynix.Extensions.Database.PostgreSql.Options`.
+- Rename the section from `DatabaseConfiguration:PostgreSqlConfiguration` to `DatabaseOptions:PostgreSqlOptions`.
+- Invalid pool ranges and negative command timeouts now fail during options validation.
