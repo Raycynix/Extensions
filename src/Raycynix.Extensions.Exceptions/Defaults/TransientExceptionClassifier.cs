@@ -14,6 +14,8 @@ public class TransientExceptionClassifier : ITransientExceptionClassifier
     /// <returns><c>true</c> if the exception is considered transient; otherwise, <c>false</c>.</returns>
     public bool IsTransient(Exception exception)
     {
+        ArgumentNullException.ThrowIfNull(exception);
+
         return exception switch
         {
             TimeoutException => true,

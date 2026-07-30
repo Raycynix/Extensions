@@ -51,19 +51,9 @@ public interface IExceptionResponse
     string? Endpoint { get; }
 
     /// <summary>
-    /// Gets the query string associated with the failed operation.
-    /// </summary>
-    string? QueryString { get; }
-
-    /// <summary>
     /// Gets the UTC timestamp when the error response was created.
     /// </summary>
     DateTimeOffset TimestampUtc { get; }
-
-    /// <summary>
-    /// Gets the execution context captured for the error.
-    /// </summary>
-    IErrorExecutionContext? Context { get; }
 
     /// <summary>
     /// Gets a value indicating whether the error is transient.
@@ -84,5 +74,5 @@ public interface IExceptionResponse
     /// Gets a collection of validation errors, where the key represents the field or property name,
     /// and the value contains an array of associated error messages.
     /// </summary>
-    IDictionary<string, string[]>? ValidationErrors { get; }
+    IReadOnlyDictionary<string, string[]>? ValidationErrors { get; }
 }

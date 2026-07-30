@@ -14,8 +14,6 @@ public class RetryExecutor(
     ITransientExceptionClassifier transientExceptionClassifier,
     ILogger<RetryExecutor>? logger = null) : IRetryExecutor
 {
-    private static readonly Random _sharedRandom = new();
-
     /// <inheritdoc />
     public async Task ExecuteAsync(
         Func<CancellationToken, Task> operation,
@@ -23,31 +21,53 @@ public class RetryExecutor(
         string? operationName = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(operation);
+
         options ??= new RetryExecutionOptions();
         options.Validate();
 
-        await ExecuteCoreAsync<object?>(
-            async ct =>
-            {
-                await operation(ct);
-                return null;
-            },
-            options,
-            operationName,
-            cancellationToken);
+        var previousContext = ErrorExecutionContextAccessor.Current;
+
+        try
+        {
+            await ExecuteCoreAsync<object?>(
+                async ct =>
+                {
+                    await operation(ct);
+                    return null;
+                },
+                options,
+                operationName,
+                cancellationToken);
+        }
+        finally
+        {
+            ErrorExecutionContextAccessor.Current = previousContext;
+        }
     }
 
     /// <inheritdoc />
-    public Task<T> ExecuteAsync<T>(
+    public async Task<T> ExecuteAsync<T>(
         Func<CancellationToken, Task<T>> operation,
         RetryExecutionOptions? options = null,
         string? operationName = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(operation);
+
         options ??= new RetryExecutionOptions();
         options.Validate();
 
-        return ExecuteCoreAsync(operation, options, operationName, cancellationToken);
+        var previousContext = ErrorExecutionContextAccessor.Current;
+
+        try
+        {
+            return await ExecuteCoreAsync(operation, options, operationName, cancellationToken);
+        }
+        finally
+        {
+            ErrorExecutionContextAccessor.Current = previousContext;
+        }
     }
 
     private async Task<T> ExecuteCoreAsync<T>(
@@ -131,7 +151,7 @@ public class RetryExecutor(
             return delay;
         }
 
-        var jitter = _sharedRandom.Next(0, 250);
+        var jitter = Random.Shared.Next(0, 250);
         return delay + TimeSpan.FromMilliseconds(jitter);
     }
 

@@ -6,9 +6,19 @@ namespace Raycynix.Extensions.Exceptions.Defaults;
 /// <summary>
 /// Maps arbitrary exceptions to <see cref="RaycynixException"/> instances.
 /// </summary>
-public class ExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> mappings)
-    : IExceptionMapper
+public class ExceptionMapper : IExceptionMapper
 {
+    private readonly IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> _mappings;
+
+    /// <summary>
+    /// Initializes the default exception mapper.
+    /// </summary>
+    public ExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> mappings)
+    {
+        ArgumentNullException.ThrowIfNull(mappings);
+        _mappings = new Dictionary<Type, Func<Exception, RaycynixException>>(mappings);
+    }
+
     /// <summary>
     /// Maps an exception to a Raycynix exception.
     /// </summary>
@@ -16,11 +26,13 @@ public class ExceptionMapper(IReadOnlyDictionary<Type, Func<Exception, RaycynixE
     /// <returns>The mapped <see cref="RaycynixException"/> instance.</returns>
     public RaycynixException Map(Exception ex)
     {
+        ArgumentNullException.ThrowIfNull(ex);
+
         if (ex is RaycynixException rayEx) return rayEx;
 
         var exceptionType = ex.GetType();
 
-        var mapping = mappings
+        var mapping = _mappings
             .Where(x => x.Key.IsAssignableFrom(exceptionType))
             .OrderByDescending(x => GetInheritanceDepth(x.Key))
             .Select(x => x.Value)

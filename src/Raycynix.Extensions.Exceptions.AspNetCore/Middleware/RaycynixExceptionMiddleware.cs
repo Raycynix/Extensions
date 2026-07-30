@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
@@ -25,9 +25,8 @@ public class RaycynixExceptionMiddleware(
     /// Executes the next middleware and handles any exception that escapes the pipeline.
     /// </summary>
     /// <param name="httpContext">The current HTTP context.</param>
-    /// <param name="operationContext">The operation context for the current request.</param>
     /// <returns>A task that completes when the request has been processed.</returns>
-    public async Task InvokeAsync(HttpContext httpContext, IOperationContext operationContext)
+    public async Task InvokeAsync(HttpContext httpContext)
     {
         try
         {
@@ -36,37 +35,23 @@ public class RaycynixExceptionMiddleware(
         catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
         {
             logger?.LogWarning("Request was canceled by the client. TraceId: {TraceId}", httpContext.TraceIdentifier);
+            throw;
         }
         catch (Exception ex)
         {
+            var operationContext = httpContext.RequestServices.GetService<IOperationContext>();
             var raycynixException = mapper.Map(ex);
             var safeDetails = masker.Mask(raycynixException.SecureDetails);
             var traceId = Activity.Current?.TraceId.ToString() ?? httpContext.TraceIdentifier;
             var spanId = Activity.Current?.SpanId.ToString();
-            var correlationId = operationContext.CorrelationId;
+            var correlationId = operationContext?.CorrelationId;
             var path = httpContext.Request.Path.Value;
             var method = httpContext.Request.Method;
             var endpoint = httpContext.GetEndpoint()?.DisplayName;
-            var queryString = httpContext.Request.QueryString.HasValue
-                ? httpContext.Request.QueryString.Value
-                : null;
             var isTransient = raycynixException.Category == ErrorCategory.Transient;
             var retryAfterSeconds = raycynixException is TransientFailureException transientFailureException
                 ? transientFailureException.RetryAfterSeconds
                 : null;
-
-            var executionContext = raycynixException.ExecutionContext ?? new ErrorExecutionContext(
-                Source: "http",
-                OperationName: endpoint,
-                TraceId: traceId,
-                SpanId: spanId,
-                CorrelationId: correlationId,
-                UserId: operationContext.UserId,
-                Path: path,
-                Method: method,
-                Endpoint: endpoint,
-                QueryString: queryString,
-                IsTransient: isTransient);
 
             logger?.LogError(ex,
                 "Error {Code}: {Msg}. Category: {Category}. TraceId: {TraceId}. SpanId: {SpanId}. CorrelationId: {CorrelationId}. Method: {Method}. Path: {Path}. Endpoint: {Endpoint}. HasQueryString: {HasQueryString}. Details: {@Details}",
@@ -79,7 +64,7 @@ public class RaycynixExceptionMiddleware(
                 method,
                 path,
                 endpoint,
-                queryString is not null,
+                httpContext.Request.QueryString.HasValue,
                 safeDetails);
 
             if (httpContext.Response.HasStarted)
@@ -105,9 +90,7 @@ public class RaycynixExceptionMiddleware(
                 Path: path,
                 Method: method,
                 Endpoint: endpoint,
-                QueryString: queryString,
                 TimestampUtc: DateTimeOffset.UtcNow,
-                Context: executionContext,
                 IsTransient: isTransient,
                 RetryAfterSeconds: retryAfterSeconds,
                 Details: raycynixException.Details,
@@ -122,7 +105,7 @@ public class RaycynixExceptionMiddleware(
             }
 
             var json = JsonSerializer.Serialize(response, _serializerOptions);
-            await httpContext.Response.WriteAsync(json);
+            await httpContext.Response.WriteAsync(json, httpContext.RequestAborted);
         }
     }
 }
