@@ -185,7 +185,7 @@ public static class Configuration
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
-            var resolvedSectionName = sectionName ?? typeof(TOptions).Name;
+            var resolvedSectionName = sectionName ?? ConfigurationSectionPath.For<TOptions>();
             var section = configuration.GetSection(resolvedSectionName);
 
             if (requireSection && !section.Exists())
