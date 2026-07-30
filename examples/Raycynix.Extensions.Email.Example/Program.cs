@@ -4,7 +4,9 @@ using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Email;
 using Raycynix.Extensions.Email.Example;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Smtp;
+using Raycynix.Extensions.Email.Smtp.Options;
 using Raycynix.Extensions.Secrets;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
@@ -33,10 +35,10 @@ builder
             {
                 smtp.Username = ResolveSecret(
                     context.Configuration,
-                    "EmailConfiguration:SmtpConfiguration:Username");
+                    $"{nameof(EmailOptions)}:{nameof(SmtpOptions)}:Username");
                 smtp.Password = ResolveSecret(
                     context.Configuration,
-                    "EmailConfiguration:SmtpConfiguration:Password");
+                    $"{nameof(EmailOptions)}:{nameof(SmtpOptions)}:Password");
             });
 
         services.AddHostedService<EmailExampleWorker>();
