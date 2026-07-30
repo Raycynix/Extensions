@@ -27,6 +27,7 @@ public class Money
     /// <returns><c>true</c> when the model is valid; otherwise, <c>false</c>.</returns>
     public bool IsValid()
     {
-        return Currency.Length == 3 && Currency.All(static c => char.IsAsciiLetterUpper(c));
+        return Currency is { Length: 3 } &&
+               Currency.All(static character => char.IsAsciiLetterUpper(character));
     }
 }

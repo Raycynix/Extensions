@@ -63,7 +63,7 @@ public static class ContractHeaderExtensions
 
         metadata = new ContractMetadata
         {
-            Name = name,
+            Name = name.Trim(),
             Version = parsedVersion!
         };
 

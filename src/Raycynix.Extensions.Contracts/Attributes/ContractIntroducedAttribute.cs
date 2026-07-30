@@ -1,3 +1,5 @@
+using Raycynix.Extensions.Contracts.Models;
+
 namespace Raycynix.Extensions.Contracts.Attributes;
 
 /// <summary>
@@ -12,7 +14,7 @@ public sealed class ContractIntroducedAttribute : Attribute
     /// <param name="version">The semantic contract version.</param>
     public ContractIntroducedAttribute(string version)
     {
-        Version = version;
+        Version = ContractVersion.Parse(version).ToString();
     }
 
     /// <summary>

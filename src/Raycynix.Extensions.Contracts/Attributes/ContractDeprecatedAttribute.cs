@@ -1,3 +1,5 @@
+using Raycynix.Extensions.Contracts.Models;
+
 namespace Raycynix.Extensions.Contracts.Attributes;
 
 /// <summary>
@@ -6,13 +8,15 @@ namespace Raycynix.Extensions.Contracts.Attributes;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 public sealed class ContractDeprecatedAttribute : Attribute
 {
+    private string? _removalVersion;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ContractDeprecatedAttribute"/> class.
     /// </summary>
     /// <param name="deprecatedSinceVersion">The semantic contract version in which deprecation started.</param>
     public ContractDeprecatedAttribute(string deprecatedSinceVersion)
     {
-        DeprecatedSinceVersion = deprecatedSinceVersion;
+        DeprecatedSinceVersion = ContractVersion.Parse(deprecatedSinceVersion).ToString();
     }
 
     /// <summary>
@@ -23,7 +27,13 @@ public sealed class ContractDeprecatedAttribute : Attribute
     /// <summary>
     /// Gets or sets the planned removal version.
     /// </summary>
-    public string? RemovalVersion { get; set; }
+    public string? RemovalVersion
+    {
+        get => _removalVersion;
+        set => _removalVersion = value is null
+            ? null
+            : ContractVersion.Parse(value).ToString();
+    }
 
     /// <summary>
     /// Gets or sets the deprecation reason.

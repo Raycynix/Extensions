@@ -23,6 +23,13 @@ public sealed class ContractHttpResult<TContract> : IResult
     {
         ArgumentNullException.ThrowIfNull(metadata);
 
+        if (!metadata.HasIdentity)
+        {
+            throw new ArgumentException(
+                "Contract metadata must contain a non-empty name and a valid semantic version.",
+                nameof(metadata));
+        }
+
         Value = value;
         Metadata = metadata;
         StatusCode = statusCode;

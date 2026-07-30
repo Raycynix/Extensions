@@ -51,7 +51,10 @@ public class ErrorContract
     {
         return !string.IsNullOrWhiteSpace(Code) &&
                !string.IsNullOrWhiteSpace(Message) &&
+               Details is not null &&
+               ValidationErrors is not null &&
                ValidationErrors.All(static error =>
+                   error is not null &&
                    !string.IsNullOrWhiteSpace(error.Field) &&
                    !string.IsNullOrWhiteSpace(error.Code) &&
                    !string.IsNullOrWhiteSpace(error.Message));
