@@ -2,6 +2,12 @@
 
 `Raycynix.Extensions.Contracts` contains reusable contract models and versioning conventions for shared .NET APIs.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Transport-neutral and independent of ASP.NET Core
+
 ## What it contains
 
 - `Money`
@@ -140,6 +146,9 @@ This package only defines the common contract model and conventions. It does not
 
 `ContractVersion` also supports parsing, comparison, and equality to help consumers implement consistent compatibility checks in their own services.
 
+`ContractVersion.Initial` returns a fresh `1.0.0` value on every access. Mutating one returned instance
+does not change the initial version observed by other consumers.
+
 ## Error Contracts
 
 Use `ErrorContract` as the shared transport shape for failures:
@@ -167,6 +176,10 @@ This package intentionally keeps the error contract generic so it can be reused 
 ## Validation Metadata
 
 The built-in contract models expose `System.ComponentModel.DataAnnotations` attributes and lightweight `IsValid()` checks so consumers can use them with ASP.NET Core, manual validation flows, or custom guards without introducing transport-specific behavior into the contracts themselves.
+
+Runtime `IsValid()` checks also safely reject required members that were set to `null` by malformed
+deserialization input. Contract evolution attributes parse their version arguments immediately, so invalid
+values such as `1.0` or `v1.0.0` fail during contract declaration.
 
 ## ASP.NET Core
 
