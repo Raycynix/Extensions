@@ -27,7 +27,7 @@ var builder = Host.CreateDefaultBuilder(args)
 builder
     .ConfigureServices((context, services) =>
     {
-        services.AddRaycynixSecrets();
+        services.AddRaycynixSecrets(context.Configuration);
 
         services
             .AddRaycynixEmail(context.Configuration)
@@ -49,8 +49,7 @@ await builder.RunConsoleAsync();
 static string? ResolveSecret(IConfiguration configuration, string key)
 {
     var secretServices = new ServiceCollection();
-    secretServices.AddSingleton(configuration);
-    secretServices.AddRaycynixSecrets();
+    secretServices.AddRaycynixSecrets(configuration);
 
     using var secretProvider = secretServices.BuildServiceProvider();
     var secrets = secretProvider.GetRequiredService<ISecretResolver>();

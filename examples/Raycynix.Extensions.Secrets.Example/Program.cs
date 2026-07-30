@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Secrets;
 using Raycynix.Extensions.Secrets.Extensions;
-using Raycynix.Extensions.Secrets.Implementations;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 const string secretKey = "ConnectionStrings:Main";
@@ -15,9 +14,9 @@ builder.Configuration[requiredKey] = "config-token";
 
 Environment.SetEnvironmentVariable(secretKey, "Server=env;Database=main;");
 Environment.SetEnvironmentVariable("CONNECTIONSTRINGS_MAIN", "Server=github;Database=main;");
-Environment.SetEnvironmentVariable("env.ConnectionStrings.Main", "Server=teamcity;Database=main;");
+Environment.SetEnvironmentVariable("ConnectionStrings.Main", "Server=teamcity;Database=main;");
 
-builder.Services.AddRaycynixSecrets();
+builder.Services.AddRaycynixSecrets(builder.Configuration);
 
 using var host = builder.Build();
 using var scope = host.Services.CreateScope();
@@ -31,7 +30,7 @@ Console.WriteLine("Available values");
 Console.WriteLine($"Configuration[{secretKey}]: {builder.Configuration[secretKey]}");
 Console.WriteLine($"Environment[{secretKey}]: {Environment.GetEnvironmentVariable(secretKey)}");
 Console.WriteLine($"Environment[CONNECTIONSTRINGS_MAIN]: {Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_MAIN")}");
-Console.WriteLine($"Environment[env.ConnectionStrings.Main]: {Environment.GetEnvironmentVariable("env.ConnectionStrings.Main")}");
+Console.WriteLine($"Environment[ConnectionStrings.Main]: {Environment.GetEnvironmentVariable("ConnectionStrings.Main")}");
 Console.WriteLine();
 
 var resolved = await resolver.GetSecretAsync(secretKey);
@@ -57,14 +56,11 @@ Console.WriteLine("GitHub -> Configuration -> Environment -> TeamCity");
 var customOrderBuilder = Host.CreateApplicationBuilder(args);
 customOrderBuilder.Configuration[secretKey] = builder.Configuration[secretKey];
 customOrderBuilder.Configuration[requiredKey] = builder.Configuration[requiredKey];
-customOrderBuilder.Services.AddRaycynixSecrets(options =>
-{
-    options.ProviderOrder.Clear();
-    options.ProviderOrder.Add(typeof(GitHubSecretProvider));
-    options.ProviderOrder.Add(typeof(ConfigurationSecretProvider));
-    options.ProviderOrder.Add(typeof(EnvironmentSecretProvider));
-    options.ProviderOrder.Add(typeof(TeamCitySecretProvider));
-});
+customOrderBuilder.Configuration["SecretOptions:ProviderOrder:0"] = SecretProviderNames.GitHub;
+customOrderBuilder.Configuration["SecretOptions:ProviderOrder:1"] = SecretProviderNames.Configuration;
+customOrderBuilder.Configuration["SecretOptions:ProviderOrder:2"] = SecretProviderNames.Environment;
+customOrderBuilder.Configuration["SecretOptions:ProviderOrder:3"] = SecretProviderNames.TeamCity;
+customOrderBuilder.Services.AddRaycynixSecrets(customOrderBuilder.Configuration);
 
 using var customOrderHost = customOrderBuilder.Build();
 using var customOrderScope = customOrderHost.Services.CreateScope();
@@ -83,4 +79,4 @@ foreach (var attempt in customOrderAttempts)
 
 Environment.SetEnvironmentVariable(secretKey, null);
 Environment.SetEnvironmentVariable("CONNECTIONSTRINGS_MAIN", null);
-Environment.SetEnvironmentVariable("env.ConnectionStrings.Main", null);
+Environment.SetEnvironmentVariable("ConnectionStrings.Main", null);

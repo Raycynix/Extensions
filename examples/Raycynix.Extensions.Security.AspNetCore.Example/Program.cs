@@ -5,7 +5,7 @@ using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore;
 using Raycynix.Extensions.Security.AspNetCore.Authorization;
-using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.Options;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
@@ -13,18 +13,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRaycynixAspNetCoreSecurity(builder.Configuration, options =>
 {
-    options.Jwt.RequireHttpsMetadata = false;
+    options.JwtOptions.RequireHttpsMetadata = false;
 });
+builder.Services.AddRaycynixRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
-app.UseRaycynixSecurity();
+app.UseAuthentication();
+app.UseRaycynixRateLimiting();
+app.UseAuthorization();
 
-app.MapGet("/", (SecurityConfiguration configuration) => Results.Ok(new
+app.MapGet("/", (SecurityOptions options) => Results.Ok(new
 {
     message = "Raycynix Security ASP.NET Core example",
-    issuer = configuration.Jwt.Issuer,
-    audience = configuration.Jwt.Audience,
+    issuer = options.JwtOptions.Issuer,
+    audience = options.JwtOptions.Audience,
     protectedEndpoints = new[]
     {
         "/profile",
@@ -75,6 +78,7 @@ app.MapGet("/token-shape", () => Results.Ok(new
         roles = new[] { "admin", "report-viewer" },
         permissions = new[] { "reports.read", "reports.export" }
     }
-}));
+}))
+    .RequireRateLimiting("sensitive");
 
 app.Run();
