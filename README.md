@@ -12,7 +12,7 @@ The solution is split by responsibility. The main package groups are:
 - contracts and contract integrations for ASP.NET Core
 - database core, provider packages, hosting integration, and ASP.NET Core integration
 - exceptions and exception handling integration
-- logging
+- structured logging with optional Elasticsearch integration
 - messaging core plus transport-specific packages
 - metrics, tracing, and observability
 - security and secrets
@@ -132,6 +132,12 @@ await host.RunAsync();
 
 `Raycynix.Extensions.Messaging.Database` adds persistent inbox and outbox storage on top of the shared database infrastructure. It uses EF Core configurators registered into the shared `DatabaseContext` and relies on optimistic concurrency for inbox and outbox lease transitions rather than provider-specific SQL behavior in the messaging layer.
 
+## Logging overview
+
+`Raycynix.Extensions.Logging` provides the validated `LoggingOptions`, Serilog host integration, console output, and typed logger adapter. Optional output packages extend the same Serilog pipeline:
+
+- `Raycynix.Extensions.Logging.Elastic` sends events to Elasticsearch.
+
 ## Package-level documentation
 
 Start with these package READMEs for details:
@@ -141,5 +147,6 @@ Start with these package READMEs for details:
 - `src/Raycynix.Extensions.Database.AspNetCore/README.md`
 - `src/Raycynix.Extensions.Messaging/README.md`
 - `src/Raycynix.Extensions.Messaging.Database/README.md`
+- `src/Raycynix.Extensions.Logging/README.md`
 
 The remaining packages follow the same pattern: core package, optional abstractions package, and optional hosting or transport adapters where needed.

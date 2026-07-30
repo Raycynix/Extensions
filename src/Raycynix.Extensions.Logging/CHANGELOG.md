@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0
+### Added
+- Added conventional `LoggingOptions` binding and startup validation.
+
+### Changed
+- Replaced `LoggingConfiguration` with `LoggingOptions`.
+- Changed the default configuration section from `LoggingConfiguration` to `LoggingOptions`.
+
+### Fixed
+- Prevented a dependency cycle while Serilog and validated logging options are initialized during host startup.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

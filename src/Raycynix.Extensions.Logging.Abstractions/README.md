@@ -5,7 +5,7 @@
 ## What it contains
 
 - `ILogger<T>`
-- `LoggingConfiguration`
+- `LoggingOptions`
 - `IRaycynixLoggingConfigurator`
 
 ## Purpose
@@ -27,4 +27,10 @@ public sealed class PriceCalculator(ILogger<PriceCalculator> logger)
 }
 ```
 
-Use this package when you want to expose or consume the Raycynix typed logger contract, shared logging configuration, or optional Serilog integration contract.
+Use this package when you want to expose or consume the Raycynix typed logger contract, shared logging options, or optional Serilog integration contract.
+
+## 3.0 migration
+
+- Replace `LoggingConfiguration` with `LoggingOptions`.
+- Replace the `Raycynix.Extensions.Logging.Abstractions.Configurations` namespace with `Raycynix.Extensions.Logging.Abstractions.Options`.
+- Rename the configuration section from `LoggingConfiguration` to `LoggingOptions`.

@@ -8,7 +8,7 @@
 - `AddRaycynixLogging()`
 - `UseRaycynixLogging(this IHostBuilder, ...)`
 - `LoggingBuilder`
-- `LoggingConfiguration`
+- `LoggingOptions`
 - Serilog-backed `ILogger<T>` implementation
 - Console sink setup
 - Serilog integration hooks for optional packages
@@ -25,7 +25,7 @@ Use `Raycynix.Extensions.Logging.Elastic` when logs should be written to Elastic
 
 ```json
 {
-  "LoggingConfiguration": {
+  "LoggingOptions": {
     "ServiceName": "orders-api",
     "ServiceVersion": "1.0.0",
     "Environment": "Production",
@@ -58,7 +58,7 @@ Host.CreateDefaultBuilder(args)
     });
 ```
 
-Runtime overrides are applied to the same `LoggingConfiguration` instance that optional integrations receive:
+Runtime overrides are applied to the same `LoggingOptions` instance that optional integrations receive:
 
 ```csharp
 Host.CreateDefaultBuilder(args)
@@ -89,7 +89,7 @@ Host.CreateDefaultBuilder(args)
 ```
 
 `UseRaycynixLogging()` must still be called on the host builder because it connects Serilog to the generic host.
-If `AddRaycynixLogging(...)` is not registered, `UseRaycynixLogging()` falls back to the host `LoggingConfiguration` section and default values.
+If `AddRaycynixLogging(...)` is not registered, `UseRaycynixLogging()` falls back to the host `LoggingOptions` section and default values.
 
 ## Injecting the typed logger
 
@@ -103,4 +103,10 @@ public sealed class OrderProcessor(ILogger<OrderProcessor> logger)
 }
 ```
 
-`AddRaycynixLogging(context.Configuration)` also registers `LoggingConfiguration` through the Raycynix configuration pipeline and validates it on startup.
+`AddRaycynixLogging(context.Configuration)` also registers `LoggingOptions` through the Raycynix configuration pipeline and validates it on startup.
+
+## 3.0 migration
+
+- Replace `LoggingConfiguration` with `LoggingOptions`.
+- Replace the `Raycynix.Extensions.Logging.Abstractions.Configurations` namespace with `Raycynix.Extensions.Logging.Abstractions.Options`.
+- Rename the configuration section from `LoggingConfiguration` to `LoggingOptions`.
