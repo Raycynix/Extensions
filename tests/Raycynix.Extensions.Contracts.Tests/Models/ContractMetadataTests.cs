@@ -38,4 +38,20 @@ public sealed class ContractMetadataTests
 
         metadata.HasIdentity.Should().BeFalse();
     }
+
+    /// <summary>
+    /// Verifies that malformed deserialized metadata does not throw during identity checks.
+    /// </summary>
+    [Fact]
+    public void HasIdentity_ShouldBeFalse_WhenVersionIsNull()
+    {
+        var metadata = new ContractMetadata
+        {
+            Name = "catalog.prices",
+            Version = null!
+        };
+
+        metadata.HasIdentity.Should().BeFalse();
+        metadata.ToString().Should().Be("catalog.prices");
+    }
 }

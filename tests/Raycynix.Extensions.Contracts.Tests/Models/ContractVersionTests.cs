@@ -55,4 +55,19 @@ public sealed class ContractVersionTests
         (current < newerMajor).Should().BeTrue();
         (current == new ContractVersion { Major = 1, Minor = 2, Patch = 0 }).Should().BeTrue();
     }
+
+    /// <summary>
+    /// Verifies that callers cannot mutate a shared global initial version instance.
+    /// </summary>
+    [Fact]
+    public void Initial_ShouldReturnIndependentVersionInstances()
+    {
+        var first = ContractVersion.Initial;
+        first.Major = 9;
+
+        var second = ContractVersion.Initial;
+
+        second.Should().NotBeSameAs(first);
+        second.ToString().Should().Be("1.0.0");
+    }
 }
