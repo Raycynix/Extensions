@@ -146,9 +146,9 @@ public sealed class IdentityDatabaseRegistrationTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databaseName}",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = $"Data Source={databaseName}",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }

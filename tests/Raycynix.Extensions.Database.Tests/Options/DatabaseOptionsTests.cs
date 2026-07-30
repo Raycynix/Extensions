@@ -1,12 +1,12 @@
 using FluentAssertions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 
-namespace Raycynix.Extensions.Database.Tests.Configurations;
+namespace Raycynix.Extensions.Database.Tests.Options;
 
 /// <summary>
-/// Covers validation and defaults for <see cref="DatabaseConfiguration"/>.
+/// Covers validation and defaults for <see cref="DatabaseOptions"/>.
 /// </summary>
-public sealed class DatabaseConfigurationTests
+public sealed class DatabaseOptionsTests
 {
     /// <summary>
     /// Verifies that defaults match the package contract.
@@ -14,7 +14,7 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Defaults_ShouldMatchExpectedValues()
     {
-        var configuration = new DatabaseConfiguration();
+        var configuration = new DatabaseOptions();
 
         configuration.EnsureCreated.Should().BeTrue();
         configuration.EnableSeed.Should().BeTrue();
@@ -30,7 +30,7 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Validate_ShouldSucceed_WhenConnectionStringIsProvided()
     {
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
             ConnectionString = "Host=localhost;Database=test;"
         };
@@ -46,13 +46,13 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Validate_ShouldFail_WhenConnectionInfoIsMissing()
     {
-        var configuration = new DatabaseConfiguration();
+        var configuration = new DatabaseOptions();
 
         var act = configuration.Validate;
 
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("*Either ConnectionString or ConnectionConfiguration must be provided*");
+            .WithMessage("*Either ConnectionString or ConnectionOptions must be provided*");
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Validate_ShouldFail_WhenEnsureCreatedAndUseMigrationsAreEnabledTogether()
     {
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
             ConnectionString = "Data Source=test.db",
             EnsureCreated = true,
@@ -83,7 +83,7 @@ public sealed class DatabaseConfigurationTests
     [InlineData(0, -1)]
     public void Validate_ShouldFail_WhenRetryValuesAreNegative(int retryCount, int retryDelaySeconds)
     {
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
             ConnectionString = "Data Source=test.db",
             RetryCount = retryCount,
@@ -101,9 +101,9 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Validate_ShouldFail_WhenStructuredConnectionIsInvalid()
     {
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
-            ConnectionConfiguration = new TestConnectionConfiguration()
+            ConnectionOptions = new TestConnectionOptions()
         };
 
         var act = configuration.Validate;
@@ -119,9 +119,9 @@ public sealed class DatabaseConfigurationTests
     [Fact]
     public void Validate_ShouldSucceed_WhenStructuredConnectionIsValid()
     {
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
-            ConnectionConfiguration = new TestConnectionConfiguration
+            ConnectionOptions = new TestConnectionOptions
             {
                 Name = "test.db"
             }
@@ -132,5 +132,5 @@ public sealed class DatabaseConfigurationTests
         act.Should().NotThrow();
     }
 
-    private sealed class TestConnectionConfiguration : ConnectionConfiguration;
+    private sealed class TestConnectionOptions : ConnectionOptions;
 }

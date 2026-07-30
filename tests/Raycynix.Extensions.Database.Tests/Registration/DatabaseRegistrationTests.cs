@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Database.PostgreSql;
@@ -34,9 +34,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=test.db",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -46,8 +46,8 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var databaseConfiguration = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-        var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>();
+        var databaseConfiguration = serviceProvider.GetRequiredService<DatabaseOptions>();
+        var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseOptions>>();
         var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
         var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
@@ -71,8 +71,8 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=original.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=original.db",
+                ["DatabaseOptions:EnsureCreated"] = "true"
             })
             .Build();
 
@@ -83,7 +83,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
-        _ = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+        _ = serviceProvider.GetRequiredService<DatabaseOptions>();
 
         setupInvoked.Should().BeTrue();
     }
@@ -100,8 +100,8 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=repeat-setup.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=repeat-setup.db",
+                ["DatabaseOptions:EnsureCreated"] = "false"
             })
             .Build();
 
@@ -114,7 +114,7 @@ public sealed class DatabaseRegistrationTests
 
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("*Configure DatabaseConfiguration only on the first AddRaycynixDatabase call*");
+            .WithMessage("*Configure DatabaseOptions only on the first AddRaycynixDatabase call*");
     }
 
     /// <summary>
@@ -129,8 +129,8 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:UseMigrations"] = "true"
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:UseMigrations"] = "true"
             })
             .Build();
 
@@ -138,7 +138,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
-        var act = () => serviceProvider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
+        var act = () => serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
         act.Should().Throw<OptionsValidationException>();
     }
@@ -155,9 +155,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-provider.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=no-provider.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -185,9 +185,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=multiple-providers.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=multiple-providers.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -217,9 +217,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = "Sqlite",
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false"
+                ["DatabaseOptions:Provider"] = "Sqlite",
+                ["DatabaseOptions:ConnectionString"] = "Data Source=legacy-provider.db",
+                ["DatabaseOptions:EnsureCreated"] = "false"
             })
             .Build();
 
@@ -247,10 +247,10 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = "PostgreSql",
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider-ignored.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:Provider"] = "PostgreSql",
+                ["DatabaseOptions:ConnectionString"] = "Data Source=legacy-provider-ignored.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -278,9 +278,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=model-test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=model-test.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -308,9 +308,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=builder-test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=builder-test.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -339,9 +339,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-caller-scan.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=no-caller-scan.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -367,9 +367,9 @@ public sealed class DatabaseRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=marker-assembly.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=marker-assembly.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 

@@ -3,10 +3,11 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using Npgsql;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.MsSql;
 using Raycynix.Extensions.Database.MySql;
 using Raycynix.Extensions.Database.PostgreSql;
@@ -29,11 +30,11 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:PostgreSqlConfiguration:Pooling"] = "false",
-                ["DatabaseConfiguration:PostgreSqlConfiguration:MinimumPoolSize"] = "2",
-                ["DatabaseConfiguration:PostgreSqlConfiguration:MaximumPoolSize"] = "25",
-                ["DatabaseConfiguration:PostgreSqlConfiguration:CommandTimeoutSeconds"] = "45",
-                ["DatabaseConfiguration:PostgreSqlConfiguration:IncludeErrorDetail"] = "true"
+                ["DatabaseOptions:PostgreSqlOptions:Pooling"] = "false",
+                ["DatabaseOptions:PostgreSqlOptions:MinimumPoolSize"] = "2",
+                ["DatabaseOptions:PostgreSqlOptions:MaximumPoolSize"] = "25",
+                ["DatabaseOptions:PostgreSqlOptions:CommandTimeoutSeconds"] = "45",
+                ["DatabaseOptions:PostgreSqlOptions:IncludeErrorDetail"] = "true"
             })
             .Build();
 
@@ -44,7 +45,7 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "postgresql");
 
         var connectionString = registration.ResolveConnectionString(
-            CreateConnectionConfiguration("db.local", 5433, "orders", "app", "secret"),
+            CreateConnectionOptions("db.local", 5433, "orders", "app", "secret"),
             serviceProvider);
 
         var builder = new NpgsqlConnectionStringBuilder(connectionString);
@@ -70,8 +71,8 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:MsSqlServerConfiguration:TrustServerCertificate"] = "false",
-                ["DatabaseConfiguration:MsSqlServerConfiguration:MultipleActiveResultSets"] = "true"
+                ["DatabaseOptions:MsSqlServerOptions:TrustServerCertificate"] = "false",
+                ["DatabaseOptions:MsSqlServerOptions:MultipleActiveResultSets"] = "true"
             })
             .Build();
 
@@ -82,7 +83,7 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "sqlserver");
 
         var connectionString = registration.ResolveConnectionString(
-            CreateConnectionConfiguration("sql.local", null, "orders", "sa", "secret"),
+            CreateConnectionOptions("sql.local", null, "orders", "sa", "secret"),
             serviceProvider);
 
         var builder = new SqlConnectionStringBuilder(connectionString);
@@ -104,8 +105,8 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:MySqlConfiguration:AllowUserVariables"] = "false",
-                ["DatabaseConfiguration:MySqlConfiguration:Pooling"] = "false"
+                ["DatabaseOptions:MySqlOptions:AllowUserVariables"] = "false",
+                ["DatabaseOptions:MySqlOptions:Pooling"] = "false"
             })
             .Build();
 
@@ -116,7 +117,7 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "mysql");
 
         var connectionString = registration.ResolveConnectionString(
-            CreateConnectionConfiguration("mysql.local", 3307, "orders", "app", "secret"),
+            CreateConnectionOptions("mysql.local", 3307, "orders", "app", "secret"),
             serviceProvider);
 
         var builder = new MySqlConnectionStringBuilder(connectionString);
@@ -139,8 +140,8 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:SqliteConfiguration:Mode"] = "ReadWriteCreate",
-                ["DatabaseConfiguration:SqliteConfiguration:Cache"] = "Shared"
+                ["DatabaseOptions:SqliteOptions:Mode"] = "ReadWriteCreate",
+                ["DatabaseOptions:SqliteOptions:Cache"] = "Shared"
             })
             .Build();
 
@@ -151,7 +152,7 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "sqlite");
 
         var connectionString = registration.ResolveConnectionString(
-            CreateConnectionConfiguration(null, null, "orders.db", null, null),
+            CreateConnectionOptions(null, null, "orders.db", null, null),
             serviceProvider);
 
         var builder = new SqliteConnectionStringBuilder(connectionString);
@@ -170,8 +171,8 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:SqliteConfiguration:Mode"] = "",
-                ["DatabaseConfiguration:SqliteConfiguration:Cache"] = "   "
+                ["DatabaseOptions:SqliteOptions:Mode"] = "",
+                ["DatabaseOptions:SqliteOptions:Cache"] = "   "
             })
             .Build();
 
@@ -182,7 +183,7 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "sqlite");
 
         var connectionString = registration.ResolveConnectionString(
-            CreateConnectionConfiguration(null, null, "orders.db", null, null),
+            CreateConnectionOptions(null, null, "orders.db", null, null),
             serviceProvider);
 
         var builder = new SqliteConnectionStringBuilder(connectionString);
@@ -192,7 +193,7 @@ public sealed class ProviderConnectionStringTests
     }
 
     /// <summary>
-    /// Verifies that invalid SQLite mode values fail with a clear parse error during connection-string resolution.
+    /// Verifies that invalid SQLite mode values fail through options validation.
     /// </summary>
     [Fact]
     public void SqliteRegistration_ShouldFail_WhenSqliteModeIsInvalid()
@@ -201,7 +202,7 @@ public sealed class ProviderConnectionStringTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:SqliteConfiguration:Mode"] = "NotARealMode"
+                ["DatabaseOptions:SqliteOptions:Mode"] = "NotARealMode"
             })
             .Build();
 
@@ -212,21 +213,22 @@ public sealed class ProviderConnectionStringTests
         var registration = GetProviderRegistration(serviceProvider, "sqlite");
 
         var act = () => registration.ResolveConnectionString(
-            CreateConnectionConfiguration(null, null, "orders.db", null, null),
+            CreateConnectionOptions(null, null, "orders.db", null, null),
             serviceProvider);
 
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<OptionsValidationException>()
+            .WithMessage("*Mode contains unsupported value 'NotARealMode'*");
     }
 
     /// <summary>
     /// Verifies that SQL Server structured configuration validates provider-required fields.
     /// </summary>
     [Fact]
-    public void MsSqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    public void MsSqlRegistration_ShouldValidateStructuredConnectionOptions()
     {
         var registration = CreateProviderRegistration(static builder => builder.AddMsSql(), "sqlserver");
 
-        var act = () => registration.Validate(CreateConnectionConfiguration(null, null, "orders", "sa", "secret"));
+        var act = () => registration.Validate(CreateConnectionOptions(null, null, "orders", "sa", "secret"));
 
         act.Should()
             .Throw<InvalidOperationException>()
@@ -237,11 +239,11 @@ public sealed class ProviderConnectionStringTests
     /// Verifies that MySQL structured configuration validates provider-required fields.
     /// </summary>
     [Fact]
-    public void MySqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    public void MySqlRegistration_ShouldValidateStructuredConnectionOptions()
     {
         var registration = CreateProviderRegistration(static builder => builder.AddMySql(), "mysql");
 
-        var act = () => registration.Validate(CreateConnectionConfiguration("mysql.local", null, "orders", null, "secret"));
+        var act = () => registration.Validate(CreateConnectionOptions("mysql.local", null, "orders", null, "secret"));
 
         act.Should()
             .Throw<InvalidOperationException>()
@@ -252,11 +254,11 @@ public sealed class ProviderConnectionStringTests
     /// Verifies that PostgreSQL structured configuration validates provider-required fields.
     /// </summary>
     [Fact]
-    public void PostgreSqlRegistration_ShouldValidateStructuredConnectionConfiguration()
+    public void PostgreSqlRegistration_ShouldValidateStructuredConnectionOptions()
     {
         var registration = CreateProviderRegistration(static builder => builder.AddPostgreSql(), "postgresql");
 
-        var act = () => registration.Validate(CreateConnectionConfiguration("pg.local", null, "orders", null, "secret"));
+        var act = () => registration.Validate(CreateConnectionOptions("pg.local", null, "orders", null, "secret"));
 
         act.Should()
             .Throw<InvalidOperationException>()
@@ -267,11 +269,11 @@ public sealed class ProviderConnectionStringTests
     /// Verifies that SQLite structured configuration validates provider-required fields.
     /// </summary>
     [Fact]
-    public void SqliteRegistration_ShouldValidateStructuredConnectionConfiguration()
+    public void SqliteRegistration_ShouldValidateStructuredConnectionOptions()
     {
         var registration = CreateProviderRegistration(static builder => builder.AddSqlite(), "sqlite");
 
-        var act = () => registration.Validate(CreateConnectionConfiguration(null, null, null, null, null));
+        var act = () => registration.Validate(CreateConnectionOptions(null, null, null, null, null));
 
         act.Should()
             .Throw<InvalidOperationException>()
@@ -285,10 +287,10 @@ public sealed class ProviderConnectionStringTests
     public void ProviderRegistration_ShouldSkipStructuredValidation_WhenConnectionStringIsProvided()
     {
         var registration = CreateProviderRegistration(static builder => builder.AddPostgreSql(), "postgresql");
-        var configuration = new DatabaseConfiguration
+        var configuration = new DatabaseOptions
         {
             ConnectionString = "Host=pg.local;Database=orders;",
-            ConnectionConfiguration = new TestConnectionConfiguration()
+            ConnectionOptions = new TestConnectionOptions()
         };
 
         var act = () => registration.Validate(configuration);
@@ -317,16 +319,16 @@ public sealed class ProviderConnectionStringTests
         return GetProviderRegistration(serviceProvider, providerName);
     }
 
-    private static DatabaseConfiguration CreateConnectionConfiguration(
+    private static DatabaseOptions CreateConnectionOptions(
         string? host,
         int? port,
         string? name,
         string? username,
         string? password)
     {
-        return new DatabaseConfiguration
+        return new DatabaseOptions
         {
-            ConnectionConfiguration = new TestConnectionConfiguration
+            ConnectionOptions = new TestConnectionOptions
             {
                 Host = host,
                 Port = port,
@@ -337,5 +339,5 @@ public sealed class ProviderConnectionStringTests
         };
     }
 
-    private sealed class TestConnectionConfiguration : ConnectionConfiguration;
+    private sealed class TestConnectionOptions : ConnectionOptions;
 }

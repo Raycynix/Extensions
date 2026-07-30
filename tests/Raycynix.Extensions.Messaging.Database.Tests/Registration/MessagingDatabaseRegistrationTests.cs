@@ -37,7 +37,7 @@ public sealed class MessagingDatabaseRegistrationTests
         {
             services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
             services.AddSingleton<ITransportMessagePublisher, RecordingTransportPublisher>();
-            services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
+            services.AddRaycynixDatabase(BuildDatabaseOptions(databasePath), registerCallerAssembly: false)
                 .AddSqlite();
             services.AddRaycynixMessaging(BuildMessagingConfiguration())
                 .AddDatabasePersistence(new ConfigurationBuilder()
@@ -616,7 +616,7 @@ public sealed class MessagingDatabaseRegistrationTests
         services.AddSingleton<ITransportMessagePublisher>(serviceProvider =>
             serviceProvider.GetRequiredService<RecordingTransportPublisher>());
 
-        services.AddRaycynixDatabase(BuildDatabaseConfiguration(databasePath), registerCallerAssembly: false)
+        services.AddRaycynixDatabase(BuildDatabaseOptions(databasePath), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<MessagingDatabaseRegistrationTests>();
         services.AddRaycynixMessaging(BuildMessagingConfiguration(additionalConfiguration))
@@ -626,15 +626,15 @@ public sealed class MessagingDatabaseRegistrationTests
         return services.BuildServiceProvider(validateScopes: true);
     }
 
-    private static IConfiguration BuildDatabaseConfiguration(string databasePath)
+    private static IConfiguration BuildDatabaseOptions(string databasePath)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databasePath}",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:UseMigrations"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = $"Data Source={databasePath}",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:UseMigrations"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }

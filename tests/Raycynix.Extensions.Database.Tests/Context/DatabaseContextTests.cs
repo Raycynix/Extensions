@@ -122,12 +122,12 @@ public sealed class DatabaseContextTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:EnableLazyLoading"] = "true",
-                ["DatabaseConfiguration:EnableAutoDetectChanges"] = "false",
-                ["DatabaseConfiguration:UseQueryTrackingByDefault"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=test.db",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:EnableLazyLoading"] = "true",
+                ["DatabaseOptions:EnableAutoDetectChanges"] = "false",
+                ["DatabaseOptions:UseQueryTrackingByDefault"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }

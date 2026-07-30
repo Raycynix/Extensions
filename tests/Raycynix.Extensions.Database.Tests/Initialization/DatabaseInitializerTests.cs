@@ -23,7 +23,7 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
+        services.AddRaycynixDatabase(BuildSqliteOptions(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
         try
@@ -52,7 +52,7 @@ public sealed class DatabaseInitializerTests
 
         var services = new ServiceCollection();
         services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
-        services.AddRaycynixDatabase(BuildSqliteConfiguration(databasePath), registerCallerAssembly: false)
+        services.AddRaycynixDatabase(BuildSqliteOptions(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
         try
@@ -72,15 +72,15 @@ public sealed class DatabaseInitializerTests
         }
     }
 
-    private static IConfiguration BuildSqliteConfiguration(string databasePath)
+    private static IConfiguration BuildSqliteOptions(string databasePath)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databasePath}",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:UseMigrations"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = $"Data Source={databasePath}",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:UseMigrations"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }
