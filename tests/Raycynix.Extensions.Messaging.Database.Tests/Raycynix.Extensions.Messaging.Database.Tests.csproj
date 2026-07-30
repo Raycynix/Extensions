@@ -10,6 +10,11 @@
         <Version>1.0.0</Version>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Azure.Core" Version="1.59.0"/>
         <PackageReference Include="coverlet.collector" Version="10.0.1">

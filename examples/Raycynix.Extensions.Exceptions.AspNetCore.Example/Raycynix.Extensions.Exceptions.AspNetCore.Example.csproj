@@ -10,6 +10,11 @@
         <Version>1.0.0-example</Version>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\src\Raycynix.Extensions.Exceptions\Raycynix.Extensions.Exceptions.csproj" />
       <ProjectReference Include="..\..\src\Raycynix.Extensions.Exceptions.AspNetCore\Raycynix.Extensions.Exceptions.AspNetCore.csproj" />
