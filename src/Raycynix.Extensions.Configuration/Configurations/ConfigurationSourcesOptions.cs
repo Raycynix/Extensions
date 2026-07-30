@@ -36,6 +36,24 @@ public sealed class ConfigurationSourcesOptions
     public bool ReloadOnChange { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether a dotenv file should be included.
+    /// Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool IncludeEnvFile { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the dotenv file name.
+    /// Defaults to <c>.env</c>.
+    /// </summary>
+    public string EnvFileName { get; set; } = ".env";
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the dotenv file is optional.
+    /// Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool EnvFileOptional { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether user secrets should be included.
     /// </summary>
     public bool IncludeUserSecrets { get; set; }

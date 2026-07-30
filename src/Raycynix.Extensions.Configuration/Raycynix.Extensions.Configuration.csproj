@@ -5,9 +5,9 @@
 
         <IsPackable>true</IsPackable>
 
-        <Description>Core Raycynix typed-options registration for Microsoft.Extensions.Configuration, with named options, feature flags, validation, reload governance, change handlers, diagnostics, redacted snapshots, and standard appsettings source composition.</Description>
-        <PackageTags>raycynix;configuration;options;typed-options;named-options;configuration-sources;binding;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;appsettings;dotnet;net10</PackageTags>
-        <PackageReleaseNotes>v3.0.0 aligns the package with net10.0/Microsoft.Extensions 10, updates source setup APIs to use ConfigurationSourcesOptions naming, and documents the current typed options, diagnostics, feature flag, reload, and logging behavior.</PackageReleaseNotes>
+        <Description>Core Raycynix typed-options registration for Microsoft.Extensions.Configuration, with dotenv and appsettings sources, named options, feature flags, validation, reload governance, change handlers, diagnostics, and redacted snapshots.</Description>
+        <PackageTags>raycynix;configuration;options;typed-options;named-options;configuration-sources;dotenv;env-file;binding;accessor;feature-flags;validation;reload;diagnostics;redaction;environment;appsettings;dotnet;net10</PackageTags>
+        <PackageReleaseNotes>v3.0.0 aligns the package with net10.0/Microsoft.Extensions 10, adds built-in optional .env loading with environment-variable-compatible section keys, updates source setup APIs to use ConfigurationSourcesOptions naming, and documents the current typed options, diagnostics, feature flag, reload, and logging behavior.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -26,10 +26,12 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.9" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
     </ItemGroup>

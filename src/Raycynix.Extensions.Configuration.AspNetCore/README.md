@@ -43,6 +43,18 @@ app.MapGet("/dashboard", () => Results.Ok("enabled"))
 app.Run();
 ```
 
+`AddRaycynixAspNetCoreConfiguration()` loads the optional `.env` file from the application content
+root. Values from real environment variables and command-line arguments override dotenv values.
+Configure or disable this behavior through `ConfigurationSourcesOptions`:
+
+```csharp
+builder.AddRaycynixAspNetCoreConfiguration(options =>
+{
+    options.EnvFileName = ".env.local";
+    options.IncludeEnvFile = true;
+});
+```
+
 ## appsettings.json
 
 ```json

@@ -22,6 +22,9 @@ riderModule.iml
 
 ## Секреты и настройки (никогда не должны быть в Git)
 appsettings.*.json
+.env
+.env.*
+!.env.example
 *.pfx
 *.certificate
 *.secret

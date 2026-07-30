@@ -14,6 +14,7 @@
 - `AddRaycynixEnvironment(string)`
 - `AddRaycynixConfigurationSources(...)`
 - `UseRaycynixConfigurationSources(...)`
+- `AddEnvFile(...)`
 - `AddRaycynixFeatureFlags(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
 - `ConfigureRaycynixConfigurationDiagnostics(...)`
@@ -29,6 +30,7 @@
 - typed configuration binding based on the standard Options pipeline
 - standard environment abstraction based on `IHostEnvironment`
 - standard configuration source ordering
+- optional `.env` loading enabled by default
 - feature flag access through `IFeatureFlagAccessor`
 - named options registration through `optionsName`
 - required-section validation through `requireSection`
@@ -57,6 +59,7 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
     options.BaseFileName = "appsettings";
     options.EnvironmentName = builder.Environment.EnvironmentName;
     options.IncludeUserSecrets = builder.Environment.IsDevelopment();
+    options.IncludeEnvFile = true;
 });
 
 builder.Services.AddRaycynixEnvironment();
@@ -89,6 +92,42 @@ builder.Services.ConfigureRaycynixConfigurationDiagnostics(options =>
     options.MaxReloadHistoryPerOptions = 10;
 });
 ```
+
+## Dotenv Files
+
+The standard source setup loads an optional `.env` file from `ConfigurationSourcesOptions.BasePath`.
+No additional registration is required:
+
+```dotenv
+Database__Host=localhost
+Database__Port=5432
+API_TOKEN="development token"
+```
+
+Double underscores map to configuration sections, so `Database__Host` is available as
+`configuration["Database:Host"]`. Blank lines, comments, `export KEY=value`, single-quoted values,
+double-quoted values, and inline comments are supported.
+
+Use a different file name, require the file, or disable dotenv loading through source options:
+
+```csharp
+builder.Configuration.UseRaycynixConfigurationSources(options =>
+{
+    options.EnvFileName = ".env.local";
+    options.EnvFileOptional = false;
+    options.IncludeEnvFile = true;
+});
+```
+
+For standalone use, add a dotenv file directly:
+
+```csharp
+configurationBuilder.AddEnvFile(".env", optional: true, reloadOnChange: false);
+```
+
+Dotenv values are added to configuration only; the provider does not mutate process environment
+variables. Keep secrets out of source control. The repository ignores `.env` and `.env.*`, while
+allowing `.env.example` templates.
 
 ## appsettings.json
 
@@ -300,8 +339,9 @@ The standard source order is:
 1. `appsettings.json`
 2. `appsettings.{Environment}.json`
 3. user secrets when enabled
-4. environment variables
-5. command-line arguments
+4. `.env` when enabled
+5. environment variables
+6. command-line arguments
 
 The standard environment names are:
 

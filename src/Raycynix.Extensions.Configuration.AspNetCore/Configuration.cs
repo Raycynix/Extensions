@@ -49,6 +49,7 @@ public static class Configuration
 
         builder.Configuration.UseRaycynixConfigurationSources(options =>
         {
+            options.BasePath = builder.Environment.ContentRootPath;
             options.EnvironmentName = builder.Environment.EnvironmentName;
             options.IncludeUserSecrets = builder.Environment.IsDevelopment();
 

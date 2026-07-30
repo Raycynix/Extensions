@@ -55,6 +55,30 @@ public static class Configuration
             builder.Sources.Clear();
             return builder.AddRaycynixConfigurationSources(setup);
         }
+
+        /// <summary>
+        /// Adds a dotenv file as a configuration source.
+        /// Double underscores in keys are mapped to configuration section delimiters.
+        /// </summary>
+        /// <param name="path">The dotenv file path relative to the configuration base path.</param>
+        /// <param name="optional">Whether the file is optional.</param>
+        /// <param name="reloadOnChange">Whether the configuration should reload when the file changes.</param>
+        /// <returns>The same <see cref="IConfigurationBuilder"/> instance for chaining.</returns>
+        public IConfigurationBuilder AddEnvFile(
+            string path = ".env",
+            bool optional = true,
+            bool reloadOnChange = false)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+            return builder.Add<EnvFileConfigurationSource>(source =>
+            {
+                source.Path = path;
+                source.Optional = optional;
+                source.ReloadOnChange = reloadOnChange;
+            });
+        }
     }
 
     /// <summary>
@@ -406,6 +430,11 @@ public static class Configuration
                 config.ReloadOnChange);
         }
 
+        if (config.IncludeEnvFile)
+        {
+            builder.AddEnvFile(config.EnvFileName, config.EnvFileOptional, config.ReloadOnChange);
+        }
+
         builder.AddEnvironmentVariables();
 
         if (config.CommandLineArguments.Length > 0)
@@ -429,6 +458,11 @@ public static class Configuration
         if (string.IsNullOrWhiteSpace(config.BaseFileName))
         {
             throw new ArgumentException("Base configuration file name cannot be null or whitespace.", nameof(config));
+        }
+
+        if (config.IncludeEnvFile && string.IsNullOrWhiteSpace(config.EnvFileName))
+        {
+            throw new ArgumentException("Environment file name cannot be null or whitespace.", nameof(config));
         }
     }
 
