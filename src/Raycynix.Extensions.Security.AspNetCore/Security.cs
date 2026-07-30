@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Handlers;
@@ -16,7 +17,8 @@ using Raycynix.Extensions.Security.AspNetCore.Authorization.Models;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.Conventions;
 using Raycynix.Extensions.Security.AspNetCore.Authorization.PolicyProvider;
 using Raycynix.Extensions.Security.AspNetCore.Implementations;
-using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.AspNetCore.Internal;
+using Raycynix.Extensions.Security.Options;
 
 namespace Raycynix.Extensions.Security.AspNetCore;
 
@@ -29,30 +31,25 @@ public static class Security
     /// Registers the core security services and ASP.NET Core JWT authentication integration.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <param name="configuration">The application configuration used to bind <see cref="SecurityConfiguration"/>.</param>
+    /// <param name="configuration">The application configuration used to bind <see cref="SecurityOptions"/>.</param>
     /// <param name="setup">An optional callback for adjusting the bound security configuration.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixAspNetCoreSecurity(
         this IServiceCollection services,
         IConfiguration configuration,
-        Action<SecurityConfiguration>? setup = null)
+        Action<SecurityOptions>? setup = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var config = new SecurityConfiguration();
-        configuration.GetSection(nameof(SecurityConfiguration)).Bind(config);
-
-        setup?.Invoke(config);
-        config.Validate();
-        ValidateAspNetCoreConfiguration(config);
-
-        services.Replace(ServiceDescriptor.Singleton(config));
-        services.AddRaycynixSecurity();
+        services.AddRaycynixSecurity(configuration, setup);
+        services.AddRaycynixConfigurationValidator<SecurityOptions, AspNetCoreSecurityOptionsValidator>();
         services.AddHttpContextAccessor();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => ConfigureJwtBearer(options, config));
+            .AddJwtBearer();
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<SecurityOptions>(ConfigureJwtBearer);
 
         services.AddAuthorization();
         services.Configure<MvcOptions>(options =>
@@ -104,10 +101,10 @@ public static class Security
         return app;
     }
 
-    private static void ConfigureJwtBearer(JwtBearerOptions options, SecurityConfiguration config)
+    private static void ConfigureJwtBearer(JwtBearerOptions options, SecurityOptions config)
     {
-        options.Authority = config.Jwt.Authority;
-        options.RequireHttpsMetadata = config.Jwt.RequireHttpsMetadata;
+        options.Authority = config.JwtOptions.Authority;
+        options.RequireHttpsMetadata = config.JwtOptions.RequireHttpsMetadata;
         options.MapInboundClaims = false;
         options.Events = new JwtBearerEvents
         {
@@ -141,23 +138,15 @@ public static class Security
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = config.Jwt.Issuer,
+            ValidIssuer = config.JwtOptions.Issuer,
             ValidateAudience = true,
-            ValidAudience = config.Jwt.Audience,
+            ValidAudience = config.JwtOptions.Audience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = config.Jwt.ClockSkew,
+            ClockSkew = config.JwtOptions.ClockSkew,
             NameClaimType = JwtRegisteredClaimNames.Sub,
             RoleClaimType = SecurityClaimTypes.Roles
         };
     }
 
-    private static void ValidateAspNetCoreConfiguration(SecurityConfiguration config)
-    {
-        if (string.IsNullOrWhiteSpace(config.Jwt.Authority))
-        {
-            throw new InvalidOperationException(
-                "SecurityConfiguration.Jwt.Authority must be provided for ASP.NET Core JWT validation.");
-        }
-    }
 }

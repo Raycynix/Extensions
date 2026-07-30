@@ -13,7 +13,7 @@ public sealed class AnyPermissionRequirement : IAuthorizationRequirement
     /// <param name="permissions">The permissions of which at least one must be granted.</param>
     public AnyPermissionRequirement(IReadOnlyCollection<string> permissions)
     {
-        Permissions = permissions;
+        Permissions = AuthorizationRequirementValues.RequiredMany(permissions, nameof(permissions));
     }
 
     /// <summary>

@@ -38,7 +38,7 @@ public static class SecurityPolicies
     /// <returns>A policy name understood by the Raycynix policy provider.</returns>
     public static string Permission(string permission)
     {
-        return $"{PermissionPrefix}{permission}";
+        return $"{PermissionPrefix}{RequiredValue(permission, nameof(permission))}";
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class SecurityPolicies
     /// <returns>A policy name understood by the Raycynix policy provider.</returns>
     public static string Role(string role)
     {
-        return $"{RolePrefix}{role}";
+        return $"{RolePrefix}{RequiredValue(role, nameof(role))}";
     }
 
     /// <summary>
@@ -98,6 +98,11 @@ public static class SecurityPolicies
     /// <returns>A policy name understood by the Raycynix policy provider.</returns>
     public static string Subject(SecuritySubjectType subjectType)
     {
+        if (!Enum.IsDefined(subjectType))
+        {
+            throw new ArgumentOutOfRangeException(nameof(subjectType), subjectType, "Unknown security subject type.");
+        }
+
         return $"{SubjectPrefix}{subjectType.ToString().ToLowerInvariant()}";
     }
 
@@ -148,6 +153,24 @@ public static class SecurityPolicies
 
     private static string JoinValues(IEnumerable<string> values)
     {
-        return string.Join("|", values.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()));
+        ArgumentNullException.ThrowIfNull(values);
+
+        var normalizedValues = values
+            .Select(value => RequiredValue(value, nameof(values)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (normalizedValues.Length == 0)
+        {
+            throw new ArgumentException("At least one authorization value is required.", nameof(values));
+        }
+
+        return string.Join("|", normalizedValues);
+    }
+
+    private static string RequiredValue(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        return value.Trim();
     }
 }

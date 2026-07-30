@@ -1,12 +1,12 @@
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Configuration.Abstractions.Models;
-using Raycynix.Extensions.Security.Configurations;
+using Raycynix.Extensions.Security.Options;
 
 namespace Raycynix.Extensions.Security.Internal;
 
-internal sealed class SecurityConfigurationValidator : IConfigurationValidator<SecurityConfiguration>
+internal sealed class SecurityOptionsValidator : IConfigurationValidator<SecurityOptions>
 {
-    public ConfigurationValidationResult Validate(SecurityConfiguration options)
+    public ConfigurationValidationResult Validate(SecurityOptions options)
     {
         try
         {

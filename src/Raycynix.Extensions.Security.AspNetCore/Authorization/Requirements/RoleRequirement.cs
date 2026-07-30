@@ -13,7 +13,7 @@ public sealed class RoleRequirement : IAuthorizationRequirement
     /// <param name="role">The role required to satisfy the policy.</param>
     public RoleRequirement(string role)
     {
-        Role = role;
+        Role = AuthorizationRequirementValues.Required(role, nameof(role));
     }
 
     /// <summary>

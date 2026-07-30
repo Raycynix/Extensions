@@ -10,6 +10,9 @@ public sealed class EnvironmentSecretProvider : ISecretProvider
     /// <inheritdoc />
     public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        cancellationToken.ThrowIfCancellationRequested();
+
         return ValueTask.FromResult(Environment.GetEnvironmentVariable(key));
     }
 }

@@ -13,7 +13,7 @@ public sealed class AnyRoleRequirement : IAuthorizationRequirement
     /// <param name="roles">The roles of which at least one must be assigned.</param>
     public AnyRoleRequirement(IReadOnlyCollection<string> roles)
     {
-        Roles = roles;
+        Roles = AuthorizationRequirementValues.RequiredMany(roles, nameof(roles));
     }
 
     /// <summary>

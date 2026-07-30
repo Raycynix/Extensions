@@ -1,9 +1,9 @@
-namespace Raycynix.Extensions.Security.Configurations;
+namespace Raycynix.Extensions.Security.Options;
 
 /// <summary>
 /// Represents the shared JWT settings used by Raycynix security packages.
 /// </summary>
-public class JwtConfiguration
+public sealed class JwtOptions
 {
     /// <summary>
     /// Gets or sets the OpenID Connect or token authority used by ASP.NET Core JWT validation.
@@ -45,6 +45,24 @@ public class JwtConfiguration
     /// </summary>
     public void Validate()
     {
+        if (Authority is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(Authority);
+
+            if (!Uri.TryCreate(Authority, UriKind.Absolute, out var authorityUri) ||
+                authorityUri.Scheme is not ("http" or "https"))
+            {
+                throw new InvalidOperationException("JWT authority must be an absolute HTTP or HTTPS URI.");
+            }
+
+            if (RequireHttpsMetadata &&
+                !string.Equals(authorityUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "JWT authority must use HTTPS when HTTPS metadata is required.");
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(Issuer))
         {
             throw new InvalidOperationException("JWT issuer must be provided.");

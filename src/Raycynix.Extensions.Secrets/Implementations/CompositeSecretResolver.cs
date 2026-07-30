@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Raycynix.Extensions.Secrets.Options;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Records;
 
@@ -21,10 +21,10 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
     /// <param name="logger">The optional logger used for secret-resolution diagnostics.</param>
     public CompositeSecretResolver(
         IEnumerable<ISecretProvider> providers,
-        IOptions<SecretOptions>? options = null,
+        SecretOptions? options = null,
         ILogger<CompositeSecretResolver>? logger = null)
     {
-        _providers = OrderProviders(providers, options?.Value).ToArray();
+        _providers = OrderProviders(providers, options).ToArray();
         _logger = logger;
 
         _logger?.LogDebug(
@@ -119,22 +119,54 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
             return providerList;
         }
 
-        var providerRanks = options.ProviderOrder
-            .Select((providerType, index) => new { providerType, index })
-            .GroupBy(item => item.providerType)
-            .ToDictionary(group => group.Key, group => group.First().index);
+        var configuredNames = options.ProviderOrder
+            .Select(providerName => providerName.Trim())
+            .ToArray();
+
+        var unknownNames = configuredNames
+            .Where(providerName => providerList.All(provider => !MatchesProvider(provider, providerName)))
+            .ToArray();
+
+        if (unknownNames.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"SecretOptions.ProviderOrder contains providers that are not registered: {string.Join(", ", unknownNames)}.");
+        }
 
         return providerList
             .Select((provider, index) => new
             {
                 Provider = provider,
                 RegistrationOrder = index,
-                Rank = providerRanks.TryGetValue(provider.GetType(), out var rank)
-                    ? rank
-                    : int.MaxValue
+                Rank = FindProviderRank(provider, configuredNames)
             })
             .OrderBy(item => item.Rank)
             .ThenBy(item => item.RegistrationOrder)
             .Select(item => item.Provider);
+    }
+
+    private static int FindProviderRank(ISecretProvider provider, IReadOnlyList<string> configuredNames)
+    {
+        for (var index = 0; index < configuredNames.Count; index++)
+        {
+            if (MatchesProvider(provider, configuredNames[index]))
+            {
+                return index;
+            }
+        }
+
+        return int.MaxValue;
+    }
+
+    private static bool MatchesProvider(ISecretProvider provider, string configuredName)
+    {
+        var providerType = provider.GetType();
+        var shortName = providerType.Name.EndsWith("SecretProvider", StringComparison.Ordinal)
+            ? providerType.Name[..^"SecretProvider".Length]
+            : providerType.Name;
+
+        return string.Equals(configuredName, shortName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(configuredName, providerType.Name, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(configuredName, providerType.FullName, StringComparison.Ordinal);
     }
 }
