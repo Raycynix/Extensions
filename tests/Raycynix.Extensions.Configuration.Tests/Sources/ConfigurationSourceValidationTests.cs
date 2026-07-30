@@ -49,4 +49,19 @@ public class ConfigurationSourceValidationTests
         action.Should().Throw<ArgumentException>()
             .WithMessage("*Base configuration file name cannot be null or whitespace.*");
     }
+
+    /// <summary>
+    /// Verifies that an enabled dotenv source requires a non-empty file name.
+    /// </summary>
+    [Fact]
+    public void AddRaycynixConfigurationSources_ShouldRejectEmptyEnvFileName()
+    {
+        var builder = new ConfigurationBuilder();
+
+        var action = () => builder.AddRaycynixConfigurationSources(options =>
+            options.EnvFileName = string.Empty);
+
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("*Environment file name cannot be null or whitespace.*");
+    }
 }

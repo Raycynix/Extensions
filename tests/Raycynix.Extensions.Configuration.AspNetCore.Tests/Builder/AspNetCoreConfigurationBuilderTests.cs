@@ -11,7 +11,7 @@ namespace Raycynix.Extensions.Configuration.AspNetCore.Tests.Builder;
 public class AspNetCoreConfigurationBuilderTests
 {
     /// <summary>
-    /// Verifies that ASP.NET Core configuration registration applies the current host environment and standard JSON source ordering.
+    /// Verifies that ASP.NET Core configuration registration uses the content root for standard JSON and dotenv sources.
     /// </summary>
     [Fact]
     public void AddRaycynixAspNetCoreConfiguration_ShouldRegisterApplicationEnvironmentAndStandardSources()
@@ -41,6 +41,10 @@ public class AspNetCoreConfigurationBuilderTests
                 }
                 """);
 
+            File.WriteAllText(
+                Path.Combine(tempDirectory, ".env"),
+                "SampleOptions__EnvValue=from-dotenv");
+
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
                 EnvironmentName = EnvironmentNames.Development,
@@ -49,7 +53,6 @@ public class AspNetCoreConfigurationBuilderTests
 
             builder.AddRaycynixAspNetCoreConfiguration(options =>
             {
-                options.BasePath = tempDirectory;
                 options.BaseFileName = "appsettings";
                 options.ReloadOnChange = false;
                 options.IncludeUserSecrets = false;
@@ -65,6 +68,7 @@ public class AspNetCoreConfigurationBuilderTests
             environment.Name.Should().Be(EnvironmentNames.Development);
             environment.IsDevelopment.Should().BeTrue();
             sampleOptions.Current.Value.Should().Be("from-environment");
+            sampleOptions.Current.EnvValue.Should().Be("from-dotenv");
         }
         finally
         {
@@ -75,5 +79,7 @@ public class AspNetCoreConfigurationBuilderTests
     private class SampleOptions
     {
         public string Value { get; set; } = string.Empty;
+
+        public string EnvValue { get; set; } = string.Empty;
     }
 }
