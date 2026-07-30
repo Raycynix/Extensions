@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Logging.Abstractions;
-using Raycynix.Extensions.Logging.Abstractions.Configurations;
+using Raycynix.Extensions.Logging.Abstractions.Options;
 using Raycynix.Extensions.Logging.Implementations;
 using Serilog;
 
@@ -69,23 +69,23 @@ public sealed class LoggingRegistrationTests
     /// Verifies that typed logging configuration binds from the standard section and is exposed through DI.
     /// </summary>
     [Fact]
-    public void AddRaycynixLogging_WithConfiguration_ShouldBindLoggingConfiguration()
+    public void AddRaycynixLogging_WithConfiguration_ShouldBindLoggingOptions()
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILogger>(_ => new LoggerConfiguration().CreateLogger());
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["LoggingConfiguration:ServiceName"] = "orders-api",
-                ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
-                ["LoggingConfiguration:MinimumLevel"] = "Debug"
+                ["LoggingOptions:ServiceName"] = "orders-api",
+                ["LoggingOptions:ServiceVersion"] = "1.2.3",
+                ["LoggingOptions:MinimumLevel"] = "Debug"
             })
             .Build();
 
         services.AddRaycynixLogging(configuration);
 
         using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<LoggingConfiguration>();
+        var options = provider.GetRequiredService<LoggingOptions>();
 
         options.ServiceName.Should().Be("orders-api");
         options.ServiceVersion.Should().Be("1.2.3");
@@ -103,16 +103,16 @@ public sealed class LoggingRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["LoggingConfiguration:ServiceName"] = "orders-api",
-                ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
-                ["LoggingConfiguration:OutputTemplate"] = string.Empty
+                ["LoggingOptions:ServiceName"] = "orders-api",
+                ["LoggingOptions:ServiceVersion"] = "1.2.3",
+                ["LoggingOptions:OutputTemplate"] = string.Empty
             })
             .Build();
 
         services.AddRaycynixLogging(configuration);
 
         using var provider = services.BuildServiceProvider();
-        var access = () => provider.GetRequiredService<IOptions<LoggingConfiguration>>().Value;
+        var access = () => provider.GetRequiredService<IOptions<LoggingOptions>>().Value;
 
         access.Should().Throw<OptionsValidationException>()
             .WithMessage("*output template*");
@@ -129,9 +129,9 @@ public sealed class LoggingRegistrationTests
             {
                 builder.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["LoggingConfiguration:ServiceName"] = "fallback-api",
-                    ["LoggingConfiguration:ServiceVersion"] = "1.2.3",
-                    ["LoggingConfiguration:MinimumLevel"] = "Debug"
+                    ["LoggingOptions:ServiceName"] = "fallback-api",
+                    ["LoggingOptions:ServiceVersion"] = "1.2.3",
+                    ["LoggingOptions:MinimumLevel"] = "Debug"
                 });
             })
             .UseRaycynixLogging();
@@ -142,6 +142,25 @@ public sealed class LoggingRegistrationTests
         };
 
         build.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Verifies that resolving validated logging options does not create a dependency cycle
+    /// while the Serilog provider is being initialized.
+    /// </summary>
+    [Fact]
+    public async Task UseRaycynixLogging_WithServiceRegistration_ShouldStartAndStopHost()
+    {
+        using var host = Host.CreateDefaultBuilder()
+            .UseRaycynixLogging()
+            .ConfigureServices((context, services) =>
+                services.AddRaycynixLogging(context.Configuration))
+            .Build();
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await host.StartAsync(timeout.Token);
+        await host.StopAsync(timeout.Token);
     }
 
     private sealed class TestCategory;
