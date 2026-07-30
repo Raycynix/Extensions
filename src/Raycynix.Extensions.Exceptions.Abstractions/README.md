@@ -13,6 +13,8 @@
 
 This package lets other packages depend on Raycynix exception contracts without taking a dependency on the full implementation package.
 
+Exception contracts validate required messages, machine-readable codes, categories, and HTTP error status codes. Public response contracts intentionally exclude raw query strings and internal execution context.
+
 ## Logging
 
 This package contains contracts, options, and shared models only. Runtime diagnostics belong to implementation packages, so this package does not add a logging dependency.
@@ -36,3 +38,10 @@ public sealed class SyncService(IRetryExecutor retryExecutor)
     }
 }
 ```
+
+## Migrating From 2.x
+
+- `IExceptionResponse.QueryString` and `IExceptionResponse.Context` were removed to prevent internal request data from entering public payloads.
+- `IExceptionResponse.ValidationErrors` now uses `IReadOnlyDictionary<string, string[]>`.
+- `ExceptionDetail` validates required values and is now sealed.
+- Custom `RaycynixException` implementations must use status codes between 400 and 599.

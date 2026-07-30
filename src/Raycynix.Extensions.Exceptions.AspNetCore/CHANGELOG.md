@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Removed raw query strings and internal execution context from public JSON error responses.
+- Client-request cancellation is propagated instead of being swallowed by the middleware.
+- `IOperationContext` integration is optional; correlation metadata is included when the service is registered.
+- Error response writes now observe `HttpContext.RequestAborted`.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.
