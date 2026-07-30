@@ -99,4 +99,16 @@ public sealed class RetryExecutorTests
 
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldRejectNullOperation()
+    {
+        var executor = new RetryExecutor(
+            new TransientExceptionClassifier(),
+            NullLogger<RetryExecutor>.Instance);
+
+        var act = () => executor.ExecuteAsync(null!);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
 }

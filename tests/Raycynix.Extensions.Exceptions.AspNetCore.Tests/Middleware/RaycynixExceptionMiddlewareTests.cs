@@ -26,7 +26,9 @@ public sealed class RaycynixExceptionMiddlewareTests
             app.Run(_ => throw new NotFoundException("Missing entity"));
         });
 
-        var response = await app.GetTestClient().GetAsync("/entities/1", TestContext.Current.CancellationToken);
+        var response = await app.GetTestClient().GetAsync(
+            "/entities/1?access_token=secret",
+            TestContext.Current.CancellationToken);
         var payload = await ReadPayloadAsync(response);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -35,6 +37,8 @@ public sealed class RaycynixExceptionMiddlewareTests
         payload.GetProperty("category").GetString().Should().Be("notfound");
         payload.GetProperty("path").GetString().Should().Be("/entities/1");
         payload.GetProperty("method").GetString().Should().Be("GET");
+        payload.TryGetProperty("queryString", out _).Should().BeFalse();
+        payload.TryGetProperty("context", out _).Should().BeFalse();
     }
 
     /// <summary>
@@ -84,10 +88,10 @@ public sealed class RaycynixExceptionMiddlewareTests
     }
 
     /// <summary>
-    /// Verifies that client-aborted requests do not produce an error response.
+    /// Verifies that client-aborted requests are propagated without producing an error response.
     /// </summary>
     [Fact]
-    public async Task Middleware_ShouldNotWriteResponse_ForAbortedRequests()
+    public async Task Middleware_ShouldPropagateCancellation_ForAbortedRequests()
     {
         var httpContext = new DefaultHttpContext();
         using var cts = new CancellationTokenSource();
@@ -100,24 +104,51 @@ public sealed class RaycynixExceptionMiddlewareTests
             new Defaults.ExceptionDataMasker(),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<Raycynix.Extensions.Exceptions.AspNetCore.Middleware.RaycynixExceptionMiddleware>.Instance);
 
-        var operationContext = new OperationContext { CorrelationId = "corr-1" };
+        var act = () => middleware.InvokeAsync(httpContext);
 
-        var act = () => middleware.InvokeAsync(httpContext, operationContext);
-
-        await act.Should().NotThrowAsync();
+        await act.Should().ThrowAsync<OperationCanceledException>();
         httpContext.Response.StatusCode.Should().Be(StatusCodes.Status200OK);
     }
 
-    private static async Task<WebApplication> CreateApp(Action<IApplicationBuilder> configureApp)
+    /// <summary>
+    /// Verifies that operation context integration is optional.
+    /// </summary>
+    [Fact]
+    public async Task Middleware_ShouldHandleException_WithoutOperationContext()
+    {
+        await using var app = await CreateApp(
+            app =>
+            {
+                app.UseRaycynixExceptions();
+                app.Run(_ => throw new NotFoundException("Missing entity"));
+            },
+            registerOperationContext: false);
+
+        var response = await app.GetTestClient().GetAsync(
+            "/without-context",
+            TestContext.Current.CancellationToken);
+        var payload = await ReadPayloadAsync(response);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        payload.GetProperty("correlationId").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    private static async Task<WebApplication> CreateApp(
+        Action<IApplicationBuilder> configureApp,
+        bool registerOperationContext = true)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddLogging();
-        builder.Services.AddSingleton<IOperationContext>(_ => new OperationContext
+        if (registerOperationContext)
         {
-            CorrelationId = "corr-1",
-            UserId = "user-1"
-        });
+            builder.Services.AddSingleton<IOperationContext>(_ => new OperationContext
+            {
+                CorrelationId = "corr-1",
+                UserId = "user-1"
+            });
+        }
+
         builder.Services.AddRaycynixExceptions();
 
         var app = builder.Build();
