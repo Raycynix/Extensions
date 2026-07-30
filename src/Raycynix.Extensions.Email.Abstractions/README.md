@@ -31,6 +31,10 @@ public interface IEmailProviderRegistration
 
 `EmailBody` is created through factory methods so it always contains sendable content. Sender implementations should call `EmailMessage.Validate()` before mapping a message to provider-specific APIs.
 
+Subjects and custom headers reject line breaks before provider mapping. Attachment factories return a new stream for each read and honor cancellation before opening content.
+
+`EmailSendResult` copies and validates provider metadata. Metadata keys must be non-empty and values cannot be `null`.
+
 ## Logging
 
 This package contains contracts, models, and exceptions only. Runtime diagnostics belong to the provider packages, so this package does not add a logging dependency.
