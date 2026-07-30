@@ -5,10 +5,12 @@
 - Added a built-in dotenv configuration provider through `AddEnvFile(...)`.
 - Added optional `.env` loading to the standard configuration source set.
 - Added support for comments, `export` declarations, quoted values, inline comments, and `__` section delimiters in dotenv files.
+- Added `ConfigurationSectionPath` for deriving root and nested configuration paths from options type names.
 
 ### Changed
 - Aligned the package version with the net10.0 / Microsoft.Extensions 10 package line.
 - Renamed the source setup options type from `ConfigurationSourcesConfiguration` to `ConfigurationSourcesOptions` to follow the Options naming convention for setup objects.
+- Standard typed configuration registration now resolves its default section through the shared options type-name convention.
 - Process environment variables and command-line arguments retain higher priority than dotenv values.
 - Updated package description, tags, release notes, and README content for the current typed options, diagnostics, feature flag, reload, and logging behavior.
 

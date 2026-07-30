@@ -148,6 +148,17 @@ Typed options bind from a section named after the options type by default:
 }
 ```
 
+Nested paths can use the same convention without repeating type names as string literals:
+
+```csharp
+var sectionPath =
+    ConfigurationSectionPath.Combine<ParentOptions, ChildOptions>();
+
+builder.Services.AddRaycynixConfiguration<ChildOptions>(
+    builder.Configuration,
+    sectionName: sectionPath);
+```
+
 You can override the section name explicitly when needed:
 
 ```csharp
