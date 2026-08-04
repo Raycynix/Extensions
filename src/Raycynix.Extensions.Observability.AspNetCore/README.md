@@ -8,6 +8,7 @@
 - `UseRaycynixObservability(this IApplicationBuilder app)`
 - `MapRaycynixObservabilityEndpoints(this IEndpointRouteBuilder endpoints)`
 - OpenTelemetry ASP.NET Core request metrics registration
+- OpenTelemetry ASP.NET Core request tracing registration
 - correlation middleware and `HttpClient` correlation propagation
 
 ## Usage
@@ -44,9 +45,9 @@ app.UseOpenTelemetryPrometheusScrapingEndpoint(
     context => context.Request.Path == "/internal/metrics");
 ```
 
-For Aspire and production OpenTelemetry pipelines, prefer OTLP export instead of adding a scraping endpoint to every resource.
+For Aspire and production OpenTelemetry pipelines, prefer OTLP export for both metrics and traces instead of adding a scraping endpoint to every resource.
 
-The middleware uses standard `Microsoft.Extensions.Logging` scopes for correlation diagnostics when a logger provider is registered. It does not require `Raycynix.Extensions.Serilog`.
+ASP.NET Core tracing uses standard OpenTelemetry instrumentation and requires no custom tracing middleware. `UseRaycynixObservability()` only adds the Raycynix correlation context middleware. It does not require `Raycynix.Extensions.Serilog`.
 
 By default, the request logging scope includes `CorrelationId`, `TraceId`, `UserId`, `SubjectId`, and `SubjectType` to preserve the previous enrichment behavior. Applications that do not want user or subject identifiers in log scopes can disable that part:
 

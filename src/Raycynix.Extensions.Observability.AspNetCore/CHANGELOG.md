@@ -3,8 +3,10 @@
 ## 3.0.0
 ### Changed
 - Added OpenTelemetry ASP.NET Core metrics instrumentation through Metrics 3.0.
+- Added OpenTelemetry ASP.NET Core tracing instrumentation through Tracing 3.0.
 - `MapRaycynixObservabilityEndpoints` now maps health checks only; metrics exporters expose their endpoints explicitly.
 - Removed the obsolete metrics request middleware from `UseRaycynixObservability`.
+- Removed the obsolete custom tracing middleware from `UseRaycynixObservability`.
 
 ## 2.2.0
 ### Added

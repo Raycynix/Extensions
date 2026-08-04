@@ -25,12 +25,12 @@ Raycynix components emit provider-neutral `System.Diagnostics.Metrics` instrumen
 ```csharp
 public sealed class CheckoutHandler(
     IOperationContext operationContext,
-    Microsoft.Extensions.Logging.ILogger<CheckoutHandler> logger,
-    Raycynix.Extensions.Tracing.Abstractions.Interfaces.ITracer tracer)
+    Microsoft.Extensions.Logging.ILogger<CheckoutHandler> logger)
 {
     public void Handle()
     {
-        using var activity = tracer.StartTrace("checkout.handle");
+        using var activity = Raycynix.Extensions.Tracing.Abstractions.RaycynixTracing
+            .ActivitySource.StartActivity("checkout.handle");
 
         logger.LogInformation(
             "Handling checkout. CorrelationId:{CorrelationId} TraceId:{TraceId}",

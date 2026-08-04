@@ -1,24 +1,47 @@
 # Raycynix.Extensions.Tracing.AspNetCore
 
-`Raycynix.Extensions.Tracing.AspNetCore` adds ASP.NET Core middleware integration for Raycynix tracing.
+Version `3.0.0` integrates the shared Raycynix `ActivitySource` with OpenTelemetry ASP.NET Core request instrumentation.
 
-## What it contains
-
-- `UseRaycynixTracing(this IApplicationBuilder app)`
-- `TracingMiddleware`
-
-## Usage
+## Registration
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixTracing();
+builder.Services.AddRaycynixAspNetCoreTracing();
 
 var app = builder.Build();
-
-app.UseRaycynixTracing();
-
 app.Run();
 ```
 
-This middleware creates a standard `Microsoft.Extensions.Logging` scope with `TraceId` and `SpanId` resolved from the current `Activity`, and falls back to `HttpContext.TraceIdentifier` when no activity exists.
+No custom tracing middleware is required. ASP.NET Core creates server activities, while standard `Microsoft.Extensions.Logging` activity tracking adds `TraceId` and `SpanId` to logging scopes.
+
+## OTLP and Aspire
+
+Add an exporter through the standard OpenTelemetry callback:
+
+```csharp
+builder.Services.AddRaycynixAspNetCoreTracing(tracing =>
+{
+    tracing.AddOtlpExporter(); // requires OpenTelemetry.Exporter.OpenTelemetryProtocol
+});
+```
+
+Aspire resources can use the same registration with the OTLP exporter supplied by their service-default pipeline.
+
+## Additional instrumentation
+
+```csharp
+builder.Services.AddRaycynixAspNetCoreTracing(tracing =>
+{
+    tracing.AddHttpClientInstrumentation();
+});
+```
+
+Install the corresponding OpenTelemetry instrumentation package when adding optional components.
+
+## Migration from 2.x
+
+- replace `AddRaycynixTracing()` in web applications with `AddRaycynixAspNetCoreTracing()`
+- remove `UseRaycynixTracing()`
+- remove custom `TracingMiddleware` references
+- configure exporters through the `TracerProviderBuilder` callback

@@ -3,6 +3,7 @@
 ## 3.0.0
 ### Changed
 - Migrated observability composition to the standard `IMeterFactory`-based Metrics 3.0 pipeline.
+- Migrated tracing composition to the shared standard `ActivitySource` from Tracing 3.0.
 - Metrics export is now selected explicitly by the host.
 
 ## 2.2.0

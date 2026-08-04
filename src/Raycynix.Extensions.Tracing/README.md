@@ -1,41 +1,61 @@
 # Raycynix.Extensions.Tracing
 
-`Raycynix.Extensions.Tracing` contains the core tracing services for Raycynix applications.
+Version `3.0.0` provides provider-neutral tracing registration for .NET 10 applications.
 
 ## What it contains
 
-- `AddRaycynixTracing(...)`
-- `ITracer` registration
-- `Tracer` implementation built on `ActivitySource`
+- `AddRaycynixTracing()` registration
+- the standard shared `ActivitySource` from `Raycynix.Extensions.Tracing.Abstractions`
+- compatibility with `ActivityListener`, OpenTelemetry, OTLP, and Aspire
 
-## What it does not contain
+The package does not own a tracer provider or exporter. Transport and sampling are configured by the host.
 
-- ASP.NET Core middleware
-- `IApplicationBuilder` extensions
-- HTTP request pipeline integration
-
-## Usage
+## Registration
 
 ```csharp
+var builder = Host.CreateApplicationBuilder(args);
+
 builder.Services.AddRaycynixTracing();
 ```
 
-The tracer emits optional diagnostics through `Microsoft.Extensions.Logging` when a logger provider is available. Tag and baggage values are not written by the package logs.
+## Creating activities
 
 ```csharp
-public sealed class OrderService(ITracer tracer)
-{
-    public void Process(string orderId)
-    {
-        using var activity = tracer.StartTrace("orders.process", new Dictionary<string, string>
-        {
-            ["order.id"] = orderId
-        });
+using System.Diagnostics;
+using Raycynix.Extensions.Tracing.Abstractions;
 
-        tracer.SetBaggage("tenant", "alpha");
-        tracer.AddTag("operation.type", "command");
-    }
+using var activity = RaycynixTracing.ActivitySource.StartActivity(
+    "orders.process",
+    ActivityKind.Internal);
+
+activity?.SetTag("raycynix.order.id", orderId);
+activity?.SetBaggage("raycynix.tenant", tenant);
+
+try
+{
+    await ProcessAsync();
+    activity?.SetStatus(ActivityStatusCode.Ok);
+}
+catch (Exception exception)
+{
+    activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+    throw;
 }
 ```
 
-For ASP.NET Core middleware integration, use `Raycynix.Extensions.Tracing.AspNetCore`.
+`StartActivity` returns `null` when no listener samples the source. Use null-conditional operations and avoid doing expensive tag preparation until an activity exists.
+
+## Aspire and OpenTelemetry
+
+Raycynix uses the stable source name `Raycynix.Extensions`. An Aspire resource can export these activities through its normal OpenTelemetry/OTLP pipeline. Configure collection in the resource process; the AppHost does not recreate spans emitted by its resources.
+
+For ASP.NET Core request instrumentation and exporter composition, use `Raycynix.Extensions.Tracing.AspNetCore`.
+
+## Migration from 2.x
+
+Version 3.0 removes `ITracer` and `Tracer`.
+
+- use `RaycynixTracing.ActivitySource.StartActivity(...)` instead of `ITracer.StartTrace(...)`
+- use `Activity.SetTag(...)` instead of `ITracer.AddTag(...)`
+- use `Activity.SetBaggage(...)` and `Activity.GetBaggageItem(...)`
+- configure sampling and exporters through OpenTelemetry or `ActivityListener`
