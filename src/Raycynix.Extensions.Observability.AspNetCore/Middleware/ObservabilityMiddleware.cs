@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Tracing.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
@@ -19,7 +18,6 @@ public static class ObservabilityMiddleware
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.UseRaycynixTracing();
         app.UseMiddleware<CorrelationMiddleware>();
         return app;
     }

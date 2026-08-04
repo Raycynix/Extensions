@@ -4,6 +4,7 @@ using Microsoft.Extensions.Http;
 using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
 using Raycynix.Extensions.Metrics.AspNetCore;
+using Raycynix.Extensions.Tracing.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore;
 
@@ -26,6 +27,7 @@ public static class Observability
 
         services.AddRaycynixObservability();
         services.AddRaycynixAspNetCoreMetrics();
+        services.AddRaycynixAspNetCoreTracing();
         services.AddHealthChecks();
         services.Configure<ObservabilityAspNetCoreConfiguration>(options => setup?.Invoke(options));
         

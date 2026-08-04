@@ -1,8 +1,9 @@
 using System.Diagnostics.Metrics;
+using System.Diagnostics;
 using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Metrics.Abstractions;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database.Observability;
@@ -12,7 +13,6 @@ namespace Raycynix.Extensions.Database.Observability;
 /// </summary>
 internal sealed class DatabaseObservability : IDatabaseObservability
 {
-    private readonly ITracer? _tracer;
     private readonly Counter<long>? _operationCounter;
     private readonly Histogram<double>? _operationDuration;
     private readonly ILogger<DatabaseObservability>? _logger;
@@ -24,13 +24,10 @@ internal sealed class DatabaseObservability : IDatabaseObservability
     public DatabaseObservability(IServiceProvider serviceProvider)
     {
         _logger = serviceProvider.GetService(typeof(ILogger<DatabaseObservability>)) as ILogger<DatabaseObservability>;
-        _tracer = serviceProvider.GetService(typeof(ITracer)) as ITracer;
-
         if (serviceProvider.GetService(typeof(IMeterFactory)) is not IMeterFactory meterFactory)
         {
             _logger?.LogDebug(
-                "Database observability initialized without metrics service. Tracing enabled: {TracingEnabled}.",
-                _tracer is not null);
+                "Database observability initialized without metrics service.");
             return;
         }
 
@@ -46,9 +43,8 @@ internal sealed class DatabaseObservability : IDatabaseObservability
             description: "Duration of observed database operations.");
 
         _logger?.LogDebug(
-            "Database observability initialized. Metrics enabled: {MetricsEnabled}, Tracing enabled: {TracingEnabled}.",
-            true,
-            _tracer is not null);
+            "Database observability initialized. Metrics enabled: {MetricsEnabled}.",
+            true);
     }
 
     /// <summary>
@@ -68,11 +64,10 @@ internal sealed class DatabaseObservability : IDatabaseObservability
         var timer = _operationDuration?.MeasureDuration(
             new("raycynix.database.provider", providerName),
             new("raycynix.database.operation", operation)) ?? NoopDisposable.Instance;
-        var trace = _tracer?.StartTrace($"database.{operation}", new Dictionary<string, string>
-        {
-            ["database.provider"] = providerName,
-            ["database.operation"] = operation
-        }) ?? NoopDisposable.Instance;
+        var activity = RaycynixTracing.ActivitySource.StartActivity($"database.{operation}", ActivityKind.Client);
+        activity?.SetTag("raycynix.database.provider", providerName);
+        activity?.SetTag("raycynix.database.operation", operation);
+        var trace = (IDisposable?)activity ?? NoopDisposable.Instance;
 
         return new CompositeDisposable(timer, trace);
     }
@@ -104,11 +99,15 @@ internal sealed class DatabaseObservability : IDatabaseObservability
     /// <param name="value">The tag value.</param>
     public void AddTag(string key, string value)
     {
-        _tracer?.AddTag(key, value);
+        Activity.Current?.SetTag(key, value);
     }
 
     private void Record(string providerName, string operation, string status)
     {
+        Activity.Current?
+            .SetTag("raycynix.database.status", status)
+            .SetStatus(status == "failure" ? ActivityStatusCode.Error : ActivityStatusCode.Ok);
+
         _operationCounter?.Add(
             1,
             new("raycynix.database.provider", providerName.ToLowerInvariant()),
