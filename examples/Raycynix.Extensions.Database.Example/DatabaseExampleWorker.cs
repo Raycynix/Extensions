@@ -33,7 +33,7 @@ internal sealed class DatabaseExampleWorker(
             });
 
             await databaseContext.SaveChangesAsync(stoppingToken);
-            logger.LogInformation("Created a new order\n{Order}", new { OrderNumber = "ORD-2026-0002" });
+            logger.LogInformation("Created a new order {@Order}", new { OrderNumber = "ORD-2026-0002" });
         }
 
         var orders = await databaseContext.Set<ExampleOrder>()
@@ -43,7 +43,7 @@ internal sealed class DatabaseExampleWorker(
 
         foreach (var order in orders)
         {
-            logger.LogInformation("Loaded order from database\n{Order}", new
+            logger.LogInformation("Loaded order from database {@Order}", new
             {
                 order.Number,
                 order.CustomerName,

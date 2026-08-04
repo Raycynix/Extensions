@@ -96,7 +96,7 @@ app.MapPost("/orders", async (
     databaseContext.Set<ExampleOrder>().Add(order);
     await databaseContext.SaveChangesAsync(cancellationToken);
 
-    logger.LogInformation("Created order through HTTP endpoint\n {Endpoint}", new
+    logger.LogInformation("Created order through HTTP endpoint {@Endpoint}", new
     {
         order.Number,
         order.CustomerId,

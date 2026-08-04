@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Serilog.Configurations;
 
 namespace Raycynix.Extensions.Logging.Example;
@@ -8,16 +7,14 @@ namespace Raycynix.Extensions.Logging.Example;
 internal sealed class LoggingExampleWorker(
     ILogger<LoggingExampleWorker> logger,
     OrderProcessor orderProcessor,
-    IOptions<RaycynixSerilogOptions> raycynixSerilogOptions,
+    RaycynixSerilogOptions raycynixSerilogOptions,
     IHostApplicationLifetime applicationLifetime) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var options = raycynixSerilogOptions.Value;
-
         logger.LogInformation("Logging example started for {ServiceName} in {Environment}",
-            options.ServiceName,
-            options.Environment);
+            raycynixSerilogOptions.ServiceName,
+            raycynixSerilogOptions.Environment);
 
         using (logger.BeginScope(new Dictionary<string, object>
                {
