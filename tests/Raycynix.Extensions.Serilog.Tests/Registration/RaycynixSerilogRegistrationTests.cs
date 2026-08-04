@@ -20,7 +20,7 @@ public sealed class RaycynixSerilogRegistrationTests
         {
             logging.Options.UseDefaultConsoleWhenNoSinksConfigured = false;
 
-            logging.ConfigureLogger((_, loggerConfiguration) =>
+            logging.ConfigureSink((_, loggerConfiguration) =>
                 loggerConfiguration.WriteTo.Sink(sink));
         });
 
@@ -47,7 +47,7 @@ public sealed class RaycynixSerilogRegistrationTests
             {
                 logging.Options.UseDefaultConsoleWhenNoSinksConfigured = false;
 
-                logging.ConfigureLogger((_, loggerConfiguration) => loggerConfiguration.WriteTo.Sink(sink));
+                logging.ConfigureSink((_, loggerConfiguration) => loggerConfiguration.WriteTo.Sink(sink));
             })
             .Build();
 
@@ -77,7 +77,7 @@ public sealed class RaycynixSerilogRegistrationTests
             {
                 logging.Options.UseDefaultConsoleWhenNoSinksConfigured = false;
 
-                logging.ConfigureLogger((_, loggerConfiguration) => loggerConfiguration.WriteTo.Sink(sink));
+                logging.ConfigureSink((_, loggerConfiguration) => loggerConfiguration.WriteTo.Sink(sink));
             });
 
         using var provider = services.BuildServiceProvider();

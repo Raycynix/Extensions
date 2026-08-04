@@ -35,6 +35,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog\Raycynix.Extensions.Serilog.csproj"/>
         <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog.Elastic\Raycynix.Extensions.Serilog.Elastic.csproj"/>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog.Aspire\Raycynix.Extensions.Serilog.Aspire.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -212,7 +212,7 @@ public sealed class MicrosoftLoggingPipelineTests
         {
             logging.Options.UseDefaultConsoleWhenNoSinksConfigured = false;
 
-            logging.ConfigureLogger((_, loggerConfiguration) =>
+            logging.ConfigureSink((_, loggerConfiguration) =>
                 loggerConfiguration.WriteTo.Sink(sink));
         });
 
@@ -244,7 +244,7 @@ public sealed class MicrosoftLoggingPipelineTests
 
             configure?.Invoke(logging);
 
-            logging.ConfigureLogger((_, loggerConfiguration) =>
+            logging.ConfigureSink((_, loggerConfiguration) =>
                 loggerConfiguration.WriteTo.Sink(sink));
         });
 
