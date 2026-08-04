@@ -10,12 +10,14 @@ using Serilog.Core;
 
 namespace Raycynix.Extensions.Serilog.Elastic.Internal;
 
-internal sealed class ElasticSerilogConfigurator(ElasticSerilogOptions options) : IRaycynixSerilogConfigurator
+internal sealed class ElasticSerilogConfigurator(ElasticSerilogOptions options) : IRaycynixSerilogSinkConfigurator
 {
     private readonly ElasticSerilogOptions _options =
         options ?? throw new ArgumentNullException(nameof(options));
 
     public int Order => _options.Order;
+
+    public bool IsEnabled => _options.Enabled;
 
     public void Configure(
         LoggerConfiguration loggerConfiguration,

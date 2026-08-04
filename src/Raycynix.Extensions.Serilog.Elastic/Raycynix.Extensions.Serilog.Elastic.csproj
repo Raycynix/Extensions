@@ -21,10 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Elastic.Channels" Version="0.48.0"/>
-        <PackageReference Include="Elastic.Ingest.Elasticsearch" Version="0.48.0"/>
         <PackageReference Include="Elastic.Serilog.Sinks" Version="9.0.0"/>
-        <PackageReference Include="Elastic.Transport" Version="1.0.0"/>
     </ItemGroup>
 
 </Project>

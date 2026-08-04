@@ -42,7 +42,7 @@ public static class RaycynixElasticSerilogExtensions
 
         builder.Services.AddSingleton<ElasticSerilogRegistrationMarker>();
 
-        builder.AddConfigurator<ElasticSerilogConfigurator>();
+        builder.AddSinkConfigurator<ElasticSerilogConfigurator>();
 
         return builder;
     }
