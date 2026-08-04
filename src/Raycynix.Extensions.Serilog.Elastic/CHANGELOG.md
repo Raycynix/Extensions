@@ -29,6 +29,8 @@
 ### Fixed
 
 - Prevented the Elasticsearch configurator from resolving options through the logging provider during Serilog startup.
+- Aligned transitive Elastic ingest and transport dependencies with `Elastic.Serilog.Sinks` 9.0.0 to prevent runtime type-load failures.
+- Prevented the fallback console sink from being added when the enabled Elastic integration contributes output.
 
 ## 2.2.0
 

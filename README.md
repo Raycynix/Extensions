@@ -134,7 +134,11 @@ await host.RunAsync();
 
 ## Logging overview
 
-`Raycynix.Extensions.Serilog` integrates Serilog with the standard Microsoft logging pipeline and adds validated Raycynix conventions. Optional packages extend the same pipeline:
+The 3.0 logging packages target .NET 10 and use the standard
+`Microsoft.Extensions.Logging.ILogger<T>` API. `Raycynix.Extensions.Serilog`
+provides Serilog host registration, native configuration, service metadata,
+ordered extension points, and fallback console output. Optional packages extend
+the same pipeline:
 
 - `Raycynix.Extensions.Serilog.Elastic` sends events to Elasticsearch.
 - `Raycynix.Extensions.Serilog.Aspire` configures logging for an Aspire AppHost process.

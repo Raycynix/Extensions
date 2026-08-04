@@ -18,6 +18,14 @@ Application services continue to consume the standard `ILogger<T>` and `ILoggerF
 * Support for optional integration packages
 * Programmatic Serilog configuration escape hatch
 
+## Package family
+
+| Package | Purpose |
+|---|---|
+| `Raycynix.Extensions.Serilog` | Core hosting integration, conventions, native Serilog configuration, DI discovery, and fallback console output |
+| `Raycynix.Extensions.Serilog.Elastic` | Official Elastic sink integration with validated ECS data stream, connection, authentication, and channel options |
+| `Raycynix.Extensions.Serilog.Aspire` | One-line Serilog registration for an Aspire AppHost process |
+
 ## Supported application models
 
 | Application model                     | Registration API                                 |
@@ -37,6 +45,39 @@ required.
 
 ```bash
 dotnet add package Raycynix.Extensions.Serilog
+```
+
+## Compatibility
+
+Version 3.0.0 targets .NET 10 and the Microsoft.Extensions 10 hosting stack. It
+uses Serilog 4.3, Serilog.Extensions.Hosting 10, and
+Serilog.Settings.Configuration 10. Applications write through the standard
+Microsoft `ILogger<T>` API; direct use of the static Serilog logger is optional.
+
+## Minimal configuration
+
+The registration call is sufficient. If no sink is supplied, a console sink is
+added automatically:
+
+```csharp
+var builder = Host.CreateApplicationBuilder(args);
+builder.AddRaycynixSerilog();
+```
+
+Application settings can then separate Raycynix conventions from native
+Serilog behavior:
+
+```json
+{
+  "Raycynix": {
+    "Serilog": {
+      "ServiceName": "orders-api"
+    }
+  },
+  "Serilog": {
+    "MinimumLevel": "Information"
+  }
+}
 ```
 
 ## Modern host registration
@@ -223,6 +264,30 @@ The package does not register a separate `IOptions<RaycynixSerilogOptions>`
 pipeline because the Serilog logger is constructed once with the resolved
 startup snapshot.
 
+### Raycynix option reference
+
+| Option | Default | Purpose |
+|---|---|---|
+| `ServiceName` | Host application name | Adds `ServiceName` to every event |
+| `ServiceVersion` | Entry assembly informational version | Adds `ServiceVersion` to every event |
+| `Environment` | Host environment name | Adds `Environment` to every event |
+| `SerilogSectionName` | `Serilog` | Selects the native Serilog configuration section |
+| `ApplyDefaultLevelOverrides` | `true` | Applies `Warning` overrides for `Microsoft` and `System` before native configuration is read |
+| `UseDefaultConsoleWhenNoSinksConfigured` | `true` | Adds console output only when no other sink is registered |
+| `DefaultConsoleOutputTemplate` | Raycynix structured console template | Controls only the fallback console sink |
+| `PreserveStaticLogger` | `false` | Preserves an application-managed `Log.Logger` |
+| `WriteToProviders` | `false` | Forwards events to other Microsoft logging providers |
+
+The configuration callback runs after section binding and before validation,
+so values supplied in code override values from configuration.
+
+Environment variables use standard double-underscore nesting, for example:
+
+```text
+Raycynix__Serilog__ServiceName=orders-api
+Serilog__MinimumLevel__Default=Debug
+```
+
 ## Native Serilog configuration
 
 Serilog-specific behavior remains in the native `Serilog` section:
@@ -397,6 +462,8 @@ builder.AddRaycynixSerilog(logging =>
 When an inline callback adds a `WriteTo` destination, register it with
 `ConfigureSink()` so it participates in fallback-console detection:
 
+The following example also requires the `Serilog.Sinks.File` package.
+
 ```csharp
 builder.AddRaycynixSerilog(logging =>
 {
@@ -408,6 +475,17 @@ builder.AddRaycynixSerilog(logging =>
 Reusable sink packages should implement
 `IRaycynixSerilogSinkConfigurator` and register it through
 `AddSinkConfigurator<TConfigurator>()`.
+
+### Extension API reference
+
+| API | Use case |
+|---|---|
+| `AddConfigurator<T>()` | Register a DI-created enricher, filter, destructuring, or other logger configurator |
+| `AddConfigurator(instance)` | Register an existing configurator instance |
+| `ConfigureLogger(...)` | Apply inline logger configuration that does not add a sink |
+| `AddSinkConfigurator<T>()` | Register a typed configurator that contributes a sink |
+| `ConfigureSink(...)` | Add an inline `WriteTo` destination and suppress fallback console output |
+| `AddSingleton(instance)` | Make an application object available to configurators through DI |
 
 ## Dependency-injected Serilog components
 
@@ -482,6 +560,33 @@ builder.Host.UseRaycynixSerilog();
 for the same application.
 
 Duplicate registration throws an `InvalidOperationException`.
+
+## Startup and reload behavior
+
+Raycynix metadata options are resolved and validated once during registration.
+Changing `Raycynix:Serilog` after the host has started does not rebuild the
+logger or replace its metadata snapshot. Native Serilog configuration retains
+the behavior provided by `Serilog.Settings.Configuration`, including supported
+level-switch reload scenarios.
+
+## Troubleshooting
+
+### Duplicate console events
+
+Use `ConfigureSink()` for inline `WriteTo` callbacks. `ConfigureLogger()` is
+intended for enrichers, filters, levels, and other non-sink configuration.
+Also verify that `WriteToProviders` is not forwarding events to an equivalent
+Microsoft provider.
+
+### Missing debug or trace events
+
+Set the native `Serilog:MinimumLevel` value. Raycynix-specific options do not
+duplicate Serilog minimum-level configuration.
+
+### Empty metadata
+
+Inject `RaycynixSerilogOptions` directly when application code needs the
+resolved metadata snapshot. Do not request `IOptions<RaycynixSerilogOptions>`.
 
 ## Static Serilog logger
 

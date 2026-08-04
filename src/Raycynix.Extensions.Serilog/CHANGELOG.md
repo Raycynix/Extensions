@@ -37,6 +37,7 @@
 * Added extension points for optional integration packages such as `Raycynix.Extensions.Serilog.Elastic`.
 * Added explicit sink configurators and `ConfigureSink()` for fallback-console detection.
 * Added the optional `Raycynix.Extensions.Serilog.Aspire` AppHost integration.
+* Added complete package-family, options, extension API, reload, and troubleshooting documentation.
 
 ### Changed
 

@@ -4,10 +4,11 @@
         <Version>3.0.0</Version>
         <IsPackable>true</IsPackable>
 
-        <Description>Opinionated Serilog configuration, host integration, enrichment conventions, and extension points for Raycynix applications.</Description>
+        <Title>Raycynix Serilog Hosting</Title>
+        <Description>Serilog hosting integration for .NET 10 applications using Microsoft.Extensions.Logging, with native configuration, service metadata enrichment, fallback console output, dependency-injected components, and ordered extension points.</Description>
 
-        <PackageTags>raycynix;serilog;logging;structured-logging;host;console;extensions;dotnet</PackageTags>
-        <PackageReleaseNotes>v3.0.0 replaces LoggingConfiguration with RaycynixSerilogOptions, adopts conventional section binding, and integrates with the standard Microsoft logging pipeline.</PackageReleaseNotes>
+        <PackageTags>raycynix;serilog;logging;microsoft-extensions-logging;structured-logging;generic-host;aspnetcore;dependency-injection;configuration;console;enrichment;message-templates;dotnet;net10</PackageTags>
+        <PackageReleaseNotes>v3.0.0 replaces the custom Raycynix logger abstraction with standard Microsoft.Extensions.Logging, adds AddRaycynixSerilog for modern hosts and UseRaycynixSerilog for classic hosts, binds RaycynixSerilogOptions from Raycynix:Serilog, reads native Serilog configuration and DI components, enriches service metadata, provides true fallback console detection, and introduces ordered logger and sink configurators.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

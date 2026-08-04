@@ -3,10 +3,11 @@
         <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>v3.0.0 replaces ElasticConfiguration with ElasticOptions, uses conventional nested section binding, validates HTTP or HTTPS endpoints, and prevents dependency cycles during Serilog startup.</PackageReleaseNotes>
+        <Title>Raycynix Serilog Elastic Integration</Title>
+        <PackageReleaseNotes>v3.0.0 integrates the official Elastic.Serilog.Sinks 9 pipeline, binds and validates ElasticSerilogOptions from Raycynix:Serilog:Elastic, supports Elasticsearch nodes and Elastic Cloud, API key and basic authentication, ECS data streams, ILM, channel buffering, proxy and TLS settings, and aligns the runtime dependency graph with the official sink.</PackageReleaseNotes>
 
-        <Description>Validated Elasticsearch sink options and integration for the Raycynix Serilog logging pipeline.</Description>
-        <PackageTags>raycynix;logging;serilog;elasticsearch;elastic;options;structured-logging;sink;integration;dotnet</PackageTags>
+        <Description>Validated Elastic.Serilog.Sinks integration for Raycynix Serilog, with Elasticsearch and Elastic Cloud connectivity, ECS data streams, authentication, buffering, proxy, TLS, ILM, and fail-fast startup validation.</Description>
+        <PackageTags>raycynix;serilog;logging;structured-logging;elasticsearch;elastic;elastic-cloud;ecs;data-stream;ilm;api-key;basic-auth;buffering;proxy;tls;sink;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
