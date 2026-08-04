@@ -33,7 +33,7 @@ public class ObservabilityRegistrationTests
         tracer.Should().NotBeNull();
         operationContext.Should().BeOfType<OperationContext>();
         services.Should().NotContain(service =>
-            service.ServiceType.FullName == "Raycynix.Extensions.Logging.Abstractions.ILogger`1");
+            service.ServiceType.FullName == "Raycynix.Extensions.Serilog.Abstractions.ILogger`1");
     }
 
     /// <summary>

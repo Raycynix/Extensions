@@ -22,7 +22,7 @@ public sealed class DatabaseInitializerTests
         var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
 
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildSqliteOptions(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -51,7 +51,7 @@ public sealed class DatabaseInitializerTests
         var databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
 
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildSqliteOptions(databasePath), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -102,7 +102,7 @@ public sealed class DatabaseInitializerTests
         }
     }
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {

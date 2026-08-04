@@ -23,6 +23,8 @@ internal static class RaycynixSerilogRegistration
         ArgumentNullException.ThrowIfNull(environment);
 
         EnsureNotRegistered(services);
+        
+        services.AddLogging();
 
         var options = CreateOptions(configuration);
 
@@ -34,15 +36,10 @@ internal static class RaycynixSerilogRegistration
 
         configure?.Invoke(builder);
 
-        RaycynixSerilogOptionsValidator
-            .ApplyDefaultsAndValidate(
-                options,
-                environment);
+        RaycynixSerilogOptionsValidator.ApplyDefaultsAndValidate(options, environment);
 
         services.AddSingleton(options);
-
-        services.AddSingleton<
-            RaycynixSerilogRegistrationMarker>();
+        services.AddSingleton<RaycynixSerilogRegistrationMarker>();
 
         RegisterSerilogProvider(
             services,
@@ -57,8 +54,7 @@ internal static class RaycynixSerilogRegistration
         var options = new RaycynixSerilogOptions();
 
         configuration
-            .GetSection(
-                RaycynixSerilogOptions.SectionName)
+            .GetSection(RaycynixSerilogOptions.SectionName)
             .Bind(options);
 
         return options;
@@ -79,10 +75,8 @@ internal static class RaycynixSerilogRegistration
                     loggerConfiguration,
                     options);
             },
-            preserveStaticLogger:
-            options.PreserveStaticLogger,
-            writeToProviders:
-            options.WriteToProviders);
+            preserveStaticLogger: options.PreserveStaticLogger,
+            writeToProviders: options.WriteToProviders);
     }
 
     private static void ConfigureLogger(
@@ -101,8 +95,7 @@ internal static class RaycynixSerilogRegistration
             loggerConfiguration,
             options);
 
-        loggerConfiguration
-            .ReadFrom.Services(services);
+        loggerConfiguration.ReadFrom.Services(services);
 
         AddFallbackConsoleIfRequired(
             configuration,
@@ -128,28 +121,16 @@ internal static class RaycynixSerilogRegistration
         loggerConfiguration
             .MinimumLevel.Information()
             .Enrich.FromLogContext()
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.ServiceName,
-                options.ServiceName)
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.ServiceVersion,
-                options.ServiceVersion)
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.Environment,
-                options.Environment);
+            .Enrich.WithProperty(RaycynixSerilogPropertyNames.ServiceName, options.ServiceName)
+            .Enrich.WithProperty(RaycynixSerilogPropertyNames.ServiceVersion, options.ServiceVersion)
+            .Enrich.WithProperty(RaycynixSerilogPropertyNames.Environment, options.Environment);
 
         if (!options.ApplyDefaultLevelOverrides)
-        {
             return;
-        }
 
         loggerConfiguration
-            .MinimumLevel.Override(
-                "Microsoft",
-                LogEventLevel.Warning)
-            .MinimumLevel.Override(
-                "System",
-                LogEventLevel.Warning);
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning);
     }
 
     private static void ReadNativeSerilogConfiguration(
@@ -157,17 +138,14 @@ internal static class RaycynixSerilogRegistration
         LoggerConfiguration loggerConfiguration,
         RaycynixSerilogOptions options)
     {
-        var readerOptions =
-            new ConfigurationReaderOptions
-            {
-                SectionName =
-                    options.SerilogSectionName
-            };
+        var readerOptions = new ConfigurationReaderOptions
+        {
+            SectionName = options.SerilogSectionName
+        };
 
-        loggerConfiguration
-            .ReadFrom.Configuration(
-                configuration,
-                readerOptions);
+        loggerConfiguration.ReadFrom.Configuration(
+            configuration,
+            readerOptions);
     }
 
     private static void ApplyConfigurators(
@@ -176,8 +154,7 @@ internal static class RaycynixSerilogRegistration
         RaycynixSerilogContext context)
     {
         var configurators = services
-            .GetServices<
-                IRaycynixSerilogConfigurator>()
+            .GetServices<IRaycynixSerilogConfigurator>()
             .OrderBy(current => current.Order);
 
         foreach (var configurator in configurators)
@@ -193,22 +170,13 @@ internal static class RaycynixSerilogRegistration
         LoggerConfiguration loggerConfiguration,
         RaycynixSerilogOptions options)
     {
-        if (!options
-                .UseDefaultConsoleWhenNoSinksConfigured)
-        {
+        if (!options.UseDefaultConsoleWhenNoSinksConfigured)
             return;
-        }
 
-        if (HasConfiguredSinks(
-                configuration,
-                options.SerilogSectionName))
-        {
+        if (HasConfiguredSinks(configuration, options.SerilogSectionName))
             return;
-        }
 
-        loggerConfiguration.WriteTo.Console(
-            outputTemplate:
-            options.DefaultConsoleOutputTemplate);
+        loggerConfiguration.WriteTo.Console(outputTemplate: options.DefaultConsoleOutputTemplate);
     }
 
     private static bool HasConfiguredSinks(
@@ -219,30 +187,21 @@ internal static class RaycynixSerilogRegistration
             .GetSection(serilogSectionName)
             .GetSection("WriteTo");
 
-        if (!string.IsNullOrWhiteSpace(
-                writeToSection.Value))
-        {
+        if (!string.IsNullOrWhiteSpace(writeToSection.Value))
             return true;
-        }
 
         return writeToSection
             .GetChildren()
             .Any();
     }
 
-    private static void EnsureNotRegistered(
-        IServiceCollection services)
+    private static void EnsureNotRegistered(IServiceCollection services)
     {
         var alreadyRegistered = services.Any(descriptor =>
-            descriptor.ServiceType ==
-            typeof(
-                RaycynixSerilogRegistrationMarker));
+            descriptor.ServiceType == typeof(RaycynixSerilogRegistrationMarker));
 
         if (alreadyRegistered)
-        {
             throw new InvalidOperationException(
-                "Raycynix Serilog has already been registered. " +
-                "Register it only once for each service collection.");
-        }
+                "Raycynix Serilog has already been registered. Register it only once for each service collection.");
     }
 }

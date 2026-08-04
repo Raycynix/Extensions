@@ -29,7 +29,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldRegisterCoreServices()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -59,13 +59,13 @@ public sealed class DatabaseRegistrationTests
     }
 
     /// <summary>
-    /// Verifies that the setup callback executes during options creation.
+    /// Verifies that the setup callback executes during option creation.
     /// </summary>
     [Fact]
     public void AddRaycynixDatabase_ShouldInvokeSetupCallback()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         var setupInvoked = false;
 
         var configuration = new ConfigurationBuilder()
@@ -76,10 +76,7 @@ public sealed class DatabaseRegistrationTests
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration, _ =>
-        {
-            setupInvoked = true;
-        }, registerCallerAssembly: false);
+        services.AddRaycynixDatabase(configuration, _ => { setupInvoked = true; }, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
@@ -95,7 +92,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenSetupIsProvidedAfterInitialRegistration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -124,7 +121,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenConfigurationIsInvalid()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -150,7 +147,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenNoProviderPackageIsRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -180,7 +177,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenMultipleProviderPackagesAreRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -212,7 +209,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenOnlyLegacyProviderKeyIsConfigured()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -242,7 +239,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldIgnoreLegacyProviderKey_WhenProviderPackageIsExplicitlyRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -272,7 +269,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabaseAssembly_ShouldIncludeConfiguratorsFromExternalAssembly()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
 
         var configuration = new ConfigurationBuilder()
@@ -303,7 +300,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldReturnBuilderThatSupportsAssemblyRegistration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -334,7 +331,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldNotScanCallerAssembly_WhenCallerAssemblyRegistrationIsDisabled()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -362,7 +359,7 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_WithMarker_ShouldExposeMarkerAssemblyAsPrimaryAssembly()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -386,31 +383,27 @@ public sealed class DatabaseRegistrationTests
 
     private sealed class ExternalConfiguredEntity
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
     }
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)
-        {
-        }
-        
-        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
         }
     }

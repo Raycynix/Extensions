@@ -148,7 +148,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Observa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{161A1616-6DBC-49BE-9FC6-75E0CC42C847}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Logging.Tests", "tests\Raycynix.Extensions.Logging.Tests\Raycynix.Extensions.Logging.Tests.csproj", "{CA9B0A22-349B-4445-B6CE-C277F0ACC563}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raycynix.Extensions.Serilog.Tests", "tests\Raycynix.Extensions.Serilog.Tests\Raycynix.Extensions.Serilog.Tests.csproj", "{CA9B0A22-349B-4445-B6CE-C277F0ACC563}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metrics", "Metrics", "{3C22E8D6-CCC2-4445-B5F8-8B8468B77141}"
 EndProject
