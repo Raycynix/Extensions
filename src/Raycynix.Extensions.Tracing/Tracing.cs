@@ -1,9 +1,6 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Raycynix.Extensions.Common.Helpers;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Implementations;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Tracing;
 
@@ -13,7 +10,7 @@ namespace Raycynix.Extensions.Tracing;
 public static class Tracing
 {
     /// <summary>
-    /// Registers the tracing service.
+    /// Registers the shared standard .NET activity source.
     /// </summary>
     /// <param name="services">The service collection to which the tracing services are to be added.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
@@ -21,10 +18,12 @@ public static class Tracing
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var serviceName = AssemblyHelper.CurrentName();
-
-        services.TryAddSingleton<ITracer>(serviceProvider =>
-            new Tracer(serviceName, serviceProvider.GetService<ILogger<Tracer>>()));
+        if (!services.Any(descriptor =>
+                descriptor.ServiceType == typeof(ActivitySource) &&
+                ReferenceEquals(descriptor.ImplementationInstance, RaycynixTracing.ActivitySource)))
+        {
+            services.AddSingleton(RaycynixTracing.ActivitySource);
+        }
 
         return services;
     }
