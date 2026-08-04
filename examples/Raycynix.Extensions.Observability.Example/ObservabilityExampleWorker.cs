@@ -1,16 +1,16 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Metrics.Abstractions;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Observability.Example;
 
 internal sealed class ObservabilityExampleWorker(
     IOperationContext operationContext,
     ILogger<ObservabilityExampleWorker> logger,
-    ITracer tracer,
     IMeterFactory meterFactory,
     IHostApplicationLifetime applicationLifetime) : BackgroundService
 {
@@ -27,14 +27,12 @@ internal sealed class ObservabilityExampleWorker(
         var durationHistogram = meter.CreateHistogram<double>(
             "raycynix.observability.example.duration", "s");
 
-        using (tracer.StartTrace("checkout.handle", new Dictionary<string, string>
-               {
-                   ["tenant"] = "alpha",
-                   ["operation.kind"] = "command"
-               }))
+        using (var activity = RaycynixTracing.ActivitySource.StartActivity("checkout.handle", ActivityKind.Internal))
         {
-            tracer.SetBaggage("tenant", "alpha");
-            tracer.AddTag("correlation.id", operationContext.CorrelationId);
+            activity?.SetTag("tenant", "alpha");
+            activity?.SetTag("operation.kind", "command");
+            activity?.SetBaggage("tenant", "alpha");
+            activity?.SetTag("correlation.id", operationContext.CorrelationId);
 
             queueDepth.Add(3, new KeyValuePair<string, object?>("raycynix.queue", "checkout"));
 
@@ -51,9 +49,9 @@ internal sealed class ObservabilityExampleWorker(
                     new("raycynix.status", "success"));
             }
 
-            using (tracer.StartTrace("checkout.publish_event"))
+            using (var publish = RaycynixTracing.ActivitySource.StartActivity("checkout.publish_event"))
             {
-                tracer.AddTag("message.destination", "orders.events");
+                publish?.SetTag("message.destination", "orders.events");
 
                 using (durationHistogram.MeasureDuration(
                            new KeyValuePair<string, object?>("raycynix.operation", "checkout.publish_event")))

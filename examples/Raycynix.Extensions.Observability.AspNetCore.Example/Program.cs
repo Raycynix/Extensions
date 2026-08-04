@@ -8,7 +8,7 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using Raycynix.Extensions.Observability.AspNetCore;
 using Raycynix.Extensions.Observability.AspNetCore.Middleware;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
@@ -52,7 +52,6 @@ app.MapGet("/", () => Results.Ok(new
 app.MapGet("/context", (
     HttpContext httpContext,
     IOperationContext operationContext,
-    ITracer tracer,
     ILoggerFactory loggerFactory) =>
 {
     activeRequests.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "context"));
@@ -61,7 +60,7 @@ app.MapGet("/context", (
     {
         using (requestDurationHistogram.MeasureDuration(
                    new KeyValuePair<string, object?>("raycynix.endpoint", "context")))
-        using (tracer.StartTrace("observability.context"))
+        using (RaycynixTracing.ActivitySource.StartActivity("observability.context"))
         {
             requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "context"));
             var logger = loggerFactory.CreateLogger("ContextEndpoint");
@@ -86,7 +85,6 @@ app.MapGet("/context", (
 app.MapGet("/checkout", async (
     IOperationContext operationContext,
     ILogger<CheckoutEndpoint> logger,
-    ITracer tracer,
     CancellationToken cancellationToken) =>
 {
     activeRequests.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "checkout"));
@@ -95,13 +93,11 @@ app.MapGet("/checkout", async (
     {
         using (requestDurationHistogram.MeasureDuration(
                    new KeyValuePair<string, object?>("raycynix.endpoint", "checkout")))
-        using (tracer.StartTrace("checkout.handle", new Dictionary<string, string>
-               {
-                   ["feature"] = "observability"
-               }))
+        using (var activity = RaycynixTracing.ActivitySource.StartActivity("checkout.handle", ActivityKind.Internal))
         {
+            activity?.SetTag("feature", "observability");
             requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "checkout"));
-            tracer.AddTag("correlation.id", operationContext.CorrelationId);
+            activity?.SetTag("correlation.id", operationContext.CorrelationId);
 
             logger.LogInformation(
                 "Handling checkout request. CorrelationId:{CorrelationId} TraceId:{TraceId}",
