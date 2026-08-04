@@ -1,163 +1,86 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Serilog.Abstractions;
-using Raycynix.Extensions.Serilog.Configurations;
-using Raycynix.Extensions.Serilog.Contexts;
 using Raycynix.Extensions.Serilog.Internal;
-using Serilog;
-using Serilog.Events;
-using Serilog.Settings.Configuration;
 
 namespace Raycynix.Extensions.Serilog;
 
 /// <summary>
-/// Provides host integration extensions for Raycynix Serilog.
+/// Provides registration extensions for Raycynix Serilog.
 /// </summary>
 public static class RaycynixSerilogExtensions
 {
     /// <summary>
-    /// Configures Serilog using Raycynix conventions and registers it
-    /// as the Microsoft.Extensions.Logging provider.
+    /// Adds Raycynix Serilog to a modern host application builder.
     /// </summary>
-    /// <param name="builder">
-    /// The host application builder to configure.
-    /// </param>
-    /// <param name="configure">
-    /// Optional callback for adjusting options and adding integrations.
-    /// </param>
-    /// <returns>The same application builder instance.</returns>
+    /// <remarks>
+    /// Supports HostApplicationBuilder and WebApplicationBuilder because
+    /// both expose IHostApplicationBuilder.
+    /// </remarks>
     public static IHostApplicationBuilder AddRaycynixSerilog(
         this IHostApplicationBuilder builder,
         Action<RaycynixSerilogBuilder>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        EnsureNotRegistered(builder.Services);
-
-        var options = new RaycynixSerilogOptions();
-
-        builder.Configuration
-            .GetSection(RaycynixSerilogOptions.SectionName)
-            .Bind(options);
-
-        var raycynixBuilder =
-            new RaycynixSerilogBuilder(builder, options);
-
-        configure?.Invoke(raycynixBuilder);
-
-        RaycynixSerilogOptionsValidator
-            .ApplyDefaultsAndValidate(
-                options,
-                builder.Environment);
-
-        builder.Services.AddSingleton(options);
-        builder.Services.AddSingleton<RaycynixSerilogRegistrationMarker>();
-
-        builder.Services.AddSerilog((services, loggerConfiguration) =>
-            {
-                var resolvedOptions = services.GetRequiredService<RaycynixSerilogOptions>();
-
-                ApplyRaycynixDefaults(loggerConfiguration, resolvedOptions);
-
-                var configurationReaderOptions = new ConfigurationReaderOptions
-                {
-                    SectionName = resolvedOptions.SerilogSectionName
-                };
-
-                loggerConfiguration
-                    .ReadFrom.Configuration(builder.Configuration, configurationReaderOptions)
-                    .ReadFrom.Services(services);
-
-                AddFallbackConsoleIfRequired(builder.Configuration, loggerConfiguration, resolvedOptions);
-
-                var context = new RaycynixSerilogContext(
-                    builder.Configuration,
-                    builder.Environment,
-                    services,
-                    resolvedOptions);
-
-                foreach (var configurator in services
-                             .GetServices<IRaycynixSerilogConfigurator>()
-                             .OrderBy(current => current.Order))
-                {
-                    configurator.Configure(loggerConfiguration, context);
-                }
-            },
-            preserveStaticLogger:
-            options.PreserveStaticLogger,
-            writeToProviders:
-            options.WriteToProviders);
+        RaycynixSerilogRegistration.Register(
+            builder.Services,
+            builder.Configuration,
+            builder.Environment,
+            configure);
 
         return builder;
     }
 
-    private static void ApplyRaycynixDefaults(
-        LoggerConfiguration loggerConfiguration,
-        RaycynixSerilogOptions options)
+    /// <summary>
+    /// Adds Raycynix Serilog to the classic generic host builder.
+    /// </summary>
+    /// <remarks>
+    /// The configuration callback executes when the host builder applies
+    /// its service registrations.
+    /// </remarks>
+    public static IHostBuilder UseRaycynixSerilog(
+        this IHostBuilder builder,
+        Action<RaycynixSerilogBuilder>? configure = null)
     {
-        loggerConfiguration
-            .MinimumLevel.Information()
-            .Enrich.FromLogContext()
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.ServiceName,
-                options.ServiceName)
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.ServiceVersion,
-                options.ServiceVersion)
-            .Enrich.WithProperty(
-                RaycynixSerilogPropertyNames.Environment,
-                options.Environment);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (!options.ApplyDefaultLevelOverrides)
-            return;
+        builder.ConfigureServices(
+            (context, services) =>
+            {
+                RaycynixSerilogRegistration.Register(
+                    services,
+                    context.Configuration,
+                    context.HostingEnvironment,
+                    configure);
+            });
 
-
-        loggerConfiguration
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .MinimumLevel.Override("System", LogEventLevel.Warning);
+        return builder;
     }
 
-    private static void AddFallbackConsoleIfRequired(
+    /// <summary>
+    /// Adds Raycynix Serilog directly to a service collection.
+    /// </summary>
+    /// <remarks>
+    /// This overload is intended for custom hosting models, integration
+    /// tests, and applications that manage their own service collection.
+    /// </remarks>
+    public static IServiceCollection AddRaycynixSerilog(
+        this IServiceCollection services,
         IConfiguration configuration,
-        LoggerConfiguration loggerConfiguration,
-        RaycynixSerilogOptions options)
+        IHostEnvironment environment,
+        Action<RaycynixSerilogBuilder>? configure = null)
     {
-        if (!options.UseDefaultConsoleWhenNoSinksConfigured)
-            return;
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(environment);
 
-        if (HasConfiguredSinks(
-                configuration,
-                options.SerilogSectionName))
-            return;
+        RaycynixSerilogRegistration.Register(
+            services,
+            configuration,
+            environment,
+            configure);
 
-        loggerConfiguration.WriteTo.Console(
-            outputTemplate:
-            options.DefaultConsoleOutputTemplate);
-    }
-
-    private static bool HasConfiguredSinks(
-        IConfiguration configuration,
-        string serilogSectionName)
-    {
-        var writeToSection = configuration
-            .GetSection(serilogSectionName)
-            .GetSection("WriteTo");
-
-        return !string.IsNullOrWhiteSpace(writeToSection.Value)
-               || writeToSection.GetChildren().Any();
-    }
-
-    private static void EnsureNotRegistered(IServiceCollection services)
-    {
-        var alreadyRegistered =
-            services.Any(descriptor => descriptor.ServiceType == typeof(RaycynixSerilogRegistrationMarker));
-
-        if (alreadyRegistered)
-        {
-            throw new InvalidOperationException(
-                "Raycynix Serilog has already been registered. " +
-                "Call AddRaycynixSerilog() only once.");
-        }
+        return services;
     }
 }

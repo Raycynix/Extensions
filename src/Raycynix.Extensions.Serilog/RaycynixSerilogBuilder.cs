@@ -10,58 +10,58 @@ using Raycynix.Extensions.Serilog.Internal;
 namespace Raycynix.Extensions.Serilog;
 
 /// <summary>
-/// Provides a fluent API for extending Raycynix Serilog registration.
+/// Provides a fluent API for extending the Raycynix Serilog pipeline.
 /// </summary>
 public sealed class RaycynixSerilogBuilder
 {
     internal RaycynixSerilogBuilder(
-        IHostApplicationBuilder applicationBuilder,
+        IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
         RaycynixSerilogOptions options)
     {
-        ApplicationBuilder = applicationBuilder
-                             ?? throw new ArgumentNullException(
-                                 nameof(applicationBuilder));
+        Services = services
+                   ?? throw new ArgumentNullException(nameof(services));
+
+        Configuration = configuration
+                        ?? throw new ArgumentNullException(
+                            nameof(configuration));
+
+        Environment = environment
+                      ?? throw new ArgumentNullException(
+                          nameof(environment));
 
         Options = options
                   ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
-    /// Gets the application builder being configured.
-    /// </summary>
-    public IHostApplicationBuilder ApplicationBuilder { get; }
-
-    /// <summary>
     /// Gets the application service collection.
     /// </summary>
-    public IServiceCollection Services => ApplicationBuilder.Services;
+    public IServiceCollection Services { get; }
 
     /// <summary>
     /// Gets the application configuration.
     /// </summary>
-    public IConfiguration Configuration => ApplicationBuilder.Configuration;
+    public IConfiguration Configuration { get; }
 
     /// <summary>
     /// Gets the host environment.
     /// </summary>
-    public IHostEnvironment Environment => ApplicationBuilder.Environment;
+    public IHostEnvironment Environment { get; }
 
     /// <summary>
     /// Gets the mutable Raycynix Serilog options.
-    /// These options are validated after the registration callback completes.
     /// </summary>
     public RaycynixSerilogOptions Options { get; }
 
     /// <summary>
     /// Registers a typed Serilog configurator.
-    /// The configurator can resolve constructor dependencies from DI.
     /// </summary>
-    /// <typeparam name="TConfigurator">
-    /// Configurator implementation type.
-    /// </typeparam>
-    /// <returns>The same builder instance.</returns>
     public RaycynixSerilogBuilder AddConfigurator<TConfigurator>()
-        where TConfigurator : class, IRaycynixSerilogConfigurator
+        where TConfigurator :
+        class,
+        IRaycynixSerilogConfigurator
     {
         Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<
@@ -72,15 +72,21 @@ public sealed class RaycynixSerilogBuilder
     }
 
     /// <summary>
+    /// Registers an existing configurator instance.
+    /// </summary>
+    public RaycynixSerilogBuilder AddConfigurator(
+        IRaycynixSerilogConfigurator configurator)
+    {
+        ArgumentNullException.ThrowIfNull(configurator);
+
+        Services.AddSingleton(configurator);
+
+        return this;
+    }
+
+    /// <summary>
     /// Registers an inline Serilog configuration callback.
     /// </summary>
-    /// <param name="configure">
-    /// Callback that modifies the logger configuration.
-    /// </param>
-    /// <param name="order">
-    /// Callback execution order. Lower values execute first.
-    /// </param>
-    /// <returns>The same builder instance.</returns>
     public RaycynixSerilogBuilder ConfigureLogger(
         Action<
             RaycynixSerilogContext,
@@ -89,10 +95,26 @@ public sealed class RaycynixSerilogBuilder
     {
         ArgumentNullException.ThrowIfNull(configure);
 
-        Services.AddSingleton<IRaycynixSerilogConfigurator>(
+        Services.AddSingleton<
+            IRaycynixSerilogConfigurator>(
             new DelegateRaycynixSerilogConfigurator(
                 configure,
                 order));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers an arbitrary singleton service that can later be resolved
+    /// by a Serilog configurator.
+    /// </summary>
+    public RaycynixSerilogBuilder AddSingleton<TService>(
+        TService instance)
+        where TService : class
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+
+        Services.AddSingleton(instance);
 
         return this;
     }
