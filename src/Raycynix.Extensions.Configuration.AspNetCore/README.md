@@ -81,7 +81,7 @@ When a required feature flag is disabled, the request returns `404 Not Found` by
 
 ## Logging
 
-The feature gate middleware logs through the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger injection is optional, so the middleware can run without registering a logging provider. It works with any Microsoft-compatible logging provider and does not require `Raycynix.Extensions.Logging`.
+The feature gate middleware logs through the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger injection is optional, so the middleware can run without registering a logging provider. It works with any Microsoft-compatible logging provider and does not require `Raycynix.Extensions.Serilog`.
 
 The middleware writes detailed gate evaluation flow at `Debug`, missing feature flag accessor diagnostics at `Warning`, and blocked feature-gated endpoints at `Information`.
 

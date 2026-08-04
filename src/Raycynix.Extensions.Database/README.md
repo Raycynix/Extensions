@@ -74,7 +74,7 @@ Provider packages validate their own structured connection requirements before b
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Database registration, initialization, migrations, creation, and model configuration emit operational diagnostics. Connection strings, usernames, passwords, and provider secrets are never logged.
 

@@ -150,7 +150,7 @@ This package intentionally provides transport integration only. It does not enfo
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Contract metadata middleware and contract HTTP results write detailed execution diagnostics at `Debug`. They log contract names, versions, endpoint names, status codes, and envelope usage, but never log response payloads.
 

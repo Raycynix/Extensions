@@ -134,9 +134,10 @@ await host.RunAsync();
 
 ## Logging overview
 
-`Raycynix.Extensions.Logging` provides the validated `LoggingOptions`, Serilog host integration, console output, and typed logger adapter. Optional output packages extend the same Serilog pipeline:
+`Raycynix.Extensions.Serilog` integrates Serilog with the standard Microsoft logging pipeline and adds validated Raycynix conventions. Optional packages extend the same pipeline:
 
-- `Raycynix.Extensions.Logging.Elastic` sends events to Elasticsearch.
+- `Raycynix.Extensions.Serilog.Elastic` sends events to Elasticsearch.
+- `Raycynix.Extensions.Serilog.Aspire` configures logging for an Aspire AppHost process.
 
 ## Package-level documentation
 
@@ -147,6 +148,8 @@ Start with these package READMEs for details:
 - `src/Raycynix.Extensions.Database.AspNetCore/README.md`
 - `src/Raycynix.Extensions.Messaging/README.md`
 - `src/Raycynix.Extensions.Messaging.Database/README.md`
-- `src/Raycynix.Extensions.Logging/README.md`
+- `src/Raycynix.Extensions.Serilog/README.md`
+- `src/Raycynix.Extensions.Serilog.Elastic/README.md`
+- `src/Raycynix.Extensions.Serilog.Aspire/README.md`
 
 The remaining packages follow the same pattern: core package, optional abstractions package, and optional hosting or transport adapters where needed.

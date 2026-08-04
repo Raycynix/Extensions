@@ -294,7 +294,7 @@ builder.Services.AddRaycynixConfigurationRedactor((key, value) =>
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Runtime configuration reload tracking writes operational decisions at `Information` and `Warning`, handler failures at `Error`, and detailed lifecycle diagnostics at `Debug`. Configuration validation and diagnostics snapshot access also emit Debug/Warning events without logging configuration values.
 

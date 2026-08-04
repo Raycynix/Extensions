@@ -38,7 +38,7 @@ public sealed class CheckoutHandler(
 }
 ```
 
-`AddRaycynixObservability()` does not register `Raycynix.Extensions.Logging`. Applications can use any provider that works with `Microsoft.Extensions.Logging`.
+`AddRaycynixObservability()` does not register `Raycynix.Extensions.Serilog`. Applications can use any provider that works with `Microsoft.Extensions.Logging`.
 
 For ASP.NET Core integration, use `Raycynix.Extensions.Observability.AspNetCore`.
 `AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()` for you.
