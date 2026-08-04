@@ -1,23 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Raycynix.Extensions.Database;
-using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.AspNetCore;
 using Raycynix.Extensions.Database.AspNetCore.Example;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging;
+using Raycynix.Extensions.Serilog;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseRaycynixLogging(options =>
-{
-    options.OutputTemplate =
-        "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] {Message:lj}{NewLine}{Exception}";
-});
+builder.AddRaycynixSerilog(options =>
+    options.Options.DefaultConsoleOutputTemplate =
+        "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] {Message:lj}{NewLine}{Exception}");
 
-builder.Services.AddRaycynixLogging(builder.Configuration);
 builder.Services
     .AddRaycynixDatabase(builder.Configuration, options =>
     {
@@ -42,21 +38,22 @@ app.MapGet("/", () => Results.Ok(new
     }
 }));
 
-app.MapGet("/orders", async ([FromServices]RaycynixDatabaseContext databaseContext, CancellationToken cancellationToken) =>
-{
-    var orders = await databaseContext.Set<ExampleOrder>()
-        .AsNoTracking()
-        .OrderBy(current => current.CreatedAt)
-        .Select(current => new ExampleOrderResponse(
-            current.Number,
-            current.CustomerName,
-            current.TotalAmount,
-            current.Status,
-            current.CreatedAt))
-        .ToListAsync(cancellationToken);
+app.MapGet("/orders",
+    async ([FromServices] RaycynixDatabaseContext databaseContext, CancellationToken cancellationToken) =>
+    {
+        var orders = await databaseContext.Set<ExampleOrder>()
+            .AsNoTracking()
+            .OrderBy(current => current.CreatedAt)
+            .Select(current => new ExampleOrderResponse(
+                current.Number,
+                current.CustomerName,
+                current.TotalAmount,
+                current.Status,
+                current.CreatedAt))
+            .ToListAsync(cancellationToken);
 
-    return Results.Ok(orders);
-});
+        return Results.Ok(orders);
+    });
 
 app.MapGet("/orders/{number}", async (
     string number,
@@ -83,8 +80,8 @@ app.MapGet("/orders/{number}", async (
 
 app.MapPost("/orders", async (
     CreateExampleOrderRequest request,
-    [FromServices]RaycynixDatabaseContext databaseContext,
-    Raycynix.Extensions.Logging.Abstractions.ILogger<OrderEndpoints> logger,
+    [FromServices] RaycynixDatabaseContext databaseContext,
+    ILogger<OrderEndpoints> logger,
     CancellationToken cancellationToken) =>
 {
     var order = new ExampleOrder
@@ -100,7 +97,7 @@ app.MapPost("/orders", async (
     databaseContext.Set<ExampleOrder>().Add(order);
     await databaseContext.SaveChangesAsync(cancellationToken);
 
-    logger.Information("Created order through HTTP endpoint\n {Endpoint}", new
+    logger.LogInformation("Created order through HTTP endpoint\n {Endpoint}", new
     {
         order.Number,
         order.CustomerName,

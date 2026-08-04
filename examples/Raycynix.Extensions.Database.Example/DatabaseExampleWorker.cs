@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Raycynix.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Raycynix.Extensions.Database.Example;
 
@@ -15,7 +15,7 @@ internal sealed class DatabaseExampleWorker(
         await using var scope = scopeFactory.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
-        logger.Information("Database example started");
+        logger.LogInformation("Database example started");
 
         var existingOrder = await databaseContext.Set<ExampleOrder>()
             .FirstOrDefaultAsync(current => current.Number == "ORD-2026-0002", stoppingToken);
@@ -33,7 +33,7 @@ internal sealed class DatabaseExampleWorker(
             });
 
             await databaseContext.SaveChangesAsync(stoppingToken);
-            logger.Information("Created a new order", new { OrderNumber = "ORD-2026-0002" });
+            logger.LogInformation("Created a new order\n{Order}", new { OrderNumber = "ORD-2026-0002" });
         }
 
         var orders = await databaseContext.Set<ExampleOrder>()
@@ -43,7 +43,7 @@ internal sealed class DatabaseExampleWorker(
 
         foreach (var order in orders)
         {
-            logger.Information("Loaded order from database\n{Order}", new
+            logger.LogInformation("Loaded order from database\n{Order}", new
             {
                 order.Number,
                 order.CustomerName,
@@ -53,7 +53,7 @@ internal sealed class DatabaseExampleWorker(
             });
         }
 
-        logger.Information("Database example finished\n{Count}", orders.Count);
+        logger.LogInformation("Database example finished\n{Count}", orders.Count);
         applicationLifetime.StopApplication();
     }
 }

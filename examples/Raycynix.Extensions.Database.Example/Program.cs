@@ -4,14 +4,14 @@ using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Example;
 using Raycynix.Extensions.Database.Hosting;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging;
+using Raycynix.Extensions.Serilog;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
 var builder = Host.CreateDefaultBuilder(args);
 
 builder
-    .UseRaycynixLogging()
+    .UseRaycynixSerilog()
     .ConfigureServices((context, services) =>
     {
         services.AddRaycynixDatabase(context.Configuration, options =>
