@@ -12,6 +12,9 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Middleware;
+using Raycynix.Extensions.Metrics.AspNetCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 using Raycynix.Extensions.Observability.AspNetCore.Tests.Http;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -198,18 +201,21 @@ public class CorrelationMiddlewareTests
     }
 
     /// <summary>
-    /// Verifies that the observability endpoint mapping exposes both health and metrics endpoints.
+    /// Verifies that health mapping and an explicitly selected metrics exporter compose correctly.
     /// </summary>
     [Fact]
-    public async Task MapRaycynixObservabilityEndpoints_ShouldExposeHealthAndMetricsEndpoints()
+    public async Task ObservabilityEndpoints_ShouldComposeWithExplicitPrometheusExporter()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddRaycynixAspNetCoreObservability();
+        builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddPrometheusExporter());
 
         var app = builder.Build();
         app.UseRaycynixObservability();
-        app.MapRaycynixObservabilityEndpoints("/internal/health", "/internal/metrics");
+        app.UseOpenTelemetryPrometheusScrapingEndpoint(
+            context => context.Request.Path == "/internal/metrics");
+        app.MapRaycynixObservabilityEndpoints("/internal/health");
 
         await app.StartAsync(TestContext.Current.CancellationToken);
 

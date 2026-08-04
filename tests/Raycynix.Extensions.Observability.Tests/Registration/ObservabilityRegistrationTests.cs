@@ -1,7 +1,7 @@
+using System.Diagnostics.Metrics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Observability.Tests.Registration;
@@ -25,11 +25,11 @@ public class ObservabilityRegistrationTests
         var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        var metrics = scope.ServiceProvider.GetRequiredService<IMetricsService>();
+        var meterFactory = scope.ServiceProvider.GetRequiredService<IMeterFactory>();
         var tracer = scope.ServiceProvider.GetRequiredService<ITracer>();
         var operationContext = scope.ServiceProvider.GetRequiredService<IOperationContext>();
 
-        metrics.Should().NotBeNull();
+        meterFactory.Should().NotBeNull();
         tracer.Should().NotBeNull();
         operationContext.Should().BeOfType<OperationContext>();
         services.Should().NotContain(service =>
