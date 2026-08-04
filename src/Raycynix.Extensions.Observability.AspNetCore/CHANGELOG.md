@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Added OpenTelemetry ASP.NET Core metrics instrumentation through Metrics 3.0.
+- `MapRaycynixObservabilityEndpoints` now maps health checks only; metrics exporters expose their endpoints explicitly.
+- Removed the obsolete metrics request middleware from `UseRaycynixObservability`.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

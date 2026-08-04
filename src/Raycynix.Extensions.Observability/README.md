@@ -5,7 +5,7 @@
 ## What it contains
 
 - `AddRaycynixObservability(...)`
-- registration of tracing and metrics services
+- registration of tracing and the standard `IMeterFactory` metrics services
 - `IOperationContext` registration
 
 ## What it does not contain
@@ -19,6 +19,8 @@
 ```csharp
 builder.Services.AddRaycynixObservability();
 ```
+
+Raycynix components emit provider-neutral `System.Diagnostics.Metrics` instruments. Configure an OpenTelemetry exporter in the host that collects the `Raycynix.Extensions` meter.
 
 ```csharp
 public sealed class CheckoutHandler(

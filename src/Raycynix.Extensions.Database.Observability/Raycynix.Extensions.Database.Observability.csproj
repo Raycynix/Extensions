@@ -5,10 +5,10 @@
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>v3.0.0 updates database metrics and tracing integration for the DatabaseOptions-based 3.0 database contracts.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 updates database tracing for the DatabaseOptions contracts and migrates metrics to standard System.Diagnostics.Metrics counters and histograms with named tags and explicit units.</PackageReleaseNotes>
 
-        <Description>Database observability integration for recording initialization, creation, migration, and model-building operations through tracing and metrics.</Description>
-        <PackageTags>raycynix;database;observability;metrics;tracing;efcore;entityframework;options;initialization;migrations;model-building;dotnet;net10</PackageTags>
+        <Description>Database observability integration for recording initialization, creation, migration, and model-building through tracing and standard .NET metrics.</Description>
+        <PackageTags>raycynix;database;observability;metrics;system-diagnostics-metrics;opentelemetry;tracing;efcore;entityframework;initialization;migrations;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

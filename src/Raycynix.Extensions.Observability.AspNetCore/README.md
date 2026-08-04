@@ -7,6 +7,7 @@
 - `AddRaycynixAspNetCoreObservability(...)`
 - `UseRaycynixObservability(this IApplicationBuilder app)`
 - `MapRaycynixObservabilityEndpoints(this IEndpointRouteBuilder endpoints)`
+- OpenTelemetry ASP.NET Core request metrics registration
 - correlation middleware and `HttpClient` correlation propagation
 
 ## Usage
@@ -26,11 +27,24 @@ app.Run();
 
 `AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()`, so no extra core registration is required in ASP.NET Core applications.
 
-You can also map custom paths:
+The endpoint helper maps health checks only. You can select a custom health path:
 
 ```csharp
-app.MapRaycynixObservabilityEndpoints("/internal/health", "/internal/metrics");
+app.MapRaycynixObservabilityEndpoints("/internal/health");
 ```
+
+Metrics export is explicit. For a Prometheus scraping endpoint:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics.AddPrometheusExporter());
+
+// after builder.Build()
+app.UseOpenTelemetryPrometheusScrapingEndpoint(
+    context => context.Request.Path == "/internal/metrics");
+```
+
+For Aspire and production OpenTelemetry pipelines, prefer OTLP export instead of adding a scraping endpoint to every resource.
 
 The middleware uses standard `Microsoft.Extensions.Logging` scopes for correlation diagnostics when a logger provider is registered. It does not require `Raycynix.Extensions.Serilog`.
 
