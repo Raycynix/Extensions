@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Raycynix.Extensions.Metrics.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore;
 
@@ -10,22 +9,18 @@ namespace Raycynix.Extensions.Observability.AspNetCore;
 public static class ObservabilityEndpoints
 {
     /// <summary>
-    /// Maps, health check and metrics endpoints.
+    /// Maps the health check endpoint. Metrics exporters expose their own endpoints explicitly.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="healthPath">The health checks endpoint path.</param>
-    /// <param name="metricsPath">The metrics endpoint path.</param>
     /// <returns>The same <see cref="IEndpointRouteBuilder"/> instance for chaining.</returns>
     public static IEndpointRouteBuilder MapRaycynixObservabilityEndpoints(
         this IEndpointRouteBuilder endpoints,
-        string healthPath = "/health",
-        string metricsPath = "/metrics")
+        string healthPath = "/health")
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         endpoints.MapHealthChecks(healthPath);
-        endpoints.MapRaycynixMetrics(metricsPath);
-
         return endpoints;
     }
 }

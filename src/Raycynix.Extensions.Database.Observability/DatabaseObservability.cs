@@ -1,6 +1,7 @@
+using System.Diagnostics.Metrics;
 using Raycynix.Extensions.Common.Disposables;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +13,8 @@ namespace Raycynix.Extensions.Database.Observability;
 internal sealed class DatabaseObservability : IDatabaseObservability
 {
     private readonly ITracer? _tracer;
-    private readonly IMetricCounter? _operationCounter;
-    private readonly IMetricHistogram? _operationDuration;
+    private readonly Counter<long>? _operationCounter;
+    private readonly Histogram<double>? _operationDuration;
     private readonly ILogger<DatabaseObservability>? _logger;
 
     /// <summary>
@@ -25,7 +26,7 @@ internal sealed class DatabaseObservability : IDatabaseObservability
         _logger = serviceProvider.GetService(typeof(ILogger<DatabaseObservability>)) as ILogger<DatabaseObservability>;
         _tracer = serviceProvider.GetService(typeof(ITracer)) as ITracer;
 
-        if (serviceProvider.GetService(typeof(IMetricsService)) is not IMetricsService metricsService)
+        if (serviceProvider.GetService(typeof(IMeterFactory)) is not IMeterFactory meterFactory)
         {
             _logger?.LogDebug(
                 "Database observability initialized without metrics service. Tracing enabled: {TracingEnabled}.",
@@ -33,18 +34,16 @@ internal sealed class DatabaseObservability : IDatabaseObservability
             return;
         }
 
-        _operationCounter = metricsService.CreateCounter(
-            "raycynix_database_operations_total",
-            "Total number of observed database operations.",
-            "provider",
-            "operation",
-            "status");
+        var meter = RaycynixMetrics.CreateMeter(meterFactory);
+        _operationCounter = meter.CreateCounter<long>(
+            "raycynix.database.operations",
+            unit: "{operation}",
+            description: "Number of observed database operations.");
 
-        _operationDuration = metricsService.CreateHistogram(
-            "raycynix_database_operation_duration_seconds",
-            "Duration of observed database operations.",
-            "provider",
-            "operation");
+        _operationDuration = meter.CreateHistogram<double>(
+            "raycynix.database.operation.duration",
+            unit: "s",
+            description: "Duration of observed database operations.");
 
         _logger?.LogDebug(
             "Database observability initialized. Metrics enabled: {MetricsEnabled}, Tracing enabled: {TracingEnabled}.",
@@ -66,7 +65,9 @@ internal sealed class DatabaseObservability : IDatabaseObservability
             operation,
             providerName);
 
-        var timer = _operationDuration?.MeasureDuration(providerName, operation) ?? NoopDisposable.Instance;
+        var timer = _operationDuration?.MeasureDuration(
+            new("raycynix.database.provider", providerName),
+            new("raycynix.database.operation", operation)) ?? NoopDisposable.Instance;
         var trace = _tracer?.StartTrace($"database.{operation}", new Dictionary<string, string>
         {
             ["database.provider"] = providerName,
@@ -108,13 +109,11 @@ internal sealed class DatabaseObservability : IDatabaseObservability
 
     private void Record(string providerName, string operation, string status)
     {
-        _operationCounter?.Increment(
-            labelValues:
-            [
-                providerName.ToLowerInvariant(),
-                operation,
-                status
-            ]);
+        _operationCounter?.Add(
+            1,
+            new("raycynix.database.provider", providerName.ToLowerInvariant()),
+            new("raycynix.database.operation", operation),
+            new("raycynix.database.status", status));
 
         _logger?.LogDebug(
             "Recorded database operation {Operation} for provider {ProviderName} with status {Status}.",

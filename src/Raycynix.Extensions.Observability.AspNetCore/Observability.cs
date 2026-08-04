@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
+using Raycynix.Extensions.Metrics.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore;
 
@@ -24,6 +25,8 @@ public static class Observability
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddRaycynixObservability();
+        services.AddRaycynixAspNetCoreMetrics();
+        services.AddHealthChecks();
         services.Configure<ObservabilityAspNetCoreConfiguration>(options => setup?.Invoke(options));
         
         services.AddHttpContextAccessor();
