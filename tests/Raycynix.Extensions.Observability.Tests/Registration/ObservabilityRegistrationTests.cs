@@ -1,8 +1,9 @@
 using System.Diagnostics.Metrics;
+using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Observability.Tests.Registration;
 
@@ -26,11 +27,11 @@ public class ObservabilityRegistrationTests
         using var scope = provider.CreateScope();
 
         var meterFactory = scope.ServiceProvider.GetRequiredService<IMeterFactory>();
-        var tracer = scope.ServiceProvider.GetRequiredService<ITracer>();
+        var activitySource = scope.ServiceProvider.GetRequiredService<ActivitySource>();
         var operationContext = scope.ServiceProvider.GetRequiredService<IOperationContext>();
 
         meterFactory.Should().NotBeNull();
-        tracer.Should().NotBeNull();
+        activitySource.Should().BeSameAs(RaycynixTracing.ActivitySource);
         operationContext.Should().BeOfType<OperationContext>();
         services.Should().NotContain(service =>
             service.ServiceType.FullName == "Raycynix.Extensions.Serilog.Abstractions.ILogger`1");

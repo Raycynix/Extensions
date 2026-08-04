@@ -1,7 +1,7 @@
+using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Implementations;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Tracing.Tests.Registration;
 
@@ -10,27 +10,18 @@ namespace Raycynix.Extensions.Tracing.Tests.Registration;
 /// </summary>
 public sealed class TracingRegistrationTests
 {
-    /// <summary>
-    /// Verifies that the shared tracer abstraction is registered as a singleton.
-    /// </summary>
     [Fact]
-    public void AddRaycynixTracing_ShouldRegisterTracer()
+    public void AddRaycynixTracing_ShouldRegisterSharedActivitySource()
     {
         var services = new ServiceCollection();
 
         services.AddRaycynixTracing();
 
-        var descriptor = services.Should()
-            .ContainSingle(service => service.ServiceType == typeof(ITracer))
-            .Subject;
-
-        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
-        descriptor.ImplementationFactory.Should().NotBeNull();
+        services.Should().ContainSingle(descriptor =>
+            descriptor.ServiceType == typeof(ActivitySource) &&
+            ReferenceEquals(descriptor.ImplementationInstance, RaycynixTracing.ActivitySource));
     }
 
-    /// <summary>
-    /// Verifies that repeated registration does not duplicate the shared tracer abstraction.
-    /// </summary>
     [Fact]
     public void AddRaycynixTracing_ShouldBeIdempotent()
     {
@@ -39,21 +30,20 @@ public sealed class TracingRegistrationTests
         services.AddRaycynixTracing();
         services.AddRaycynixTracing();
 
-        services.Count(service => service.ServiceType == typeof(ITracer)).Should().Be(1);
+        services.Count(descriptor =>
+                descriptor.ServiceType == typeof(ActivitySource) &&
+                ReferenceEquals(descriptor.ImplementationInstance, RaycynixTracing.ActivitySource))
+            .Should().Be(1);
     }
 
-    /// <summary>
-    /// Verifies that the shared tracer abstraction can be resolved from DI.
-    /// </summary>
     [Fact]
-    public void AddRaycynixTracing_ShouldResolveTracer()
+    public void AddRaycynixTracing_ShouldResolveSharedActivitySource()
     {
         var services = new ServiceCollection();
         services.AddRaycynixTracing();
 
         using var provider = services.BuildServiceProvider();
-        var tracer = provider.GetRequiredService<ITracer>();
 
-        tracer.Should().BeOfType<Tracer>();
+        provider.GetRequiredService<ActivitySource>().Should().BeSameAs(RaycynixTracing.ActivitySource);
     }
 }

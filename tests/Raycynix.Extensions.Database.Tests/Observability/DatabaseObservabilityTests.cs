@@ -1,8 +1,9 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Metrics.Abstractions;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Observability;
 
@@ -36,28 +37,30 @@ public sealed class DatabaseObservabilityTests
     [Fact]
     public void Methods_ShouldForwardSignalsToTracingAndMetrics()
     {
-        var tracer = new FakeTracer();
+        using var traces = new ActivityRecorder();
         using var metrics = new MetricRecorder();
 
         var services = new ServiceCollection();
-        services.AddSingleton<ITracer>(tracer);
         services.AddSingleton<IMeterFactory>(metrics);
 
         var observability = CreateObservability(services.BuildServiceProvider());
 
         using (InvokeBeginOperation(observability, "postgresql", "migrate"))
         {
+            InvokeAddTag(observability, "database.configurator.count", "2");
+            InvokeRecordSuccess(observability, "postgresql", "migrate");
+            InvokeRecordFailure(observability, "postgresql", "migrate");
         }
 
-        InvokeRecordSuccess(observability, "postgresql", "migrate");
-        InvokeRecordFailure(observability, "postgresql", "migrate");
-        InvokeAddTag(observability, "database.configurator.count", "2");
-
-        tracer.StartedTraces.Should().ContainSingle();
-        tracer.StartedTraces[0].Name.Should().Be("database.migrate");
-        tracer.StartedTraces[0].Tags.Should().Contain(new KeyValuePair<string, string>("database.provider", "postgresql"));
-        tracer.StartedTraces[0].Tags.Should().Contain(new KeyValuePair<string, string>("database.operation", "migrate"));
-        tracer.Tags.Should().Contain(new KeyValuePair<string, string>("database.configurator.count", "2"));
+        traces.Stopped.Should().ContainSingle();
+        var activity = traces.Stopped[0];
+        activity.OperationName.Should().Be("database.migrate");
+        activity.Kind.Should().Be(ActivityKind.Client);
+        activity.GetTagItem("raycynix.database.provider").Should().Be("postgresql");
+        activity.GetTagItem("raycynix.database.operation").Should().Be("migrate");
+        activity.GetTagItem("database.configurator.count").Should().Be("2");
+        activity.GetTagItem("raycynix.database.status").Should().Be("failure");
+        activity.Status.Should().Be(ActivityStatusCode.Error);
 
         metrics.DoubleMeasurements.Should().ContainSingle(measurement =>
             measurement.InstrumentName == "raycynix.database.operation.duration" &&
@@ -101,31 +104,25 @@ public sealed class DatabaseObservabilityTests
         observability.GetType().GetMethod("AddTag")!.Invoke(observability, [key, value]);
     }
 
-    private sealed class FakeTracer : ITracer
+    private sealed class ActivityRecorder : IDisposable
     {
-        public List<(string Name, Dictionary<string, string> Tags)> StartedTraces { get; } = [];
+        private readonly ActivityListener _listener;
 
-        public List<KeyValuePair<string, string>> Tags { get; } = [];
-
-        public IDisposable StartTrace(string name, Dictionary<string, string>? tags = null)
+        public ActivityRecorder()
         {
-            StartedTraces.Add((name, tags ?? []));
-            return new FakeDisposable();
+            _listener = new ActivityListener
+            {
+                ShouldListenTo = source => source.Name == RaycynixTracing.SourceName,
+                Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+                SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = activity => Stopped.Add(activity)
+            };
+            ActivitySource.AddActivityListener(_listener);
         }
 
-        public void AddTag(string key, string value)
-        {
-            Tags.Add(new KeyValuePair<string, string>(key, value));
-        }
+        public List<Activity> Stopped { get; } = [];
 
-        public void SetBaggage(string key, string value)
-        {
-        }
-
-        public string? GetBaggage(string key)
-        {
-            return null;
-        }
+        public void Dispose() => _listener.Dispose();
     }
 
     private static bool HasTag(
@@ -185,10 +182,4 @@ public sealed class DatabaseObservabilityTests
         T Value,
         KeyValuePair<string, object?>[] Tags);
 
-    private sealed class FakeDisposable : IDisposable
-    {
-        public void Dispose()
-        {
-        }
-    }
 }
