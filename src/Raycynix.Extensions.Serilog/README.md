@@ -28,6 +28,7 @@ Application services continue to consume the standard `ILogger<T>` and `ILoggerF
 | Custom `IServiceCollection` bootstrap | `AddRaycynixSerilog(configuration, environment)` |
 | Worker Service                        | Modern or classic host registration              |
 | ASP.NET Core                          | `AddRaycynixSerilog()`                           |
+| Aspire AppHost                        | `Raycynix.Extensions.Serilog.Aspire` package     |
 
 `WebApplicationBuilder` implements `IHostApplicationBuilder`, so a separate ASP.NET Core registration method is not
 required.
@@ -210,6 +211,18 @@ When the following values are omitted, the package resolves them automatically:
 * `ServiceVersion` from the entry assembly informational version
 * `Environment` from `IHostEnvironment.EnvironmentName`
 
+The resolved snapshot is registered directly as `RaycynixSerilogOptions`:
+
+```csharp
+public sealed class Worker(RaycynixSerilogOptions loggingOptions)
+{
+}
+```
+
+The package does not register a separate `IOptions<RaycynixSerilogOptions>`
+pipeline because the Serilog logger is constructed once with the resolved
+startup snapshot.
+
 ## Native Serilog configuration
 
 Serilog-specific behavior remains in the native `Serilog` section:
@@ -249,7 +262,9 @@ The package does not duplicate these settings in its own configuration model.
 
 ## Fallback console sink
 
-When no sink is configured under `Serilog:WriteTo`, the package adds a default console sink.
+When no output sink is available, the package adds a default console sink.
+Fallback detection includes sinks configured through `Serilog:WriteTo`,
+`ReadFrom.Services()`, `ConfigureSink()`, and optional sink integrations.
 
 The fallback can be disabled:
 
@@ -275,7 +290,7 @@ The fallback output template can also be replaced:
 }
 ```
 
-When at least one native Serilog sink is configured, the fallback console sink is not added.
+When at least one sink is configured, the fallback console sink is not added.
 
 ## Standard Raycynix properties
 
@@ -379,6 +394,21 @@ builder.AddRaycynixSerilog(logging =>
 });
 ```
 
+When an inline callback adds a `WriteTo` destination, register it with
+`ConfigureSink()` so it participates in fallback-console detection:
+
+```csharp
+builder.AddRaycynixSerilog(logging =>
+{
+    logging.ConfigureSink((context, loggerConfiguration) =>
+        loggerConfiguration.WriteTo.File("logs/application.log"));
+});
+```
+
+Reusable sink packages should implement
+`IRaycynixSerilogSinkConfigurator` and register it through
+`AddSinkConfigurator<TConfigurator>()`.
+
 ## Dependency-injected Serilog components
 
 The package calls `ReadFrom.Services()`, so supported Serilog components can be registered directly in dependency
@@ -416,6 +446,22 @@ builder.AddRaycynixSerilog(logging =>
 
 The core package contains only the dependencies required for host integration, native Serilog configuration, and the
 fallback console sink.
+
+## Aspire AppHost
+
+Aspire AppHost uses `IDistributedApplicationBuilder`, which has a separate
+hosting contract. Install `Raycynix.Extensions.Serilog.Aspire` to configure the
+AppHost logger:
+
+```csharp
+using Raycynix.Extensions.Serilog.Aspire;
+
+var builder = DistributedApplication.CreateBuilder(args);
+builder.AddRaycynixSerilog();
+```
+
+This configures the AppHost process only. Each orchestrated .NET project must
+also call the core `AddRaycynixSerilog()` method in its own process.
 
 ## Registration rules
 

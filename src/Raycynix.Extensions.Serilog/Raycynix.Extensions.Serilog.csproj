@@ -7,7 +7,7 @@
         <Description>Opinionated Serilog configuration, host integration, enrichment conventions, and extension points for Raycynix applications.</Description>
 
         <PackageTags>raycynix;serilog;logging;structured-logging;host;console;extensions;dotnet</PackageTags>
-        <PackageReleaseNotes>v3.0.0 replaces LoggingConfiguration with LoggingOptions, adopts conventional options section binding, and prevents dependency cycles during Serilog host startup.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces LoggingConfiguration with RaycynixSerilogOptions, adopts conventional section binding, and integrates with the standard Microsoft logging pipeline.</PackageReleaseNotes>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -15,12 +15,6 @@
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" Visible="true" PackagePath="\"/>
         <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="false" Visible="true" PackagePath="\"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Raycynix.Extensions.Common\Raycynix.Extensions.Common.csproj"/>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration\Raycynix.Extensions.Configuration.csproj"/>
-        <ProjectReference Include="..\Raycynix.Extensions.Configuration.Abstractions\Raycynix.Extensions.Configuration.Abstractions.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

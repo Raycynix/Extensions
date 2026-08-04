@@ -1,5 +1,7 @@
 # Changelog
 
+## 3.0.0
+
 ### Added
 
 * Added the new `Raycynix.Extensions.Serilog` package.
@@ -33,6 +35,8 @@
 * Added `PreserveStaticLogger` configuration.
 * Added `WriteToProviders` configuration.
 * Added extension points for optional integration packages such as `Raycynix.Extensions.Serilog.Elastic`.
+* Added explicit sink configurators and `ConfigureSink()` for fallback-console detection.
+* Added the optional `Raycynix.Extensions.Serilog.Aspire` AppHost integration.
 
 ### Changed
 
@@ -47,6 +51,7 @@
 * Changed correlation and request metadata enrichment to rely on standard logging scopes and observability integrations.
 * Changed optional sink integrations to separate packages.
 * Reduced the core package dependency set to host integration, native Serilog configuration, and console fallback support.
+* Changed fallback console detection to account for native, dependency-injected, inline, and integration-provided sinks.
 
 ### Removed
 

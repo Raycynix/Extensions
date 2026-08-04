@@ -72,6 +72,22 @@ public sealed class RaycynixSerilogBuilder
     }
 
     /// <summary>
+    /// Registers a typed configurator that contributes an output sink.
+    /// </summary>
+    public RaycynixSerilogBuilder AddSinkConfigurator<TConfigurator>()
+        where TConfigurator :
+        class,
+        IRaycynixSerilogSinkConfigurator
+    {
+        Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<
+                IRaycynixSerilogConfigurator,
+                TConfigurator>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Registers an existing configurator instance.
     /// </summary>
     public RaycynixSerilogBuilder AddConfigurator(
@@ -98,6 +114,31 @@ public sealed class RaycynixSerilogBuilder
         Services.AddSingleton<
             IRaycynixSerilogConfigurator>(
             new DelegateRaycynixSerilogConfigurator(
+                configure,
+                order));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers an inline callback that contributes an output sink.
+    /// </summary>
+    /// <remarks>
+    /// Use this method instead of <see cref="ConfigureLogger"/> when the
+    /// callback calls <c>WriteTo</c>. It prevents the fallback console sink
+    /// from being added alongside the programmatic sink.
+    /// </remarks>
+    public RaycynixSerilogBuilder ConfigureSink(
+        Action<
+            RaycynixSerilogContext,
+            global::Serilog.LoggerConfiguration> configure,
+        int order = int.MaxValue)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        Services.AddSingleton<
+            IRaycynixSerilogConfigurator>(
+            new DelegateRaycynixSerilogSinkConfigurator(
                 configure,
                 order));
 

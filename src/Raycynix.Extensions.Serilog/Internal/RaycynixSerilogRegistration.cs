@@ -5,6 +5,7 @@ using Raycynix.Extensions.Serilog.Abstractions;
 using Raycynix.Extensions.Serilog.Configurations;
 using Raycynix.Extensions.Serilog.Contexts;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Settings.Configuration;
 
@@ -97,21 +98,28 @@ internal static class RaycynixSerilogRegistration
 
         loggerConfiguration.ReadFrom.Services(services);
 
-        AddFallbackConsoleIfRequired(
-            configuration,
-            loggerConfiguration,
-            options);
-
         var context = new RaycynixSerilogContext(
             configuration,
             environment,
             services,
             options);
 
+        var configurators = services
+            .GetServices<IRaycynixSerilogConfigurator>()
+            .OrderBy(current => current.Order)
+            .ToArray();
+
         ApplyConfigurators(
-            services,
+            configurators,
             loggerConfiguration,
             context);
+
+        AddFallbackConsoleIfRequired(
+            services,
+            configuration,
+            loggerConfiguration,
+            options,
+            configurators);
     }
 
     private static void ApplyRaycynixDefaults(
@@ -149,14 +157,10 @@ internal static class RaycynixSerilogRegistration
     }
 
     private static void ApplyConfigurators(
-        IServiceProvider services,
+        IEnumerable<IRaycynixSerilogConfigurator> configurators,
         LoggerConfiguration loggerConfiguration,
         RaycynixSerilogContext context)
     {
-        var configurators = services
-            .GetServices<IRaycynixSerilogConfigurator>()
-            .OrderBy(current => current.Order);
-
         foreach (var configurator in configurators)
         {
             configurator.Configure(
@@ -166,9 +170,11 @@ internal static class RaycynixSerilogRegistration
     }
 
     private static void AddFallbackConsoleIfRequired(
+        IServiceProvider services,
         IConfiguration configuration,
         LoggerConfiguration loggerConfiguration,
-        RaycynixSerilogOptions options)
+        RaycynixSerilogOptions options,
+        IEnumerable<IRaycynixSerilogConfigurator> configurators)
     {
         if (!options.UseDefaultConsoleWhenNoSinksConfigured)
             return;
@@ -176,7 +182,24 @@ internal static class RaycynixSerilogRegistration
         if (HasConfiguredSinks(configuration, options.SerilogSectionName))
             return;
 
+        if (HasDependencyInjectedSink(services))
+            return;
+
+        if (configurators
+            .OfType<IRaycynixSerilogSinkConfigurator>()
+            .Any(current => current.IsEnabled))
+            return;
+
         loggerConfiguration.WriteTo.Console(outputTemplate: options.DefaultConsoleOutputTemplate);
+    }
+
+    private static bool HasDependencyInjectedSink(IServiceProvider services)
+    {
+        var serviceProbe = services.GetService<IServiceProviderIsService>();
+
+        return serviceProbe is not null
+            ? serviceProbe.IsService(typeof(ILogEventSink))
+            : services.GetServices<ILogEventSink>().Any();
     }
 
     private static bool HasConfiguredSinks(
