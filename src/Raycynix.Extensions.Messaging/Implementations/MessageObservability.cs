@@ -1,5 +1,6 @@
+using System.Diagnostics.Metrics;
 using Raycynix.Extensions.Common.Disposables;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using Raycynix.Extensions.Metrics.Abstractions;
 
 namespace Raycynix.Extensions.Messaging.Implementations;
 
@@ -8,12 +9,12 @@ namespace Raycynix.Extensions.Messaging.Implementations;
 /// </summary>
 public sealed class MessageObservability
 {
-    private readonly IMetricCounter? _dispatchCounter;
-    private readonly IMetricHistogram? _dispatchDuration;
-    private readonly IMetricCounter? _publishCounter;
-    private readonly IMetricHistogram? _publishDuration;
-    private readonly IMetricCounter? _requestCounter;
-    private readonly IMetricHistogram? _requestDuration;
+    private readonly Counter<long>? _dispatchCounter;
+    private readonly Histogram<double>? _dispatchDuration;
+    private readonly Counter<long>? _publishCounter;
+    private readonly Histogram<double>? _publishDuration;
+    private readonly Counter<long>? _requestCounter;
+    private readonly Histogram<double>? _requestDuration;
 
     /// <summary>
     /// Initializes a new observability helper instance.
@@ -21,50 +22,37 @@ public sealed class MessageObservability
     /// <param name="serviceProvider">The application service provider.</param>
     public MessageObservability(IServiceProvider serviceProvider)
     {
-        var metricsService = serviceProvider.GetService(typeof(IMetricsService)) as IMetricsService;
-        if (metricsService is null)
+        var meterFactory = serviceProvider.GetService(typeof(IMeterFactory)) as IMeterFactory;
+        if (meterFactory is null)
         {
             return;
         }
 
-        _dispatchCounter = metricsService.CreateCounter(
-            "raycynix_messaging_dispatch_total",
-            "Total number of observed messaging dispatch operations.",
-            "message_type",
-            "destination",
-            "status");
-
-        _dispatchDuration = metricsService.CreateHistogram(
-            "raycynix_messaging_dispatch_duration_seconds",
-            "Duration of observed messaging dispatch operations.",
-            "message_type",
-            "destination");
-
-        _publishCounter = metricsService.CreateCounter(
-            "raycynix_messaging_publish_total",
-            "Total number of observed messaging publish operations.",
-            "format",
-            "destination",
-            "status");
-
-        _publishDuration = metricsService.CreateHistogram(
-            "raycynix_messaging_publish_duration_seconds",
-            "Duration of observed messaging publish operations.",
-            "format",
-            "destination");
-
-        _requestCounter = metricsService.CreateCounter(
-            "raycynix_messaging_request_total",
-            "Total number of observed direct request dispatch operations.",
-            "request_type",
-            "destination",
-            "status");
-
-        _requestDuration = metricsService.CreateHistogram(
-            "raycynix_messaging_request_duration_seconds",
-            "Duration of observed direct request dispatch operations.",
-            "request_type",
-            "destination");
+        var meter = RaycynixMetrics.CreateMeter(meterFactory);
+        _dispatchCounter = meter.CreateCounter<long>(
+            "raycynix.messaging.dispatches",
+            unit: "{dispatch}",
+            description: "Number of observed messaging dispatch operations.");
+        _dispatchDuration = meter.CreateHistogram<double>(
+            "raycynix.messaging.dispatch.duration",
+            unit: "s",
+            description: "Duration of observed messaging dispatch operations.");
+        _publishCounter = meter.CreateCounter<long>(
+            "raycynix.messaging.publishes",
+            unit: "{publish}",
+            description: "Number of observed messaging publish operations.");
+        _publishDuration = meter.CreateHistogram<double>(
+            "raycynix.messaging.publish.duration",
+            unit: "s",
+            description: "Duration of observed messaging publish operations.");
+        _requestCounter = meter.CreateCounter<long>(
+            "raycynix.messaging.requests",
+            unit: "{request}",
+            description: "Number of observed direct request dispatch operations.");
+        _requestDuration = meter.CreateHistogram<double>(
+            "raycynix.messaging.request.duration",
+            unit: "s",
+            description: "Duration of observed direct request dispatch operations.");
     }
 
     /// <summary>
@@ -78,7 +66,9 @@ public sealed class MessageObservability
         ArgumentNullException.ThrowIfNull(messageType);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
 
-        return _dispatchDuration?.MeasureDuration(GetMessageTypeName(messageType), destination) ?? NoopDisposable.Instance;
+        return _dispatchDuration?.MeasureDuration(
+            new("raycynix.messaging.message.type", GetMessageTypeName(messageType)),
+            new("raycynix.messaging.destination", destination)) ?? NoopDisposable.Instance;
     }
 
     /// <summary>
@@ -112,7 +102,9 @@ public sealed class MessageObservability
         ArgumentException.ThrowIfNullOrWhiteSpace(format);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
 
-        return _publishDuration?.MeasureDuration(format, destination) ?? NoopDisposable.Instance;
+        return _publishDuration?.MeasureDuration(
+            new("raycynix.messaging.message.format", format),
+            new("raycynix.messaging.destination", destination)) ?? NoopDisposable.Instance;
     }
 
     /// <summary>
@@ -146,7 +138,9 @@ public sealed class MessageObservability
         ArgumentNullException.ThrowIfNull(requestType);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
 
-        return _requestDuration?.MeasureDuration(GetMessageTypeName(requestType), destination) ?? NoopDisposable.Instance;
+        return _requestDuration?.MeasureDuration(
+            new("raycynix.messaging.request.type", GetMessageTypeName(requestType)),
+            new("raycynix.messaging.destination", destination)) ?? NoopDisposable.Instance;
     }
 
     /// <summary>
@@ -171,17 +165,29 @@ public sealed class MessageObservability
 
     private void RecordDispatch(Type messageType, string destination, string status)
     {
-        _dispatchCounter?.Increment(labelValues: [GetMessageTypeName(messageType), destination, status]);
+        _dispatchCounter?.Add(
+            1,
+            new("raycynix.messaging.message.type", GetMessageTypeName(messageType)),
+            new("raycynix.messaging.destination", destination),
+            new("raycynix.messaging.status", status));
     }
 
     private void RecordPublish(string format, string destination, string status)
     {
-        _publishCounter?.Increment(labelValues: [format, destination, status]);
+        _publishCounter?.Add(
+            1,
+            new("raycynix.messaging.message.format", format),
+            new("raycynix.messaging.destination", destination),
+            new("raycynix.messaging.status", status));
     }
 
     private void RecordRequest(Type requestType, string destination, string status)
     {
-        _requestCounter?.Increment(labelValues: [GetMessageTypeName(requestType), destination, status]);
+        _requestCounter?.Add(
+            1,
+            new("raycynix.messaging.request.type", GetMessageTypeName(requestType)),
+            new("raycynix.messaging.destination", destination),
+            new("raycynix.messaging.status", status));
     }
 
     private static string GetMessageTypeName(Type messageType)
