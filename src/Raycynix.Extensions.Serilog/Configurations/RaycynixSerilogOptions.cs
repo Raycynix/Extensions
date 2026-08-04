@@ -52,10 +52,7 @@ public sealed class RaycynixSerilogOptions
     /// Gets or sets the output template used by the fallback console sink.
     /// </summary>
     public string DefaultConsoleOutputTemplate { get; set; } =
-        "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] " +
-        "[{ServiceName}] [{Environment}] [{SourceContext}] " +
-        "[Trace:{TraceId}] [Span:{SpanId}] " +
-        "{Message:lj}{NewLine}{Exception}";
+        "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] [Trace:{TraceId}] [Span:{SpanId}] [Corr:{CorrelationId}] {Message:lj}{NewLine}{Exception}";
 
     /// <summary>
     /// Gets or sets whether the existing static Serilog logger should be preserved.
