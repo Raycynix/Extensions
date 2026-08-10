@@ -1,4 +1,6 @@
 using System.Net;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -86,6 +88,34 @@ public class RateLimitRegistrationTests
         firstLease.IsAcquired.Should().BeTrue();
         rejectedLease.IsAcquired.Should().BeFalse();
         otherPartitionLease.IsAcquired.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AddRaycynixRateLimiting_ShouldIgnoreSubjectClaimsFromUnauthenticatedPrincipals()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+        services.AddRaycynixRateLimiting(configuration, options =>
+        {
+            options.GlobalPolicy!.Algorithm = RateLimitAlgorithm.FixedWindow;
+            options.GlobalPolicy.PartitionStrategy = RateLimitPartitionStrategy.Subject;
+            options.GlobalPolicy.PermitLimit = 1;
+            options.GlobalPolicy.Window = TimeSpan.FromHours(1);
+        });
+        using var provider = services.BuildServiceProvider();
+        var limiter = provider.GetRequiredService<IOptions<RateLimiterOptions>>().Value.GlobalLimiter!;
+        var firstContext = CreateHttpContext("192.0.2.1");
+        firstContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(JwtRegisteredClaimNames.Sub, "attacker-a")]));
+        var secondContext = CreateHttpContext("192.0.2.1");
+        secondContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(JwtRegisteredClaimNames.Sub, "attacker-b")]));
+
+        using var firstLease = limiter.AttemptAcquire(firstContext);
+        using var secondLease = limiter.AttemptAcquire(secondContext);
+
+        firstLease.IsAcquired.Should().BeTrue();
+        secondLease.IsAcquired.Should().BeFalse();
     }
 
     /// <summary>

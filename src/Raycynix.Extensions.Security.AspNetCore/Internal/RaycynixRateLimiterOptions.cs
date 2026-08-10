@@ -135,6 +135,11 @@ internal static class RaycynixRateLimiterOptions
 
     private static string ResolveSubjectOrIpPartition(HttpContext context)
     {
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            return ResolveIpPartition(context);
+        }
+
         var subject = context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         return string.IsNullOrWhiteSpace(subject)
             ? ResolveIpPartition(context)

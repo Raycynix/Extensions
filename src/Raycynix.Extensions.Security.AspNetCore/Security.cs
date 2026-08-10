@@ -71,8 +71,8 @@ public static class Security
         services.Replace(ServiceDescriptor.Scoped<ISecurityContext>(serviceProvider =>
         {
             var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-            var securityContext = HttpSecurityContextFactory.Create(httpContextAccessor.HttpContext?.User);
             var logger = serviceProvider.GetService<ILogger<ISecurityContext>>();
+            var securityContext = HttpSecurityContextFactory.Create(httpContextAccessor.HttpContext?.User, logger);
             logger?.LogDebug(
                 "Resolved HTTP security context. IsAuthenticated={IsAuthenticated}, SubjectType={SubjectType}, RoleCount={RoleCount}, PermissionCount={PermissionCount}.",
                 securityContext.IsAuthenticated,
