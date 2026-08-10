@@ -37,7 +37,7 @@ internal sealed class SmtpEmailSender(
             message.Attachments.Count,
             message.Headers.Count);
 
-        var mimeMessage = await mimeMessageFactory.CreateAsync(message, cancellationToken);
+        using var mimeMessage = await mimeMessageFactory.CreateAsync(message, cancellationToken);
         using var client = new SmtpClient();
         client.Timeout = smtpOptions.TimeoutMilliseconds;
 

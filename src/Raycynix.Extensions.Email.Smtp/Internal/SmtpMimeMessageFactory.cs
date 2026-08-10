@@ -20,7 +20,7 @@ internal sealed class SmtpMimeMessageFactory(
                      ?? throw new EmailSendException(
                          "Email message requires a sender address. Set EmailOptions.DefaultFromAddress or EmailMessage.From.");
 
-        var mimeMessage = new MimeMessage
+        var mimeMessage = new StreamOwningMimeMessage
         {
             Subject = message.Subject
         };
@@ -37,21 +37,38 @@ internal sealed class SmtpMimeMessageFactory(
 
         var linkedResourceCount = 0;
         var attachmentCount = 0;
-        foreach (var attachment in message.Attachments)
-        {
-            await AddAttachmentAsync(bodyBuilder, attachment, cancellationToken);
+        var attachmentStreams = new List<Stream>(message.Attachments.Count);
 
-            if (string.IsNullOrWhiteSpace(attachment.ContentId))
+        try
+        {
+            foreach (var attachment in message.Attachments)
             {
-                attachmentCount++;
+                attachmentStreams.Add(await AddAttachmentAsync(bodyBuilder, attachment, cancellationToken));
+
+                if (string.IsNullOrWhiteSpace(attachment.ContentId))
+                {
+                    attachmentCount++;
+                }
+                else
+                {
+                    linkedResourceCount++;
+                }
             }
-            else
+
+            mimeMessage.Body = bodyBuilder.ToMessageBody();
+            mimeMessage.TakeOwnership(attachmentStreams);
+        }
+        catch
+        {
+            foreach (var stream in attachmentStreams)
             {
-                linkedResourceCount++;
+                await stream.DisposeAsync();
             }
+
+            mimeMessage.Dispose();
+            throw;
         }
 
-        mimeMessage.Body = bodyBuilder.ToMessageBody();
         logger?.LogDebug(
             "Created SMTP MIME message. BodyFormat={BodyFormat}, ToCount={ToCount}, CcCount={CcCount}, BccCount={BccCount}, AttachmentCount={AttachmentCount}, LinkedResourceCount={LinkedResourceCount}, HeaderCount={HeaderCount}.",
             message.Body.PreferredFormat,
@@ -94,37 +111,44 @@ internal sealed class SmtpMimeMessageFactory(
         }
     }
 
-    private static async Task AddAttachmentAsync(
+    private static async Task<Stream> AddAttachmentAsync(
         BodyBuilder bodyBuilder,
         EmailAttachment attachment,
         CancellationToken cancellationToken)
     {
-        await using var stream = await attachment.OpenReadAsync(cancellationToken);
-        using var memory = new MemoryStream();
-        await stream.CopyToAsync(memory, cancellationToken);
-
+        var stream = await attachment.OpenReadAsync(cancellationToken);
         var contentType = ContentType.Parse(attachment.ContentType);
-        var content = memory.ToArray();
-
-        if (!string.IsNullOrWhiteSpace(attachment.ContentId))
+        try
         {
-            var linkedResource = bodyBuilder.LinkedResources.Add(
-                attachment.FileName,
-                content,
-                contentType);
-
-            if (linkedResource is MimePart linkedResourcePart)
+            if (!string.IsNullOrWhiteSpace(attachment.ContentId))
             {
-                linkedResourcePart.ContentId = attachment.ContentId;
+                var linkedResource = bodyBuilder.LinkedResources.Add(
+                    attachment.FileName,
+                    stream,
+                    contentType,
+                    cancellationToken);
+
+                if (linkedResource is MimePart linkedResourcePart)
+                {
+                    linkedResourcePart.ContentId = attachment.ContentId;
+                }
+
+                return stream;
             }
 
-            return;
-        }
+            bodyBuilder.Attachments.Add(
+                attachment.FileName,
+                stream,
+                contentType,
+                cancellationToken);
 
-        bodyBuilder.Attachments.Add(
-            attachment.FileName,
-            content,
-            contentType);
+            return stream;
+        }
+        catch
+        {
+            await stream.DisposeAsync();
+            throw;
+        }
     }
 
     private static void AddHeaders(MimeMessage mimeMessage, IReadOnlyDictionary<string, string> headers)
@@ -155,5 +179,30 @@ internal sealed class SmtpMimeMessageFactory(
         return string.IsNullOrWhiteSpace(address.DisplayName)
             ? MailboxAddress.Parse(address.Address)
             : new MailboxAddress(address.DisplayName, address.Address);
+    }
+
+    private sealed class StreamOwningMimeMessage : MimeMessage
+    {
+        private IReadOnlyCollection<Stream>? _ownedStreams;
+
+        public void TakeOwnership(IReadOnlyCollection<Stream> streams)
+        {
+            _ownedStreams = streams;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && _ownedStreams is not null)
+            {
+                foreach (var stream in _ownedStreams)
+                {
+                    stream.Dispose();
+                }
+
+                _ownedStreams = null;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
