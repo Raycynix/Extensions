@@ -37,19 +37,19 @@ public sealed class MessagingDatabaseCleanupProcessor(
     {
         var processedStatus = (int)IncomingMessageInboxStatus.Processed;
         var failedStatus = (int)IncomingMessageInboxStatus.Failed;
+        var processedCutoff = now - configuration.ProcessedInboxRetention;
+        var failedCutoff = now - configuration.FailedInboxRetention;
 
-        var candidates = await databaseContext.Set<MessagingInboxEntryEntity>()
+        var expiredIds = await databaseContext.Set<MessagingInboxEntryEntity>()
             .AsNoTracking()
-            .Where(entry => entry.Status == processedStatus || entry.Status == failedStatus)
-            .ToArrayAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var expiredIds = candidates
-            .Where(entry => IsInboxExpired(entry, now))
+            .Where(entry =>
+                (entry.Status == processedStatus && entry.UpdatedAt <= processedCutoff) ||
+                (entry.Status == failedStatus && entry.UpdatedAt <= failedCutoff))
             .OrderBy(entry => entry.UpdatedAt)
             .Take(configuration.CleanupBatchSize)
             .Select(entry => entry.MessageId)
-            .ToArray();
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         if (expiredIds.Length == 0)
         {
@@ -57,7 +57,7 @@ public sealed class MessagingDatabaseCleanupProcessor(
         }
 
         var entries = await databaseContext.Set<MessagingInboxEntryEntity>()
-            .Where(entry => expiredIds.AsEnumerable().Contains(entry.MessageId))
+            .Where(entry => expiredIds.Contains(entry.MessageId))
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -70,19 +70,19 @@ public sealed class MessagingDatabaseCleanupProcessor(
     {
         var dispatchedStatus = (int)MessageOutboxStatus.Dispatched;
         var failedStatus = (int)MessageOutboxStatus.Failed;
+        var dispatchedCutoff = now - configuration.DispatchedOutboxRetention;
+        var failedCutoff = now - configuration.FailedOutboxRetention;
 
-        var candidates = await databaseContext.Set<MessagingOutboxEntryEntity>()
+        var expiredIds = await databaseContext.Set<MessagingOutboxEntryEntity>()
             .AsNoTracking()
-            .Where(entry => entry.Status == dispatchedStatus || entry.Status == failedStatus)
-            .ToArrayAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var expiredIds = candidates
-            .Where(entry => IsOutboxExpired(entry, now))
+            .Where(entry =>
+                (entry.Status == dispatchedStatus && entry.UpdatedAt <= dispatchedCutoff) ||
+                (entry.Status == failedStatus && entry.UpdatedAt <= failedCutoff))
             .OrderBy(entry => entry.UpdatedAt)
             .Take(configuration.CleanupBatchSize)
             .Select(entry => entry.MessageId)
-            .ToArray();
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         if (expiredIds.Length == 0)
         {
@@ -90,7 +90,7 @@ public sealed class MessagingDatabaseCleanupProcessor(
         }
 
         var entries = await databaseContext.Set<MessagingOutboxEntryEntity>()
-            .Where(entry => expiredIds.AsEnumerable().Contains(entry.MessageId))
+            .Where(entry => expiredIds.Contains(entry.MessageId))
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -99,27 +99,4 @@ public sealed class MessagingDatabaseCleanupProcessor(
         return entries.Length;
     }
 
-    private bool IsInboxExpired(MessagingInboxEntryEntity entry, DateTimeOffset now)
-    {
-        var retention = (IncomingMessageInboxStatus)entry.Status switch
-        {
-            IncomingMessageInboxStatus.Processed => configuration.ProcessedInboxRetention,
-            IncomingMessageInboxStatus.Failed => configuration.FailedInboxRetention,
-            _ => TimeSpan.MaxValue
-        };
-
-        return now - entry.UpdatedAt >= retention;
-    }
-
-    private bool IsOutboxExpired(MessagingOutboxEntryEntity entry, DateTimeOffset now)
-    {
-        var retention = (MessageOutboxStatus)entry.Status switch
-        {
-            MessageOutboxStatus.Dispatched => configuration.DispatchedOutboxRetention,
-            MessageOutboxStatus.Failed => configuration.FailedOutboxRetention,
-            _ => TimeSpan.MaxValue
-        };
-
-        return now - entry.UpdatedAt >= retention;
-    }
 }

@@ -61,7 +61,7 @@ internal sealed class KafkaInboundConsumer(
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             {
                 logger?.LogWarning(exception, "Kafka message processing failed. Topic={Topic}.", message.Topic);
-                await HandleFailureAsync(message, exception, CancellationToken.None).ConfigureAwait(false);
+                await HandleFailureAsync(message, exception, stoppingToken).ConfigureAwait(false);
                 consumer.Commit(message);
             }
         }
@@ -138,7 +138,7 @@ internal sealed class KafkaInboundConsumer(
         var headers = new Dictionary<string, string>(message.Headers, StringComparer.OrdinalIgnoreCase)
         {
             [DeliveryAttemptHeader] = nextAttempt.ToString(),
-            [ErrorHeader] = exception.Message,
+            [ErrorHeader] = exception.GetType().Name,
             [OriginalTopicHeader] = message.Topic
         };
 

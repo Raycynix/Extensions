@@ -29,13 +29,14 @@ internal sealed class DatabaseIncomingMessageInboxStore(
 
         if (existing is null)
         {
-            set.Add(new MessagingInboxEntryEntity
+            var newEntry = new MessagingInboxEntryEntity
             {
                 MessageId = message.MessageId,
                 Destination = message.Destination,
                 Status = (int)IncomingMessageInboxStatus.Processing,
                 UpdatedAt = DateTimeOffset.UtcNow
-            });
+            };
+            set.Add(newEntry);
 
             try
             {
@@ -46,6 +47,7 @@ internal sealed class DatabaseIncomingMessageInboxStore(
             catch (DbUpdateException)
             {
                 // Another worker may have inserted the same inbox row concurrently.
+                databaseContext.Entry(newEntry).State = EntityState.Detached;
                 var current = await GetCurrentEntryAsync(message.MessageId, cancellationToken).ConfigureAwait(false);
                 if (current is not null)
                 {
@@ -253,6 +255,11 @@ internal sealed class DatabaseIncomingMessageInboxStore(
         {
             logger?.LogDebug("Inbox processing lease is still active. Destination={Destination}.", message.Destination);
             return false;
+        }
+
+        if (databaseContext.Entry(entry).State == EntityState.Detached)
+        {
+            databaseContext.Attach(entry);
         }
 
         entry.Destination = message.Destination;

@@ -3,6 +3,7 @@ using Raycynix.Extensions.Database;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Messaging.Database.Configurations;
+using Raycynix.Extensions.Messaging.Database.Infrastructure;
 using Raycynix.Extensions.Messaging.Database.Models;
 
 namespace Raycynix.Extensions.Messaging.Database.Configurators;
@@ -31,19 +32,27 @@ internal sealed class MessagingOutboxEntryConfigurator(
         
         entity.Property(static entry => entry.ContentType).IsRequired().HasMaxLength(256);
         
-        entity.Property(static entry => entry.CreatedAt).IsRequired();
+        entity.Property(static entry => entry.CreatedAt)
+            .HasConversion<UtcDateTimeOffsetTicksConverter>()
+            .IsRequired();
         
         entity.Property(static entry => entry.Headers).IsRequired();
         
         entity.Property(static entry => entry.Status).IsRequired();
         
-        entity.Property(static entry => entry.UpdatedAt).IsRequired().IsConcurrencyToken();
+        entity.Property(static entry => entry.UpdatedAt)
+            .HasConversion<UtcDateTimeOffsetTicksConverter>()
+            .IsRequired()
+            .IsConcurrencyToken();
         
         entity.Property(static entry => entry.AttemptCount).IsRequired();
         
-        entity.Property(static entry => entry.NextAttemptAt).IsRequired();
+        entity.Property(static entry => entry.NextAttemptAt)
+            .HasConversion<UtcDateTimeOffsetTicksConverter>()
+            .IsRequired();
         
         entity.HasIndex(static entry => new { entry.Status, entry.NextAttemptAt });
+        entity.HasIndex(static entry => new { entry.Status, entry.UpdatedAt });
     }
 
     /// <inheritdoc />
