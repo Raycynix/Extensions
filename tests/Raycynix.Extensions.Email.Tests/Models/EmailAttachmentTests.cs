@@ -29,6 +29,19 @@ public sealed class EmailAttachmentTests
         secondBytes.Should().BeEquivalentTo([1, 2, 3]);
     }
 
+    [Fact]
+    public async Task FromMemory_ShouldSnapshotContent_AndOpenFreshStreams()
+    {
+        var bytes = new byte[] { 1, 2, 3 };
+        var attachment = EmailAttachment.FromMemory("data.bin", bytes);
+        bytes[0] = 9;
+
+        await using var stream = await attachment.OpenReadAsync(TestContext.Current.CancellationToken);
+        var content = await ReadAllAsync(stream);
+
+        content.Should().Equal(1, 2, 3);
+    }
+
     /// <summary>
     /// Verifies that file-backed attachments use the file name and open the file lazily.
     /// </summary>
