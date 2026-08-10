@@ -2,6 +2,7 @@
 
 ## 3.0.0
 ### Changed
+- Incoming correlation identifiers are now single-value, length-bounded, and restricted to a safe ASCII character set before logging or propagation.
 - Added OpenTelemetry ASP.NET Core metrics instrumentation through Metrics 3.0.
 - Added OpenTelemetry ASP.NET Core tracing instrumentation through Tracing 3.0.
 - `MapRaycynixObservabilityEndpoints` now maps health checks only; metrics exporters expose their endpoints explicitly.

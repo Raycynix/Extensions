@@ -112,6 +112,51 @@ public class CorrelationMiddlewareTests
         OperationContext.Current.Should().BeNull();
     }
 
+    [Fact]
+    public async Task CorrelationMiddleware_ShouldReplaceInvalidIncomingCorrelationId()
+    {
+        var httpContext = new DefaultHttpContext { TraceIdentifier = "trusted-trace" };
+        httpContext.Request.Headers[CorrelationHeaderHandlerTests.CorrelationHeader] = "invalid correlation value";
+        var operationContext = new OperationContext();
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var middleware = new CorrelationMiddleware(_ => Task.CompletedTask);
+
+        await middleware.InvokeAsync(httpContext, operationContext, provider);
+
+        operationContext.CorrelationId.Should().Be("trusted-trace");
+        httpContext.Response.Headers[CorrelationHeaderHandlerTests.CorrelationHeader]
+            .ToString().Should().Be("trusted-trace");
+    }
+
+    [Fact]
+    public async Task CorrelationMiddleware_ShouldRejectMultipleIncomingCorrelationIds()
+    {
+        var httpContext = new DefaultHttpContext { TraceIdentifier = "trusted-trace" };
+        httpContext.Request.Headers.Append(CorrelationHeaderHandlerTests.CorrelationHeader, "first");
+        httpContext.Request.Headers.Append(CorrelationHeaderHandlerTests.CorrelationHeader, "second");
+        var operationContext = new OperationContext();
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var middleware = new CorrelationMiddleware(_ => Task.CompletedTask);
+
+        await middleware.InvokeAsync(httpContext, operationContext, provider);
+
+        operationContext.CorrelationId.Should().Be("trusted-trace");
+    }
+
+    [Fact]
+    public async Task CorrelationMiddleware_ShouldReplaceInvalidPreexistingOperationCorrelationId()
+    {
+        var httpContext = new DefaultHttpContext { TraceIdentifier = "trusted-trace" };
+        var operationContext = new OperationContext { CorrelationId = "invalid correlation value" };
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var middleware = new CorrelationMiddleware(_ => Task.CompletedTask);
+
+        await middleware.InvokeAsync(httpContext, operationContext, provider);
+
+        operationContext.CorrelationId.Should().HaveLength(32);
+        operationContext.CorrelationId.Should().NotBe("invalid correlation value");
+    }
+
     /// <summary>
     /// Verifies that downstream log events keep the identity values resolved by the correlation middleware.
     /// </summary>
