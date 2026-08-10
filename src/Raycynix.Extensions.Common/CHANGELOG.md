@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Aligned the package with the net10.0 Raycynix 3.0 package line.
+- Existing operation-context, assembly helper, and disposable APIs remain compatible.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.
