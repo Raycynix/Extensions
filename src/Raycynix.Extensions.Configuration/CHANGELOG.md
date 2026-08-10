@@ -8,6 +8,7 @@
 - Added `ConfigurationSectionPath` for deriving root and nested configuration paths from options type names.
 
 ### Changed
+- Configuration change handlers are now invoked sequentially in reload order and are cancelled and awaited during host shutdown.
 - Aligned the package version with the net10.0 / Microsoft.Extensions 10 package line.
 - Renamed the source setup options type from `ConfigurationSourcesConfiguration` to `ConfigurationSourcesOptions` to follow the Options naming convention for setup objects.
 - Standard typed configuration registration now resolves its default section through the shared options type-name convention.
