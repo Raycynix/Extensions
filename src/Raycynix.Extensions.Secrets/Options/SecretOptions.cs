@@ -10,4 +10,9 @@ public sealed class SecretOptions
     /// Providers not listed here are evaluated afterward in registration order.
     /// </summary>
     public IList<string> ProviderOrder { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets a value indicating whether resolution continues with the next provider when a provider fails.
+    /// </summary>
+    public bool ContinueOnProviderError { get; set; } = true;
 }

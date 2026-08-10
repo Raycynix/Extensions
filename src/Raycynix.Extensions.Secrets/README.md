@@ -101,6 +101,7 @@ builder.Services.AddRaycynixSecrets(builder.Configuration, options =>
 ```
 
 Providers not listed in `SecretOptions.ProviderOrder` are still evaluated afterward in their registration order.
+Provider failures fall through to the next provider by default. Set `SecretOptions:ContinueOnProviderError` to `false` when fail-fast resolution is required.
 Custom providers can be referenced by their short name, CLR type name, or fully qualified type name. Unknown and duplicate configured names are rejected.
 
 For environment-based configuration, use indexed keys:

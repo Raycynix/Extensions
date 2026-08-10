@@ -2,11 +2,13 @@
 
 ## 3.0.0
 ### Added
+- Added `SecretOptions.ContinueOnProviderError` to control fallback behavior after provider failures.
 - Added configuration binding for `SecretOptions` through the shared Raycynix Configuration pipeline.
 - Added stable `SecretProviderNames` values for built-in provider ordering.
 - Added validation for duplicate, empty, and unregistered provider names.
 
 ### Changed
+- Secret resolution now continues through the configured provider chain after non-cancellation provider failures by default.
 - Moved `SecretOptions` to `Raycynix.Extensions.Secrets.Options`.
 - Changed `ProviderOrder` from CLR `Type` values to configuration-friendly provider names.
 - Changed `AddRaycynixSecrets(...)` to require `IConfiguration`.

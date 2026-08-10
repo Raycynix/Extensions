@@ -130,6 +130,52 @@ public sealed class CompositeSecretResolverTests
         attempts[1].Succeeded.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task GetSecretAsync_ShouldContinueAfterProviderFailure_ByDefault()
+    {
+        var resolver = new CompositeSecretResolver(
+        [
+            new ThrowingSecretProvider(new InvalidOperationException("provider unavailable")),
+            new TestConfigurationProvider()
+        ]);
+
+        var result = await resolver.GetSecretAsync("Api:Token", TestContext.Current.CancellationToken);
+
+        result.Should().Be("config-secret");
+    }
+
+    [Fact]
+    public async Task GetSecretAsync_ShouldFailFast_WhenConfigured()
+    {
+        var failure = new InvalidOperationException("provider unavailable");
+        var resolver = new CompositeSecretResolver(
+        [
+            new ThrowingSecretProvider(failure),
+            new TestConfigurationProvider()
+        ],
+        new SecretOptions { ContinueOnProviderError = false });
+
+        var act = async () => await resolver.GetSecretAsync("Api:Token", TestContext.Current.CancellationToken);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(failure);
+    }
+
+    [Fact]
+    public async Task GetSecretAsync_ShouldNotSwallowRequestedCancellation()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        await cancellationSource.CancelAsync();
+        var resolver = new CompositeSecretResolver(
+        [
+            new ThrowingSecretProvider(new OperationCanceledException(cancellationSource.Token)),
+            new TestConfigurationProvider()
+        ]);
+
+        var act = async () => await resolver.GetSecretAsync("Api:Token", cancellationSource.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     private sealed class StaticSecretProvider(string? value) : ISecretProvider
     {
         public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
@@ -151,6 +197,14 @@ public sealed class CompositeSecretResolverTests
         public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
         {
             return ValueTask.FromResult<string?>("env-secret");
+        }
+    }
+
+    private sealed class ThrowingSecretProvider(Exception exception) : ISecretProvider
+    {
+        public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromException<string?>(exception);
         }
     }
 }

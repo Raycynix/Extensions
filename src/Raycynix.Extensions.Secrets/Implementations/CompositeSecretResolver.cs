@@ -11,6 +11,7 @@ namespace Raycynix.Extensions.Secrets.Implementations;
 public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
 {
     private readonly IReadOnlyCollection<ISecretProvider> _providers;
+    private readonly bool _continueOnProviderError;
     private readonly ILogger<CompositeSecretResolver>? _logger;
 
     /// <summary>
@@ -25,6 +26,7 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
         ILogger<CompositeSecretResolver>? logger = null)
     {
         _providers = OrderProviders(providers, options).ToArray();
+        _continueOnProviderError = options?.ContinueOnProviderError ?? true;
         _logger = logger;
 
         _logger?.LogDebug(
@@ -78,7 +80,28 @@ public sealed class CompositeSecretResolver : ISecretDiagnosticsResolver
                 "Trying secret provider. ProviderName={ProviderName}.",
                 providerName);
 
-            var value = await provider.GetSecretAsync(key, cancellationToken);
+            string? value;
+            try
+            {
+                value = await provider.GetSecretAsync(key, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception) when (_continueOnProviderError)
+            {
+                attempts.Add(new SecretResolutionAttempt(
+                    ProviderName: providerName,
+                    Succeeded: false));
+
+                _logger?.LogWarning(
+                    "Secret provider failed; resolution will continue with the next provider. ProviderName={ProviderName}, ExceptionType={ExceptionType}.",
+                    providerName,
+                    exception.GetType().Name);
+                continue;
+            }
+
             var succeeded = !string.IsNullOrWhiteSpace(value);
             attempts.Add(new SecretResolutionAttempt(
                 ProviderName: providerName,
