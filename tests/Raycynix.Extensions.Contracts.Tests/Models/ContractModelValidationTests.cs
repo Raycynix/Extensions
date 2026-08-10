@@ -61,6 +61,25 @@ public sealed class ContractModelValidationTests
     }
 
     /// <summary>
+    /// Verifies that paging navigation flags must match the current page.
+    /// </summary>
+    [Fact]
+    public void PageInfo_ShouldRejectInconsistentNavigationFlags()
+    {
+        var pageInfo = new PageInfo
+        {
+            Page = 2,
+            PageSize = 20,
+            TotalCount = 60,
+            TotalPages = 3,
+            HasPreviousPage = false,
+            HasNextPage = true
+        };
+
+        pageInfo.IsValid().Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies that error contracts require a code, message, and valid validation entries.
     /// </summary>
     [Fact]
@@ -82,6 +101,23 @@ public sealed class ContractModelValidationTests
         };
 
         error.IsValid().Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that runtime validation safely rejects nulls introduced by malformed payload deserialization.
+    /// </summary>
+    [Fact]
+    public void ContractModels_ShouldRejectDeserializedNullMembers()
+    {
+        new Money { Currency = null! }.IsValid().Should().BeFalse();
+        new Quantity { UoM = null! }.IsValid().Should().BeFalse();
+        new PagedResult<object> { Items = null!, PageInfo = null! }.IsValid().Should().BeFalse();
+        new ErrorContract
+        {
+            Code = "invalid",
+            Message = "Invalid.",
+            Details = null!
+        }.IsValid().Should().BeFalse();
     }
 
     private static IReadOnlyCollection<ValidationResult> Validate(object instance)

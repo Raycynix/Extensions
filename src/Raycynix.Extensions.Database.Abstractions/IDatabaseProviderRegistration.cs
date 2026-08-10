@@ -1,6 +1,6 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 
 namespace Raycynix.Extensions.Database.Abstractions;
 
@@ -20,7 +20,7 @@ public interface IDatabaseProviderRegistration
     /// <param name="configuration">The bound shared database configuration.</param>
     /// <param name="serviceProvider">The service provider used to resolve provider-specific options.</param>
     /// <returns>The final connection string passed to EF Core.</returns>
-    string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider);
+    string ResolveConnectionString(DatabaseOptions configuration, IServiceProvider serviceProvider);
 
     /// <summary>
     /// Applies provider-specific EF Core options to the shared database context.
@@ -33,7 +33,7 @@ public interface IDatabaseProviderRegistration
     void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider);
 
@@ -41,5 +41,5 @@ public interface IDatabaseProviderRegistration
     /// Validates provider-specific database configuration before connection-string resolution.
     /// </summary>
     /// <param name="configuration">The bound shared database configuration.</param>
-    void Validate(DatabaseConfiguration configuration);
+    void Validate(DatabaseOptions configuration);
 }

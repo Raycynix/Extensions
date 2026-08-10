@@ -77,10 +77,10 @@ public class SecurityContextResolutionTests
     }
 
     /// <summary>
-    /// Verifies that missing subject information is rejected when resolving the scoped security context.
+    /// Verifies that incomplete authenticated principals fail closed without breaking request resolution.
     /// </summary>
     [Fact]
-    public void AddRaycynixAspNetCoreSecurity_ShouldRejectMissingSubjectInformation()
+    public void AddRaycynixAspNetCoreSecurity_ShouldResolveAnonymousContext_WhenSubjectInformationIsMissing()
     {
         var httpContextAccessor = new HttpContextAccessor
         {
@@ -98,10 +98,37 @@ public class SecurityContextResolutionTests
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        var action = () => scope.ServiceProvider.GetRequiredService<ISecurityContext>();
+        var context = scope.ServiceProvider.GetRequiredService<ISecurityContext>();
 
-        action.Should().Throw<InvalidOperationException>()
-            .WithMessage("*does not contain the required 'sub' claim*");
+        context.IsAuthenticated.Should().BeFalse();
+        context.SubjectId.Should().BeEmpty();
+        context.Roles.Should().BeEmpty();
+        context.Permissions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddRaycynixAspNetCoreSecurity_ShouldResolveAnonymousContext_WhenSubjectTypeIsInvalid()
+    {
+        var httpContextAccessor = new HttpContextAccessor
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = CreatePrincipal(
+                    new Claim(JwtRegisteredClaimNames.Sub, "user-1"),
+                    new Claim(SecurityClaimTypes.SubjectType, "invalid"))
+            }
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
+        services.AddRaycynixAspNetCoreSecurity(CreateValidConfiguration());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ISecurityContext>();
+
+        context.IsAuthenticated.Should().BeFalse();
+        context.SubjectId.Should().BeEmpty();
     }
 
     private static IConfiguration CreateValidConfiguration()
@@ -109,12 +136,12 @@ public class SecurityContextResolutionTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Authority"] = "https://auth.raycynix.local",
-                ["SecurityConfiguration:Jwt:Issuer"] = "raycynix-auth",
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services",
-                ["SecurityConfiguration:Jwt:AccessTokenLifetime"] = "00:15:00",
-                ["SecurityConfiguration:Jwt:RefreshTokenLifetime"] = "14.00:00:00",
-                ["SecurityConfiguration:Jwt:ClockSkew"] = "00:01:00"
+                ["SecurityOptions:JwtOptions:Authority"] = "https://auth.raycynix.local",
+                ["SecurityOptions:JwtOptions:Issuer"] = "raycynix-auth",
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services",
+                ["SecurityOptions:JwtOptions:AccessTokenLifetime"] = "00:15:00",
+                ["SecurityOptions:JwtOptions:RefreshTokenLifetime"] = "14.00:00:00",
+                ["SecurityOptions:JwtOptions:ClockSkew"] = "00:01:00"
             })
             .Build();
     }

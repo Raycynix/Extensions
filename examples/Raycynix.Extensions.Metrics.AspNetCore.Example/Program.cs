@@ -1,79 +1,55 @@
-using Raycynix.Extensions.Metrics;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using System.Diagnostics.Metrics;
+using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Metrics.AspNetCore;
-
-Environment.CurrentDirectory = AppContext.BaseDirectory;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixMetrics(builder.Configuration, options =>
-{
-    options.MetricsEndpoint = "/metrics";
-    options.UsePrometheus = true;
-});
+builder.Services.AddRaycynixAspNetCoreMetrics(metrics => metrics.AddPrometheusExporter());
 
 var app = builder.Build();
+var meter = RaycynixMetrics.CreateMeter(app.Services.GetRequiredService<IMeterFactory>());
+var requestCounter = meter.CreateCounter<long>(
+    "raycynix.example.requests",
+    unit: "{request}",
+    description: "Requests served by sample endpoints.");
+var inventoryChanges = meter.CreateUpDownCounter<long>(
+    "raycynix.example.inventory.changes",
+    unit: "{item}",
+    description: "Changes to the example inventory.");
+var checkoutDuration = meter.CreateHistogram<double>(
+    "raycynix.example.checkout.duration",
+    unit: "s",
+    description: "Checkout duration.");
 
-app.UseRaycynixMetrics();
-
-var requestCounter = app.Services.GetRequiredService<IMetricsService>()
-    .CreateCounter("raycynix_http_requests_total", "HTTP requests served by sample endpoints.", "endpoint");
-var inventoryGauge = app.Services.GetRequiredService<IMetricsService>()
-    .CreateGauge("raycynix_inventory_items", "Current inventory amount.", "sku");
-var checkoutHistogram = app.Services.GetRequiredService<IMetricsService>()
-    .CreateHistogram("raycynix_checkout_duration_seconds", "Checkout duration in seconds.", "result");
-
-inventoryGauge.Set(10, "SKU-RED-MUG");
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.MapGet("/", () => Results.Ok(new
 {
     Service = "Raycynix.Extensions.Metrics.AspNetCore.Example",
-    Endpoints = new[]
-    {
-        "GET /orders/process",
-        "POST /inventory/{sku}/reserve",
-        "GET /healthz",
-        "GET /metrics"
-    }
+    Endpoints = new[] { "GET /orders/process", "POST /inventory/{sku}/reserve", "GET /metrics" }
 }));
 
 app.MapGet("/orders/process", async (CancellationToken cancellationToken) =>
 {
-    requestCounter.Increment(labelValues: ["orders_process"]);
+    requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "orders_process"));
 
-    using (checkoutHistogram.MeasureDuration("success"))
+    using (checkoutDuration.MeasureDuration(
+               new KeyValuePair<string, object?>("raycynix.result", "success")))
     {
         await Task.Delay(120, cancellationToken);
     }
 
-    return Results.Ok(new
-    {
-        Message = "Order processed and metrics updated."
-    });
+    return Results.Ok(new { Message = "Order processed and metrics updated." });
 });
 
 app.MapPost("/inventory/{sku}/reserve", (string sku) =>
 {
-    requestCounter.Increment(labelValues: ["inventory_reserve"]);
-    inventoryGauge.Decrement(1, sku);
+    requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "inventory_reserve"));
+    inventoryChanges.Add(-1, new KeyValuePair<string, object?>("raycynix.inventory.sku", sku));
 
-    return Results.Accepted($"/inventory/{sku}", new
-    {
-        Message = "Inventory reserved.",
-        Sku = sku
-    });
+    return Results.Accepted($"/inventory/{sku}", new { Message = "Inventory reserved.", Sku = sku });
 });
-
-app.MapGet("/healthz", () =>
-{
-    requestCounter.Increment(labelValues: ["healthz"]);
-
-    return Results.Ok(new
-    {
-        Status = "Healthy"
-    });
-});
-
-app.MapRaycynixMetrics("/metrics");
 
 app.Run();

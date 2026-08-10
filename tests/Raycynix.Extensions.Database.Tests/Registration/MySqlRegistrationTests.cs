@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.MySql;
-using Raycynix.Extensions.Database.MySql.Configurations;
+using Raycynix.Extensions.Database.MySql.Options;
 
 namespace Raycynix.Extensions.Database.Tests.Registration;
 
@@ -15,17 +15,17 @@ public sealed class MySqlRegistrationTests
     /// Verifies that MySQL options bind from the nested database configuration section.
     /// </summary>
     [Fact]
-    public void AddMySql_ShouldBindOptionsFromDatabaseConfigurationSection()
+    public void AddMySql_ShouldBindOptionsFromDatabaseOptionsSection()
     {
         var services = new ServiceCollection();
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Server=localhost;Database=test;",
-                ["DatabaseConfiguration:MySqlConfiguration:AllowUserVariables"] = "false",
-                ["DatabaseConfiguration:MySqlConfiguration:Pooling"] = "false",
-                ["DatabaseConfiguration:MySqlConfiguration:CommandTimeoutSeconds"] = "45"
+                ["DatabaseOptions:ConnectionString"] = "Server=localhost;Database=test;",
+                ["DatabaseOptions:MySqlOptions:AllowUserVariables"] = "false",
+                ["DatabaseOptions:MySqlOptions:Pooling"] = "false",
+                ["DatabaseOptions:MySqlOptions:CommandTimeoutSeconds"] = "45"
             })
             .Build();
 
@@ -33,7 +33,7 @@ public sealed class MySqlRegistrationTests
             .AddMySql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-        var options = serviceProvider.GetRequiredService<MySqlConfiguration>();
+        var options = serviceProvider.GetRequiredService<MySqlOptions>();
 
         options.AllowUserVariables.Should().BeFalse();
         options.Pooling.Should().BeFalse();

@@ -57,6 +57,8 @@ public class PageInfo
             return TotalCount == 0 && !HasPreviousPage && !HasNextPage;
         }
 
-        return Page <= TotalPages;
+        return Page <= TotalPages &&
+               HasPreviousPage == (Page > 1) &&
+               HasNextPage == (Page < TotalPages);
     }
 }

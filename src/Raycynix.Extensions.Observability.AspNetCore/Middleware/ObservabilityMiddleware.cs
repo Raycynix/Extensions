@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Metrics.AspNetCore;
-using Raycynix.Extensions.Tracing.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 
@@ -10,7 +8,9 @@ namespace Raycynix.Extensions.Observability.AspNetCore.Middleware;
 public static class ObservabilityMiddleware
 {
     /// <summary>
-    /// Adds tracing, correlation, and HTTP metrics middleware to the request pipeline.
+    /// Adds tracing and correlation middleware to the request pipeline.
+    /// ASP.NET Core metrics are collected through the OpenTelemetry instrumentation registered by
+    /// <c>AddRaycynixAspNetCoreObservability</c> and require no request middleware.
     /// </summary>
     /// <param name="app">The application builder used to configure the request pipeline.</param>
     /// <returns>The same <see cref="IApplicationBuilder"/> instance for chaining.</returns>
@@ -18,10 +18,7 @@ public static class ObservabilityMiddleware
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        app.UseRaycynixTracing();
         app.UseMiddleware<CorrelationMiddleware>();
-        app.UseRaycynixMetrics();
-
         return app;
     }
 }

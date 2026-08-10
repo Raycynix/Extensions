@@ -67,3 +67,7 @@ Notes:
 The gRPC transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
 
 Diagnostics cover request operation lookup, client sends, processor execution, mapped RPC statuses, and processing failures. Request/response payloads and header values are not logged.
+
+## Migrating From 2.x
+
+Version 3.0 targets .NET 10 and depends on `Raycynix.Extensions.Messaging` 3.0. Existing registration and request APIs remain compatible.

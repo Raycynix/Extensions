@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+
+        <Version>3.0.0</Version>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.MTP" Version="10.0.1">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="FluentAssertions" Version="8.10.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1"/>
+        <PackageReference Include="Serilog" Version="4.4.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog\Raycynix.Extensions.Serilog.csproj"/>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog.Elastic\Raycynix.Extensions.Serilog.Elastic.csproj"/>
+        <ProjectReference Include="..\..\src\Raycynix.Extensions.Serilog.Aspire\Raycynix.Extensions.Serilog.Aspire.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="obj\" />
+    </ItemGroup>
+
+</Project>

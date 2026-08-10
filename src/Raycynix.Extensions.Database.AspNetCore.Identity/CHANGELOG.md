@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Updated default, generic, and custom Identity contexts to use `DatabaseOptions`.
+- Updated configuration examples to the `DatabaseOptions` and provider-specific options section names.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

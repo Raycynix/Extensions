@@ -5,7 +5,7 @@
 ## What it contains
 
 - `AddRaycynixObservability(...)`
-- registration of tracing and metrics services
+- registration of tracing and the standard `IMeterFactory` metrics services
 - `IOperationContext` registration
 
 ## What it does not contain
@@ -20,15 +20,17 @@
 builder.Services.AddRaycynixObservability();
 ```
 
+Raycynix components emit provider-neutral `System.Diagnostics.Metrics` instruments. Configure an OpenTelemetry exporter in the host that collects the `Raycynix.Extensions` meter.
+
 ```csharp
 public sealed class CheckoutHandler(
     IOperationContext operationContext,
-    Microsoft.Extensions.Logging.ILogger<CheckoutHandler> logger,
-    Raycynix.Extensions.Tracing.Abstractions.Interfaces.ITracer tracer)
+    Microsoft.Extensions.Logging.ILogger<CheckoutHandler> logger)
 {
     public void Handle()
     {
-        using var activity = tracer.StartTrace("checkout.handle");
+        using var activity = Raycynix.Extensions.Tracing.Abstractions.RaycynixTracing
+            .ActivitySource.StartActivity("checkout.handle");
 
         logger.LogInformation(
             "Handling checkout. CorrelationId:{CorrelationId} TraceId:{TraceId}",
@@ -38,7 +40,7 @@ public sealed class CheckoutHandler(
 }
 ```
 
-`AddRaycynixObservability()` does not register `Raycynix.Extensions.Logging`. Applications can use any provider that works with `Microsoft.Extensions.Logging`.
+`AddRaycynixObservability()` does not register `Raycynix.Extensions.Serilog`. Applications can use any provider that works with `Microsoft.Extensions.Logging`.
 
 For ASP.NET Core integration, use `Raycynix.Extensions.Observability.AspNetCore`.
 `AddRaycynixAspNetCoreObservability(...)` already calls `AddRaycynixObservability()` for you.

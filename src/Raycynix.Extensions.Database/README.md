@@ -40,7 +40,7 @@ Exactly one provider must be registered:
 
 ```json
 {
-  "DatabaseConfiguration": {
+  "DatabaseOptions": {
     "ConnectionString": "Host=localhost;Port=5432;Database=app;Username=app;Password=secret",
     "UseMigrations": true,
     "EnsureCreated": false,
@@ -54,12 +54,12 @@ Exactly one provider must be registered:
 }
 ```
 
-Provider-specific settings are nested under `DatabaseConfiguration`:
+Provider-specific settings are nested under `DatabaseOptions`:
 
 ```json
 {
-  "DatabaseConfiguration": {
-    "PostgreSqlConfiguration": {
+  "DatabaseOptions": {
+    "PostgreSqlOptions": {
       "Pooling": true,
       "MinimumPoolSize": 5,
       "MaximumPoolSize": 50,
@@ -74,7 +74,7 @@ Provider packages validate their own structured connection requirements before b
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Database registration, initialization, migrations, creation, and model configuration emit operational diagnostics. Connection strings, usernames, passwords, and provider secrets are never logged.
 
@@ -100,7 +100,7 @@ public sealed class AppDatabaseContext : DbContext, IRaycynixDatabaseContext
 
     public AppDatabaseContext(
         DbContextOptions options,
-        DatabaseConfiguration config,
+        DatabaseOptions config,
         IDatabaseModelConfigurator modelConfigurator,
         IServiceProvider serviceProvider)
         : base(options)
@@ -163,7 +163,7 @@ builder.Services
     .AddPostgreSql();
 ```
 
-If `AddRaycynixDatabase` is called more than once with the same context, only the first call may configure `DatabaseConfiguration`. Later calls can add assemblies but cannot pass another `setup` callback.
+If `AddRaycynixDatabase` is called more than once with the same context, only the first call may configure `DatabaseOptions`. Later calls can add assemblies but cannot pass another `setup` callback.
 
 ## Configurators
 
@@ -215,3 +215,11 @@ builder.Services
     .AddPostgreSql()
     .AddObservability();
 ```
+
+## Migrating From 2.x
+
+- Replace `DatabaseConfiguration` with `DatabaseOptions`.
+- Replace `ConnectionConfiguration` and the nested `ConnectionConfiguration` key with `ConnectionOptions`.
+- Import shared settings from `Raycynix.Extensions.Database.Abstractions.Options`.
+- Rename the root configuration section from `DatabaseConfiguration` to `DatabaseOptions`.
+- Rename provider sections to their options type names, for example `PostgreSqlOptions` or `SqliteOptions`.

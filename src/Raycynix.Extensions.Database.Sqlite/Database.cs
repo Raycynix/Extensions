@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.Sqlite.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.Sqlite.Options;
 using Raycynix.Extensions.Database.Sqlite.Internal;
 
 namespace Raycynix.Extensions.Database.Sqlite;
@@ -22,17 +22,18 @@ public static class Database
     /// <returns>The same builder instance for chaining.</returns>
     public static IDatabaseBuilder AddSqlite(
         this IDatabaseBuilder builder,
-        Action<SqliteConfiguration>? configure = null)
+        Action<SqliteOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddRaycynixConfiguration<SqliteConfiguration>(
+        builder.Services.AddRaycynixConfiguration<SqliteOptions>(
             builder.Configuration,
-            $"{nameof(DatabaseConfiguration)}:{nameof(SqliteConfiguration)}",
+            $"{nameof(DatabaseOptions)}:{nameof(SqliteOptions)}",
             configurePostBind: configure);
+        builder.Services.AddRaycynixConfigurationValidator<SqliteOptions, SqliteOptionsValidator>();
 
-        builder.Services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<SqliteConfiguration>>().Current);
+        builder.Services.TryAddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<SqliteOptions>>().Current);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<IDatabaseProviderRegistration, SqliteDatabaseProviderRegistration>());

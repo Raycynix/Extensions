@@ -26,8 +26,18 @@ Mapped exceptions are written as structured JSON responses. For example, a mappe
 
 This package depends on `Raycynix.Extensions.Exceptions` for the core exception mapping and retry services.
 
+Public responses contain trace and correlation identifiers, request path and method, error details, validation errors, and retry hints when applicable. Raw query strings, user identifiers, secure details, and internal execution context are never included.
+
+`IOperationContext` is optional. Register it when correlation metadata should be added to responses and logs.
+
 ## Logging
 
 The middleware uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
 
 Diagnostics include exception category, error code, trace identifiers, method, path, endpoint, whether a query string was present, and masked secure details. Raw query string values are not logged.
+
+## Migrating From 2.x
+
+- Public JSON responses no longer contain `queryString` or `context`.
+- Client-aborted request cancellation is propagated through the ASP.NET Core pipeline.
+- Applications no longer need to register `IOperationContext` unless correlation metadata is required.

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Infrastructure;
 
@@ -26,12 +26,12 @@ public static class Database
         /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
         /// <typeparam name="TMarker">A marker type from the assembly that contributes EF Core configurators.</typeparam>
         /// <typeparam name="TMigrationMarker">A marker type from the assembly that contains EF Core migrations.</typeparam>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase<TContext, TMarker, TMigrationMarker>(
             IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseOptions>? setup = null)
             where TContext : DbContext, IRaycynixDatabaseContext
         {
             var migrationsAssembly = typeof(TMigrationMarker).Assembly;
@@ -51,12 +51,12 @@ public static class Database
         /// </summary>
         /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
         /// <typeparam name="TMarker">A marker type from the assembly to register for configurators and migrations.</typeparam>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase<TContext, TMarker>(
             IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseOptions>? setup = null)
             where TContext : DbContext, IRaycynixDatabaseContext
         {
             var assembly = typeof(TMarker).Assembly;
@@ -73,7 +73,7 @@ public static class Database
         /// Registers the Raycynix database infrastructure using explicit model and migrations assemblies.
         /// </summary>
         /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="migrationsAssembly">The assembly that contains EF Core migrations.</param>
         /// <param name="modelAssembly">The assembly that contributes EF Core configurators.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
@@ -82,7 +82,7 @@ public static class Database
             IConfiguration configuration,
             Assembly migrationsAssembly,
             Assembly modelAssembly,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseOptions>? setup = null)
             where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(migrationsAssembly);
@@ -101,14 +101,14 @@ public static class Database
         /// that contributes EF Core configurators and contains EF Core migrations.
         /// </summary>
         /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="assembly">The assembly to register for configurators and migrations.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase<TContext>(
             IConfiguration configuration,
             Assembly assembly,
-            Action<DatabaseConfiguration>? setup = null)
+            Action<DatabaseOptions>? setup = null)
             where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(assembly);
@@ -125,7 +125,7 @@ public static class Database
         /// Registers the Raycynix database infrastructure using a custom context type.
         /// </summary>
         /// <typeparam name="TContext">The concrete Raycynix database context type to register.</typeparam>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <param name="registerCallerAssembly">
         /// The entry or caller assembly is always used as the default EF Core migrations assembly.
@@ -134,7 +134,7 @@ public static class Database
         /// </param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase<TContext>(IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null,
+            Action<DatabaseOptions>? setup = null,
             bool registerCallerAssembly = true) where TContext : DbContext, IRaycynixDatabaseContext
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -153,7 +153,7 @@ public static class Database
         /// <summary>
         /// Registers the Raycynix database infrastructure using the default <see cref="RaycynixDatabaseContext"/>.
         /// </summary>
-        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseConfiguration"/>.</param>
+        /// <param name="configuration">The application configuration used to bind <see cref="DatabaseOptions"/>.</param>
         /// <param name="setup">An optional callback for adjusting the bound database configuration.</param>
         /// <param name="registerCallerAssembly">
         /// The entry or caller assembly is always used as the default EF Core migrations assembly.
@@ -162,7 +162,7 @@ public static class Database
         /// </param>
         /// <returns>A builder that can be used to extend the database registration.</returns>
         public IDatabaseBuilder AddRaycynixDatabase(IConfiguration configuration,
-            Action<DatabaseConfiguration>? setup = null, bool registerCallerAssembly = true)
+            Action<DatabaseOptions>? setup = null, bool registerCallerAssembly = true)
         {
             return services.AddRaycynixDatabase<RaycynixDatabaseContext>(
                 configuration,

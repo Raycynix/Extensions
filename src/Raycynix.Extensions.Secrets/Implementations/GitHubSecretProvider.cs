@@ -10,6 +10,9 @@ public sealed class GitHubSecretProvider : ISecretProvider
     /// <inheritdoc />
     public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        cancellationToken.ThrowIfCancellationRequested();
+
         var normalizedKey = key
             .Replace(':', '_')
             .Replace('.', '_')

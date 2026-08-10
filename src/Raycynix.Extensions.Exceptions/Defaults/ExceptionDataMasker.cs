@@ -31,6 +31,20 @@ public class ExceptionDataMasker : IExceptionDataMasker
         "PrivateKey"
     };
 
+    private static readonly string[] _sensitiveKeyFragments =
+    [
+        "Password",
+        "Token",
+        "Secret",
+        "ApiKey",
+        "AccessKey",
+        "Authorization",
+        "Cookie",
+        "ConnectionString",
+        "CardNumber",
+        "PrivateKey"
+    ];
+
     /// <summary>
     /// Masks sensitive values in the supplied object graph.
     /// </summary>
@@ -64,7 +78,7 @@ public class ExceptionDataMasker : IExceptionDataMasker
                 foreach (var key in dictionary.Keys)
                 {
                     var keyName = key?.ToString();
-                    maskedDict[key!] = keyName is not null && _sensitiveKeys.Contains(keyName)
+                    maskedDict[key!] = keyName is not null && IsSensitiveKey(keyName)
                         ? MaskedValue
                         : MaskInternal(dictionary[key!], visited);
                 }
@@ -102,12 +116,30 @@ public class ExceptionDataMasker : IExceptionDataMasker
                 value = "[Unavailable]";
             }
 
-            result[prop.Name] = _sensitiveKeys.Contains(prop.Name)
+            result[prop.Name] = IsSensitiveKey(prop.Name)
                 ? MaskedValue
                 : MaskInternal(value, visited);
         }
 
         return result;
+    }
+
+    private static bool IsSensitiveKey(string key)
+    {
+        if (_sensitiveKeys.Contains(key))
+        {
+            return true;
+        }
+
+        if (_sensitiveKeyFragments.Any(fragment => key.Contains(fragment, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return key.StartsWith("Pin", StringComparison.OrdinalIgnoreCase) ||
+               key.EndsWith("Pin", StringComparison.OrdinalIgnoreCase) ||
+               key.StartsWith("Cvv", StringComparison.OrdinalIgnoreCase) ||
+               key.EndsWith("Cvv", StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class ReferenceEqualityComparer : IEqualityComparer<object>

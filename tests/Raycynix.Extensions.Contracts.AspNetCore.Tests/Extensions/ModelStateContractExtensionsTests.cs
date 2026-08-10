@@ -25,4 +25,17 @@ public sealed class ModelStateContractExtensionsTests
         error.ValidationErrors.Should().ContainSingle();
         error.ValidationErrors.Single().Field.Should().Be("pageSize");
     }
+
+    /// <summary>
+    /// Verifies that the generated top-level error identity cannot be empty.
+    /// </summary>
+    [Fact]
+    public void ToErrorContract_ShouldRejectEmptyErrorCode()
+    {
+        var modelState = new ModelStateDictionary();
+
+        var action = () => modelState.ToErrorContract(code: string.Empty);
+
+        action.Should().Throw<ArgumentException>();
+    }
 }

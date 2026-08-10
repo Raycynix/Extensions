@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.PostgreSql.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.PostgreSql.Options;
 using Raycynix.Extensions.Database.PostgreSql.Internal;
 
 namespace Raycynix.Extensions.Database.PostgreSql;
@@ -22,17 +22,18 @@ public static class Database
     /// <returns>The same builder instance for chaining.</returns>
     public static IDatabaseBuilder AddPostgreSql(
         this IDatabaseBuilder builder,
-        Action<PostgreSqlConfiguration>? configure = null)
+        Action<PostgreSqlOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddRaycynixConfiguration<PostgreSqlConfiguration>(
+        builder.Services.AddRaycynixConfiguration<PostgreSqlOptions>(
             builder.Configuration,
-            $"{nameof(DatabaseConfiguration)}:{nameof(PostgreSqlConfiguration)}",
+            $"{nameof(DatabaseOptions)}:{nameof(PostgreSqlOptions)}",
             configurePostBind: configure);
+        builder.Services.AddRaycynixConfigurationValidator<PostgreSqlOptions, PostgreSqlOptionsValidator>();
 
-        builder.Services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<PostgreSqlConfiguration>>().Current);
+        builder.Services.TryAddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<PostgreSqlOptions>>().Current);
 
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IDatabaseProviderRegistration, PostgreSqlDatabaseProviderRegistration>());

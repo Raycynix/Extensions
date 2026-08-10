@@ -18,11 +18,18 @@ public class ContractMetadata
     /// <summary>
     /// Gets a value indicating whether the metadata contains a canonical name and a valid version.
     /// </summary>
-    public bool HasIdentity => !string.IsNullOrWhiteSpace(Name) && Version.IsValid();
+    public bool HasIdentity => !string.IsNullOrWhiteSpace(Name) && Version?.IsValid() == true;
 
     /// <inheritdoc />
     public override string ToString()
     {
-        return string.IsNullOrWhiteSpace(Name) ? Version.ToString() : $"{Name}:{Version}";
+        var version = Version?.ToString() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            return version;
+        }
+
+        return string.IsNullOrEmpty(version) ? Name : $"{Name}:{version}";
     }
 }

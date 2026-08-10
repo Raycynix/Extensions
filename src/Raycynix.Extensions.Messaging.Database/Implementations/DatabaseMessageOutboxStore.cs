@@ -72,17 +72,17 @@ internal sealed class DatabaseMessageOutboxStore(
         var entities = await databaseContext.Set<MessagingOutboxEntryEntity>()
             .AsNoTracking()
             .Where(entry =>
-                entry.Status == (int)MessageOutboxStatus.Pending ||
-                entry.Status == (int)MessageOutboxStatus.Failed ||
-                entry.Status == (int)MessageOutboxStatus.Dispatching)
+                (entry.Status == (int)MessageOutboxStatus.Pending ||
+                 entry.Status == (int)MessageOutboxStatus.Failed ||
+                 entry.Status == (int)MessageOutboxStatus.Dispatching) &&
+                entry.NextAttemptAt <= asOf)
+            .OrderBy(entry => entry.NextAttemptAt)
+            .ThenBy(entry => entry.CreatedAt)
+            .Take(maxCount)
             .ToArrayAsync(cancellationToken)
             .ConfigureAwait(false);
 
         var available = entities
-            .Where(entry => entry.NextAttemptAt <= asOf)
-            .OrderBy(entry => entry.NextAttemptAt)
-            .ThenBy(entry => entry.CreatedAt)
-            .Take(maxCount)
             .Select(Map)
             .ToArray();
 

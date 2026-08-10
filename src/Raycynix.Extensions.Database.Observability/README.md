@@ -5,8 +5,8 @@ Optional tracing and metrics integration for Raycynix database infrastructure op
 ## What It Provides
 
 - `AddObservability()`
-- an `IDatabaseObservability` implementation backed by Raycynix tracing and metrics abstractions
-- operation counters with provider, operation, and status labels
+- an `IDatabaseObservability` implementation backed by Raycynix tracing and `System.Diagnostics.Metrics`
+- operation counters with named provider, operation, and status tags
 - duration histograms for observed database operations
 - trace tags for provider and operation names
 
@@ -32,7 +32,7 @@ The package observes infrastructure operations such as:
 - EF Core migrations
 - model creation
 
-Metrics use the `raycynix_database_*` prefix.
+Metrics use the `raycynix.database.*` prefix and the shared `Raycynix.Extensions` meter. Register `IMeterFactory` through `AddRaycynixMetrics()` or the observability packages to enable them.
 
 ## Logging
 

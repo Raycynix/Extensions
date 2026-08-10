@@ -15,9 +15,11 @@ public sealed class ContractAttribute : Attribute
     /// <param name="version">The semantic contract version.</param>
     public ContractAttribute(string name, string version)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
         Metadata = new ContractMetadata
         {
-            Name = name,
+            Name = name.Trim(),
             Version = ContractVersion.Parse(version)
         };
     }

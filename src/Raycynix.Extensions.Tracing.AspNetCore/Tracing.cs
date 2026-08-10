@@ -1,20 +1,40 @@
-using Microsoft.AspNetCore.Builder;
-using Raycynix.Extensions.Tracing.AspNetCore.Middleware;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Trace;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Tracing.AspNetCore;
 
 /// <summary>
-/// Provides middleware extensions for the Raycynix tracing package.
+/// Provides OpenTelemetry tracing integration for ASP.NET Core applications.
 /// </summary>
 public static class Tracing
 {
     /// <summary>
-    /// Adds the Raycynix tracing middleware to the ASP.NET Core request pipeline.
+    /// Registers the Raycynix activity source and ASP.NET Core request instrumentation with OpenTelemetry.
     /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The configured application builder.</returns>
-    public static IApplicationBuilder UseRaycynixTracing(this IApplicationBuilder app)
+    /// <param name="services">The service collection to update.</param>
+    /// <param name="configure">An optional callback for adding exporters or additional instrumentation.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
+    public static IServiceCollection AddRaycynixAspNetCoreTracing(
+        this IServiceCollection services,
+        Action<TracerProviderBuilder>? configure = null)
     {
-        return app.UseMiddleware<TracingMiddleware>();
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddRaycynixTracing();
+        services.Configure<LoggerFactoryOptions>(options =>
+            options.ActivityTrackingOptions |= ActivityTrackingOptions.TraceId | ActivityTrackingOptions.SpanId);
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddSource(RaycynixTracing.SourceName)
+                    .AddAspNetCoreInstrumentation();
+
+                configure?.Invoke(tracing);
+            });
+
+        return services;
     }
 }

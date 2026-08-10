@@ -34,13 +34,13 @@ Register `Raycynix.Extensions.Database`, exactly one provider package, and any r
 
 ```json
 {
-  "DatabaseConfiguration": {
-    "ConnectionConfiguration": {
+  "DatabaseOptions": {
+    "ConnectionOptions": {
       "Name": "app.db"
     },
     "EnsureCreated": true,
     "UseMigrations": false,
-    "SqliteConfiguration": {
+    "SqliteOptions": {
       "CommandTimeoutSeconds": 30
     }
   }

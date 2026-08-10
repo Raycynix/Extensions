@@ -2,12 +2,19 @@
 
 `Raycynix.Extensions.Configuration` contains the core typed-configuration registration helpers for Raycynix applications.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Built on `Microsoft.Extensions.Configuration` and `Microsoft.Extensions.Options` 10.x
+
 ## What it contains
 
 - `AddRaycynixEnvironment()`
 - `AddRaycynixEnvironment(string)`
 - `AddRaycynixConfigurationSources(...)`
 - `UseRaycynixConfigurationSources(...)`
+- `AddEnvFile(...)`
 - `AddRaycynixFeatureFlags(...)`
 - `AddRaycynixConfiguration<TOptions>(...)`
 - `ConfigureRaycynixConfigurationDiagnostics(...)`
@@ -23,6 +30,7 @@
 - typed configuration binding based on the standard Options pipeline
 - standard environment abstraction based on `IHostEnvironment`
 - standard configuration source ordering
+- optional `.env` loading enabled by default
 - feature flag access through `IFeatureFlagAccessor`
 - named options registration through `optionsName`
 - required-section validation through `requireSection`
@@ -34,6 +42,7 @@
 - diagnostics through `IConfigurationDiagnostics`
 - redacted configuration snapshots through `IConfigurationRedactor`
 - optional Microsoft.Extensions.Logging diagnostics for configuration reload tracking
+- source setup customization through `ConfigurationSourcesOptions`
 
 ## What it does not contain
 
@@ -50,6 +59,7 @@ builder.Configuration.UseRaycynixConfigurationSources(options =>
     options.BaseFileName = "appsettings";
     options.EnvironmentName = builder.Environment.EnvironmentName;
     options.IncludeUserSecrets = builder.Environment.IsDevelopment();
+    options.IncludeEnvFile = true;
 });
 
 builder.Services.AddRaycynixEnvironment();
@@ -83,6 +93,42 @@ builder.Services.ConfigureRaycynixConfigurationDiagnostics(options =>
 });
 ```
 
+## Dotenv Files
+
+The standard source setup loads an optional `.env` file from `ConfigurationSourcesOptions.BasePath`.
+No additional registration is required:
+
+```dotenv
+Database__Host=localhost
+Database__Port=5432
+API_TOKEN="development token"
+```
+
+Double underscores map to configuration sections, so `Database__Host` is available as
+`configuration["Database:Host"]`. Blank lines, comments, `export KEY=value`, single-quoted values,
+double-quoted values, and inline comments are supported.
+
+Use a different file name, require the file, or disable dotenv loading through source options:
+
+```csharp
+builder.Configuration.UseRaycynixConfigurationSources(options =>
+{
+    options.EnvFileName = ".env.local";
+    options.EnvFileOptional = false;
+    options.IncludeEnvFile = true;
+});
+```
+
+For standalone use, add a dotenv file directly:
+
+```csharp
+configurationBuilder.AddEnvFile(".env", optional: true, reloadOnChange: false);
+```
+
+Dotenv values are added to configuration only; the provider does not mutate process environment
+variables. Keep secrets out of source control. The repository ignores `.env` and `.env.*`, while
+allowing `.env.example` templates.
+
 ## appsettings.json
 
 Typed options bind from a section named after the options type by default:
@@ -100,6 +146,17 @@ Typed options bind from a section named after the options type by default:
     }
   }
 }
+```
+
+Nested paths can use the same convention without repeating type names as string literals:
+
+```csharp
+var sectionPath =
+    ConfigurationSectionPath.Combine<ParentOptions, ChildOptions>();
+
+builder.Services.AddRaycynixConfiguration<ChildOptions>(
+    builder.Configuration,
+    sectionName: sectionPath);
 ```
 
 You can override the section name explicitly when needed:
@@ -237,7 +294,7 @@ builder.Services.AddRaycynixConfigurationRedactor((key, value) =>
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Runtime configuration reload tracking writes operational decisions at `Information` and `Warning`, handler failures at `Error`, and detailed lifecycle diagnostics at `Debug`. Configuration validation and diagnostics snapshot access also emit Debug/Warning events without logging configuration values.
 
@@ -293,8 +350,9 @@ The standard source order is:
 1. `appsettings.json`
 2. `appsettings.{Environment}.json`
 3. user secrets when enabled
-4. environment variables
-5. command-line arguments
+4. `.env` when enabled
+5. environment variables
+6. command-line arguments
 
 The standard environment names are:
 

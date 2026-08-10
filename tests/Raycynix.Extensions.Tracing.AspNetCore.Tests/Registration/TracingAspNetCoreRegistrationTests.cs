@@ -1,24 +1,37 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Raycynix.Extensions.Tracing.AspNetCore.Tests.Registration;
 
 /// <summary>
-/// Covers registration-style behavior for the ASP.NET Core tracing package.
+/// Covers OpenTelemetry ASP.NET Core tracing registration.
 /// </summary>
 public sealed class TracingAspNetCoreRegistrationTests
 {
-    /// <summary>
-    /// Verifies that the middleware extension returns the same application builder for chaining.
-    /// </summary>
     [Fact]
-    public void UseRaycynixTracing_ShouldReturnApplicationBuilder()
+    public void AddRaycynixAspNetCoreTracing_ShouldInvokeProviderConfiguration()
     {
-        var builder = WebApplication.CreateBuilder();
-        var app = builder.Build();
+        var services = new ServiceCollection();
+        var invoked = false;
 
-        var result = app.UseRaycynixTracing();
+        services.AddRaycynixAspNetCoreTracing(_ => invoked = true);
 
-        result.Should().BeSameAs(app);
+        invoked.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AddRaycynixAspNetCoreTracing_ShouldEnableStandardActivityLoggingScopes()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddRaycynixAspNetCoreTracing();
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<LoggerFactoryOptions>>().Value;
+
+        options.ActivityTrackingOptions.Should().HaveFlag(ActivityTrackingOptions.TraceId);
+        options.ActivityTrackingOptions.Should().HaveFlag(ActivityTrackingOptions.SpanId);
     }
 }

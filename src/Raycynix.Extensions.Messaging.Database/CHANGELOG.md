@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Moved outbox availability, retention, ordering, and batch limits into provider-translated SQL queries.
+- Persisted messaging timestamps as UTC ticks to provide consistent comparisons and ordering across SQLite, PostgreSQL, SQL Server, and MySQL.
+- Added status/timestamp indexes for inbox and outbox retention cleanup queries.
+
+### Fixed
+- Detached failed concurrent inbox inserts before loading and reclaiming the winning row.
+
+### Migration
+- Existing inbox and outbox timestamp columns must be converted to signed 64-bit UTC tick values when upgrading from 2.x.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

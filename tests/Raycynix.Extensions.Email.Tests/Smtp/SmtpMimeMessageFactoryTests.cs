@@ -1,7 +1,7 @@
 using FluentAssertions;
 using MimeKit;
 using Raycynix.Extensions.Email.Abstractions.Models;
-using Raycynix.Extensions.Email.Configurations;
+using Raycynix.Extensions.Email.Options;
 using Raycynix.Extensions.Email.Smtp.Internal;
 
 namespace Raycynix.Extensions.Email.Tests.Smtp;
@@ -17,7 +17,7 @@ public sealed class SmtpMimeMessageFactoryTests
     [Fact]
     public async Task CreateAsync_ShouldPutContentIdAttachmentsIntoLinkedResources()
     {
-        var factory = new SmtpMimeMessageFactory(new EmailConfiguration
+        var factory = new SmtpMimeMessageFactory(new EmailOptions
         {
             DefaultFromAddress = "sender@example.com"
         });
@@ -42,7 +42,7 @@ public sealed class SmtpMimeMessageFactoryTests
             ]
         };
 
-        var mimeMessage = await factory.CreateAsync(message, TestContext.Current.CancellationToken);
+        using var mimeMessage = await factory.CreateAsync(message, TestContext.Current.CancellationToken);
 
         mimeMessage.Body.Should().NotBeNull();
         var related = EnumerateMimeEntities(mimeMessage.Body!)
@@ -59,6 +59,47 @@ public sealed class SmtpMimeMessageFactoryTests
         linkedResource.ContentType.MimeType.Should().Be("image/png");
         attachments.Should().ContainSingle(part => part.FileName == "document.txt");
         attachments.Should().NotContain(part => part.ContentId == "logo");
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldKeepAttachmentStreamUntilMessageIsDisposed()
+    {
+        var factory = new SmtpMimeMessageFactory(new EmailOptions
+        {
+            DefaultFromAddress = "sender@example.com"
+        });
+        var stream = new TrackingMemoryStream([1, 2, 3]);
+        var message = new EmailMessage
+        {
+            To = [new EmailAddress("recipient@example.com")],
+            Subject = "Streamed attachment",
+            Body = EmailBody.FromPlainText("Body"),
+            Attachments =
+            [
+                new EmailAttachment
+                {
+                    FileName = "data.bin",
+                    OpenReadAsync = _ => ValueTask.FromResult<Stream>(stream)
+                }
+            ]
+        };
+
+        var mimeMessage = await factory.CreateAsync(message, TestContext.Current.CancellationToken);
+
+        stream.IsDisposed.Should().BeFalse();
+        mimeMessage.Dispose();
+        stream.IsDisposed.Should().BeTrue();
+    }
+
+    private sealed class TrackingMemoryStream(byte[] content) : MemoryStream(content)
+    {
+        public bool IsDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            IsDisposed = true;
+            base.Dispose(disposing);
+        }
     }
 
     private static IEnumerable<MimeEntity> EnumerateMimeEntities(MimeEntity entity)

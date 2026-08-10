@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
-        <PackageReleaseNotes>Starts unified versioning for Raycynix packages from this release and uses provider-agnostic Microsoft.Extensions.Logging scopes for trace diagnostics.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces custom request middleware with stable OpenTelemetry ASP.NET Core instrumentation and standard Microsoft.Extensions.Logging activity tracking scopes.</PackageReleaseNotes>
 
-        <Description>ASP.NET Core middleware integration for Raycynix tracing, request-level trace enrichment, and distributed correlation propagation.</Description>
-        <PackageTags>raycynix;tracing;aspnetcore;middleware;http;correlation;propagation;activitysource;dotnet</PackageTags>
+        <Description>Stable OpenTelemetry ASP.NET Core tracing instrumentation for the shared Raycynix ActivitySource, OTLP exporters, Aspire, and logging correlation.</Description>
+        <PackageTags>raycynix;tracing;aspnetcore;opentelemetry;otlp;aspire;http;correlation;activitysource;instrumentation;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -23,6 +23,8 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0"/>
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0"/>
     </ItemGroup>
 
 </Project>

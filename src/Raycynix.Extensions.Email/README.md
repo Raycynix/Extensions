@@ -5,12 +5,14 @@ Shared email registration infrastructure for Raycynix applications.
 ## What It Provides
 
 - `AddRaycynixEmail(...)`
-- `EmailConfiguration`
+- `EmailOptions`
 - email provider resolution
 - email builder support for provider packages
 - optional Microsoft `ILogger<T>` diagnostics for provider resolution
 
 This package registers the shared email infrastructure. A provider package, such as `Raycynix.Extensions.Email.Smtp`, must be added to provide an `IEmailSender` implementation.
+
+`EmailOptions` is bound from the conventional `EmailOptions` section and validated during application startup.
 
 ## Usage
 
@@ -28,7 +30,7 @@ builder.Services
 
 ```json
 {
-  "EmailConfiguration": {
+  "EmailOptions": {
     "DefaultFromAddress": "no-reply@example.com",
     "DefaultFromDisplayName": "Example App",
     "DefaultReplyToAddress": "support@example.com",
@@ -36,6 +38,12 @@ builder.Services
   }
 }
 ```
+
+## Migrating From 2.x
+
+- Replace `EmailConfiguration` with `EmailOptions`.
+- Replace the `Raycynix.Extensions.Email.Configurations` namespace with `Raycynix.Extensions.Email.Options`.
+- Rename the configuration section from `EmailConfiguration` to `EmailOptions`.
 
 ## Logging
 

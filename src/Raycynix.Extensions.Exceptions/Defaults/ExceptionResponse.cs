@@ -15,10 +15,8 @@ public record ExceptionResponse(
     string? Path,
     string? Method,
     string? Endpoint,
-    string? QueryString,
     DateTimeOffset TimestampUtc,
-    IErrorExecutionContext? Context,
     bool IsTransient,
     int? RetryAfterSeconds,
     IReadOnlyCollection<IExceptionDetail>? Details = null,
-    IDictionary<string, string[]>? ValidationErrors = null) : IExceptionResponse;
+    IReadOnlyDictionary<string, string[]>? ValidationErrors = null) : IExceptionResponse;

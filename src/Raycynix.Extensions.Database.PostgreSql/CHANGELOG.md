@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Renamed `PostgreSqlConfiguration` to `PostgreSqlOptions` and moved it to the `Options` namespace.
+- Changed the provider section to `DatabaseOptions:PostgreSqlOptions`.
+- Added fail-fast validation for pool sizes and command timeout.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

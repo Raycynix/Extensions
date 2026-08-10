@@ -106,7 +106,7 @@ public sealed class MessagingDatabaseProviderModelTests
         services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
 
         var builder = services.AddRaycynixDatabase(
-            BuildDatabaseConfiguration(connectionString),
+            BuildDatabaseOptions(connectionString),
             registerCallerAssembly: false);
         registerProvider(builder);
         services.AddRaycynixDatabaseAssembly(typeof(MessagingInboxEntryEntity).Assembly);
@@ -119,14 +119,14 @@ public sealed class MessagingDatabaseProviderModelTests
     /// </summary>
     /// <param name="connectionString">The provider-specific connection string.</param>
     /// <returns>An in-memory configuration source for the database package.</returns>
-    private static IConfiguration BuildDatabaseConfiguration(string connectionString)
+    private static IConfiguration BuildDatabaseOptions(string connectionString)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = connectionString,
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = connectionString,
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }

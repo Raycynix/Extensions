@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for MySQL provider configuration.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces MySqlConfiguration with MySqlOptions, binds from DatabaseOptions:MySqlOptions, and validates command timeout during options resolution.</PackageReleaseNotes>
 
-        <Description>MySQL provider integration for Raycynix.Extensions.Database with AddMySql registration, provider-specific validation, connection-string composition, and EF Core UseMySQL configuration.</Description>
-        <PackageTags>raycynix;database;mysql;provider;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet</PackageTags>
+        <Description>MySQL EF Core integration with typed MySqlOptions, validated timeouts, connection-string composition, pooling, retries, and migrations.</Description>
+        <PackageTags>raycynix;database;mysql;provider;options;configuration;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -19,13 +19,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.9"/>
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.9"/>
-        <PackageReference Include="System.Security.Permissions" Version="10.0.9"/>
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.10"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.10"/>
+        <PackageReference Include="System.Security.Permissions" Version="10.0.10"/>
         <PackageReference Include="ZstdSharp.Port" Version="0.8.8"/>
         <PackageReference Include="Google.Protobuf" Version="3.35.1"/>
-        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
+        <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10"/>
     </ItemGroup>
 
     <ItemGroup>

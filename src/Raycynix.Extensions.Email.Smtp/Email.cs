@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
-using Raycynix.Extensions.Email.Configurations;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Options;
+using Raycynix.Extensions.Email.Smtp.Options;
 using Raycynix.Extensions.Email.Smtp.Internal;
 
 namespace Raycynix.Extensions.Email.Smtp;
@@ -22,17 +22,17 @@ public static class Email
     /// <returns>The same builder instance for chaining.</returns>
     public static IEmailBuilder AddSmtp(
         this IEmailBuilder builder,
-        Action<SmtpConfiguration>? configure = null)
+        Action<SmtpOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddRaycynixConfiguration<SmtpConfiguration>(
+        builder.Services.AddRaycynixConfiguration<SmtpOptions>(
             builder.Configuration,
-            $"{nameof(EmailConfiguration)}:{nameof(SmtpConfiguration)}",
+            ConfigurationSectionPath.Combine<EmailOptions, SmtpOptions>(),
             configurePostBind: configure);
-        builder.Services.AddRaycynixConfigurationValidator<SmtpConfiguration, SmtpConfigurationValidator>();
+        builder.Services.AddRaycynixConfigurationValidator<SmtpOptions, SmtpOptionsValidator>();
         builder.Services.TryAddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<SmtpConfiguration>>().Current);
+            serviceProvider.GetRequiredService<IConfigurationAccessor<SmtpOptions>>().Current);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<IEmailProviderRegistration, SmtpEmailProviderRegistration>());

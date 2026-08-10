@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.MsSql;
-using Raycynix.Extensions.Database.MsSql.Configurations;
+using Raycynix.Extensions.Database.MsSql.Options;
 
 namespace Raycynix.Extensions.Database.Tests.Registration;
 
@@ -15,17 +15,17 @@ public sealed class MsSqlRegistrationTests
     /// Verifies that SQL Server options bind from the nested database configuration section.
     /// </summary>
     [Fact]
-    public void AddMsSql_ShouldBindOptionsFromDatabaseConfigurationSection()
+    public void AddMsSql_ShouldBindOptionsFromDatabaseOptionsSection()
     {
         var services = new ServiceCollection();
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Server=localhost;Database=test;",
-                ["DatabaseConfiguration:MsSqlServerConfiguration:TrustServerCertificate"] = "false",
-                ["DatabaseConfiguration:MsSqlServerConfiguration:CommandTimeoutSeconds"] = "45",
-                ["DatabaseConfiguration:MsSqlServerConfiguration:MultipleActiveResultSets"] = "true"
+                ["DatabaseOptions:ConnectionString"] = "Server=localhost;Database=test;",
+                ["DatabaseOptions:MsSqlServerOptions:TrustServerCertificate"] = "false",
+                ["DatabaseOptions:MsSqlServerOptions:CommandTimeoutSeconds"] = "45",
+                ["DatabaseOptions:MsSqlServerOptions:MultipleActiveResultSets"] = "true"
             })
             .Build();
 
@@ -33,7 +33,7 @@ public sealed class MsSqlRegistrationTests
             .AddMsSql();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-        var options = serviceProvider.GetRequiredService<MsSqlServerConfiguration>();
+        var options = serviceProvider.GetRequiredService<MsSqlServerOptions>();
 
         options.TrustServerCertificate.Should().BeFalse();
         options.CommandTimeoutSeconds.Should().Be(45);

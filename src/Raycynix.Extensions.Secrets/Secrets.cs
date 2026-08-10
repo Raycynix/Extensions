@@ -1,6 +1,11 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Raycynix.Extensions.Configuration;
+using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Secrets.Implementations;
+using Raycynix.Extensions.Secrets.Internal;
+using Raycynix.Extensions.Secrets.Options;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
 namespace Raycynix.Extensions.Secrets;
@@ -14,19 +19,24 @@ public static class Secrets
     /// Registers the default secret providers and the composite secret resolver.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
+    /// <param name="configuration">The application configuration used to bind <see cref="SecretOptions"/>.</param>
     /// <param name="setup">An optional callback for adjusting secret resolution behavior.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddRaycynixSecrets(
         this IServiceCollection services,
-        Action<SecretOptions>? setup)
+        IConfiguration configuration,
+        Action<SecretOptions>? setup = null)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddOptions<SecretOptions>();
-        if (setup is not null)
-        {
-            services.Configure(setup);
-        }
+        services.TryAddSingleton(configuration);
+        services.AddRaycynixConfiguration<SecretOptions>(
+            configuration,
+            configurePostBind: setup);
+        services.AddRaycynixConfigurationValidator<SecretOptions, SecretOptionsValidator>();
+        services.TryAddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<SecretOptions>>().Current);
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, ConfigurationSecretProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProvider, EnvironmentSecretProvider>());
@@ -39,15 +49,5 @@ public static class Secrets
             serviceProvider.GetRequiredService<CompositeSecretResolver>());
 
         return services;
-    }
-
-    /// <summary>
-    /// Registers the default secret providers and the composite secret resolver.
-    /// </summary>
-    /// <param name="services">The service collection to update.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
-    public static IServiceCollection AddRaycynixSecrets(this IServiceCollection services)
-    {
-        return services.AddRaycynixSecrets(setup: null);
     }
 }

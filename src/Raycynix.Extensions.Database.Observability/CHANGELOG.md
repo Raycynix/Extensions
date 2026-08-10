@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Updated database metrics and tracing integration for the Database 3.0 options contracts.
+- Migrated database instruments to standard `System.Diagnostics.Metrics` with named tags and explicit units.
+- Migrated database spans to the shared standard `ActivitySource` with client activity kinds, tags, and success/error status codes.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

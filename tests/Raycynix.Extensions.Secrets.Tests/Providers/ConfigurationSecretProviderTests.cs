@@ -26,11 +26,7 @@ public sealed class ConfigurationSecretProviderTests
             })
             .Build();
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(configuration);
-        using var serviceProvider = services.BuildServiceProvider();
-
-        var provider = new ConfigurationSecretProvider(serviceProvider);
+        var provider = new ConfigurationSecretProvider(configuration);
 
         var result = await provider.GetSecretAsync(key, TestContext.Current.CancellationToken);
 

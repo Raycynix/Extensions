@@ -1,7 +1,9 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Database.Tests.Observability;
 
@@ -35,38 +37,41 @@ public sealed class DatabaseObservabilityTests
     [Fact]
     public void Methods_ShouldForwardSignalsToTracingAndMetrics()
     {
-        var tracer = new FakeTracer();
-        var counter = new FakeMetricCounter();
-        var histogram = new FakeMetricHistogram();
-        var metricsService = new FakeMetricsService(counter, histogram);
+        using var traces = new ActivityRecorder();
+        using var metrics = new MetricRecorder();
 
         var services = new ServiceCollection();
-        services.AddSingleton<ITracer>(tracer);
-        services.AddSingleton<IMetricsService>(metricsService);
+        services.AddSingleton<IMeterFactory>(metrics);
 
         var observability = CreateObservability(services.BuildServiceProvider());
 
         using (InvokeBeginOperation(observability, "postgresql", "migrate"))
         {
+            InvokeAddTag(observability, "database.configurator.count", "2");
+            InvokeRecordSuccess(observability, "postgresql", "migrate");
+            InvokeRecordFailure(observability, "postgresql", "migrate");
         }
 
-        InvokeRecordSuccess(observability, "postgresql", "migrate");
-        InvokeRecordFailure(observability, "postgresql", "migrate");
-        InvokeAddTag(observability, "database.configurator.count", "2");
+        traces.Stopped.Should().ContainSingle();
+        var activity = traces.Stopped[0];
+        activity.OperationName.Should().Be("database.migrate");
+        activity.Kind.Should().Be(ActivityKind.Client);
+        activity.GetTagItem("raycynix.database.provider").Should().Be("postgresql");
+        activity.GetTagItem("raycynix.database.operation").Should().Be("migrate");
+        activity.GetTagItem("database.configurator.count").Should().Be("2");
+        activity.GetTagItem("raycynix.database.status").Should().Be("failure");
+        activity.Status.Should().Be(ActivityStatusCode.Error);
 
-        tracer.StartedTraces.Should().ContainSingle();
-        tracer.StartedTraces[0].Name.Should().Be("database.migrate");
-        tracer.StartedTraces[0].Tags.Should().Contain(new KeyValuePair<string, string>("database.provider", "postgresql"));
-        tracer.StartedTraces[0].Tags.Should().Contain(new KeyValuePair<string, string>("database.operation", "migrate"));
-        tracer.Tags.Should().Contain(new KeyValuePair<string, string>("database.configurator.count", "2"));
-
-        var durationLabels = new[] { "postgresql", "migrate" };
-        var successLabels = new[] { "postgresql", "migrate", "success" };
-        var failureLabels = new[] { "postgresql", "migrate", "failure" };
-
-        histogram.Measurements.Should().ContainSingle(labels => labels.AsEnumerable().SequenceEqual(durationLabels));
-        counter.Increments.Should().Contain(labels => labels.AsEnumerable().SequenceEqual(successLabels));
-        counter.Increments.Should().Contain(labels => labels.AsEnumerable().SequenceEqual(failureLabels));
+        metrics.DoubleMeasurements.Should().ContainSingle(measurement =>
+            measurement.InstrumentName == "raycynix.database.operation.duration" &&
+            HasTag(measurement.Tags, "raycynix.database.provider", "postgresql") &&
+            HasTag(measurement.Tags, "raycynix.database.operation", "migrate"));
+        metrics.LongMeasurements.Should().Contain(measurement =>
+            measurement.InstrumentName == "raycynix.database.operations" &&
+            HasTag(measurement.Tags, "raycynix.database.status", "success"));
+        metrics.LongMeasurements.Should().Contain(measurement =>
+            measurement.InstrumentName == "raycynix.database.operations" &&
+            HasTag(measurement.Tags, "raycynix.database.status", "failure"));
     }
 
     private static object CreateObservability(IServiceProvider serviceProvider)
@@ -99,81 +104,82 @@ public sealed class DatabaseObservabilityTests
         observability.GetType().GetMethod("AddTag")!.Invoke(observability, [key, value]);
     }
 
-    private sealed class FakeTracer : ITracer
+    private sealed class ActivityRecorder : IDisposable
     {
-        public List<(string Name, Dictionary<string, string> Tags)> StartedTraces { get; } = [];
+        private readonly ActivityListener _listener;
 
-        public List<KeyValuePair<string, string>> Tags { get; } = [];
-
-        public IDisposable StartTrace(string name, Dictionary<string, string>? tags = null)
+        public ActivityRecorder()
         {
-            StartedTraces.Add((name, tags ?? []));
-            return new FakeDisposable();
+            _listener = new ActivityListener
+            {
+                ShouldListenTo = source => source.Name == RaycynixTracing.SourceName,
+                Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+                SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = activity => Stopped.Add(activity)
+            };
+            ActivitySource.AddActivityListener(_listener);
         }
 
-        public void AddTag(string key, string value)
-        {
-            Tags.Add(new KeyValuePair<string, string>(key, value));
-        }
+        public List<Activity> Stopped { get; } = [];
 
-        public void SetBaggage(string key, string value)
-        {
-        }
-
-        public string? GetBaggage(string key)
-        {
-            return null;
-        }
+        public void Dispose() => _listener.Dispose();
     }
 
-    private sealed class FakeMetricsService(FakeMetricCounter counter, FakeMetricHistogram histogram) : IMetricsService
+    private static bool HasTag(
+        IReadOnlyCollection<KeyValuePair<string, object?>> tags,
+        string key,
+        object value)
     {
-        public IMetricCounter CreateCounter(string name, string help, params string[] labelNames)
-        {
-            return counter;
-        }
-
-        public IMetricGauge CreateGauge(string name, string help, params string[] labelNames)
-        {
-            throw new NotSupportedException();
-        }
-
-        public IMetricHistogram CreateHistogram(string name, string help, params string[] labelNames)
-        {
-            return histogram;
-        }
+        return tags.Any(tag => tag.Key == key && Equals(tag.Value, value));
     }
 
-    private sealed class FakeMetricCounter : IMetricCounter
+    private sealed class MetricRecorder : IMeterFactory, IDisposable
     {
-        public List<string[]> Increments { get; } = [];
+        private readonly MeterListener _listener;
+        private readonly List<Meter> _meters = [];
 
-        public void Increment(double value = 1, params string[] labelValues)
+        public MetricRecorder()
         {
-            Increments.Add(labelValues);
+            _listener = new MeterListener
+            {
+                InstrumentPublished = (instrument, listener) =>
+                {
+                    if (instrument.Meter.Name == RaycynixMetrics.MeterName)
+                    {
+                        listener.EnableMeasurementEvents(instrument);
+                    }
+                }
+            };
+            _listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
+                LongMeasurements.Add(new(instrument.Name, value, tags.ToArray())));
+            _listener.SetMeasurementEventCallback<double>((instrument, value, tags, _) =>
+                DoubleMeasurements.Add(new(instrument.Name, value, tags.ToArray())));
+            _listener.Start();
         }
-    }
 
-    private sealed class FakeMetricHistogram : IMetricHistogram
-    {
-        public List<string[]> Measurements { get; } = [];
+        public List<Measurement<long>> LongMeasurements { get; } = [];
+        public List<Measurement<double>> DoubleMeasurements { get; } = [];
 
-        public void Observe(double value, params string[] labelValues)
+        public Meter Create(MeterOptions options)
         {
-            Measurements.Add(labelValues);
+            var meter = new Meter(options);
+            _meters.Add(meter);
+            return meter;
         }
 
-        public IDisposable MeasureDuration(params string[] labelValues)
-        {
-            Measurements.Add(labelValues);
-            return new FakeDisposable();
-        }
-    }
-
-    private sealed class FakeDisposable : IDisposable
-    {
         public void Dispose()
         {
+            _listener.Dispose();
+            foreach (var meter in _meters)
+            {
+                meter.Dispose();
+            }
         }
     }
+
+    private sealed record Measurement<T>(
+        string InstrumentName,
+        T Value,
+        KeyValuePair<string, object?>[] Tags);
+
 }

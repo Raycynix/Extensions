@@ -161,4 +161,48 @@ public sealed class EmailMessageValidationTests
             .Throw<ArgumentException>()
             .WithMessage("Attachment content type must be a valid MIME content type.*");
     }
+
+    /// <summary>
+    /// Verifies that subjects cannot inject MIME headers.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenSubjectContainsLineBreak()
+    {
+        var message = CreateMessage(subject: "Hello\r\nBcc: hidden@example.com");
+
+        var act = message.Validate;
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Subject cannot contain line breaks.*");
+    }
+
+    /// <summary>
+    /// Verifies that custom header values cannot inject additional MIME headers.
+    /// </summary>
+    [Fact]
+    public void Validate_ShouldThrow_WhenHeaderValueContainsLineBreak()
+    {
+        var message = CreateMessage(headers: new Dictionary<string, string>
+        {
+            ["X-Correlation-Id"] = "value\r\nBcc: hidden@example.com"
+        });
+
+        var act = message.Validate;
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Headers cannot contain values with line breaks.");
+    }
+
+    private static EmailMessage CreateMessage(
+        string subject = "Hello",
+        IReadOnlyDictionary<string, string>? headers = null)
+    {
+        return new EmailMessage
+        {
+            To = [new EmailAddress("user@example.com")],
+            Subject = subject,
+            Body = EmailBody.FromPlainText("Hello"),
+            Headers = headers ?? new Dictionary<string, string>()
+        };
+    }
 }

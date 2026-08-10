@@ -1,22 +1,12 @@
 using System.Diagnostics;
-using Raycynix.Extensions.Tracing;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 using Raycynix.Extensions.Tracing.AspNetCore;
-
-using var activityListener = new ActivityListener();
-activityListener.ShouldListenTo = static _ => true;
-activityListener.Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded;
-activityListener.SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded;
-
-ActivitySource.AddActivityListener(activityListener);
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRaycynixTracing();
+builder.Services.AddRaycynixAspNetCoreTracing();
 
 var app = builder.Build();
-
-app.UseRaycynixTracing();
 
 app.MapGet("/", () => Results.Ok(new
 {
@@ -35,19 +25,17 @@ app.MapGet("/trace", (HttpContext httpContext) => Results.Ok(new
     SpanId = Activity.Current?.SpanId.ToString()
 }));
 
-app.MapGet("/orders/{id}", async (string id, ITracer tracer, HttpContext httpContext, CancellationToken cancellationToken) =>
+app.MapGet("/orders/{id}", async (string id, HttpContext httpContext, CancellationToken cancellationToken) =>
 {
-    using (tracer.StartTrace("orders.get", new Dictionary<string, string>
-           {
-               ["order.id"] = id
-           }))
+    using (var activity = RaycynixTracing.ActivitySource.StartActivity("orders.get", ActivityKind.Internal))
     {
-        tracer.SetBaggage("tenant", "alpha");
-        tracer.AddTag("http.route", "/orders/{id}");
+        activity?.SetTag("order.id", id);
+        activity?.SetBaggage("tenant", "alpha");
+        activity?.SetTag("http.route", "/orders/{id}");
 
-        using (tracer.StartTrace("orders.load_payment"))
+        using (var payment = RaycynixTracing.ActivitySource.StartActivity("orders.load_payment"))
         {
-            tracer.AddTag("payment.provider", "demo-gateway");
+            payment?.SetTag("payment.provider", "demo-gateway");
             await Task.Delay(40, cancellationToken);
         }
 
@@ -56,19 +44,17 @@ app.MapGet("/orders/{id}", async (string id, ITracer tracer, HttpContext httpCon
             OrderId = id,
             TraceId = Activity.Current?.TraceId.ToString() ?? httpContext.TraceIdentifier,
             SpanId = Activity.Current?.SpanId.ToString(),
-            Tenant = tracer.GetBaggage("tenant")
+            Tenant = Activity.Current?.GetBaggageItem("tenant")
         });
     }
 });
 
-app.MapGet("/inventory/{sku}", (string sku, ITracer tracer, HttpContext httpContext) =>
+app.MapGet("/inventory/{sku}", (string sku, HttpContext httpContext) =>
 {
-    using (tracer.StartTrace("inventory.get", new Dictionary<string, string>
-           {
-               ["sku"] = sku
-           }))
+    using (var activity = RaycynixTracing.ActivitySource.StartActivity("inventory.get", ActivityKind.Internal))
     {
-        tracer.AddTag("inventory.source", "cache");
+        activity?.SetTag("sku", sku);
+        activity?.SetTag("inventory.source", "cache");
 
         return Results.Ok(new
         {

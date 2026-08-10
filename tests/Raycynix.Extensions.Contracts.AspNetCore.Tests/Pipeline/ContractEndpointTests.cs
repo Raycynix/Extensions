@@ -132,6 +132,21 @@ public sealed class ContractEndpointTests
         context.Response.Headers["X-Contract-Version"].ToString().Should().Be("1.2.0");
     }
 
+    /// <summary>
+    /// Verifies that invalid contract declarations fail while endpoints are configured.
+    /// </summary>
+    [Fact]
+    public void WithContract_ShouldRejectMissingContractName()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var app = builder.Build();
+
+        var action = () => app.MapGet("/invalid", TypedResults.Ok)
+            .WithContract(string.Empty, "1.0.0");
+
+        action.Should().Throw<ArgumentException>();
+    }
+
     private static async Task<WebApplication> CreateApp(Action<WebApplication> configure)
     {
         var builder = WebApplication.CreateBuilder();

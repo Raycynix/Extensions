@@ -6,8 +6,8 @@
 
 - `SecurityContext`
 - `AddRaycynixSecurity(...)`
-- `SecurityConfiguration`
-- `JwtConfiguration`
+- `SecurityOptions`
+- `JwtOptions`
 - DI registration for `ISecurityContext`
 
 ## What it does not contain
@@ -23,16 +23,16 @@
 ```csharp
 builder.Services.AddRaycynixSecurity(builder.Configuration, options =>
 {
-    options.Jwt.Authority = "https://auth.raycynix.com";
-    options.Jwt.Issuer = "raycynix-auth";
-    options.Jwt.Audience = "raycynix-services";
+    options.JwtOptions.Authority = "https://auth.raycynix.com";
+    options.JwtOptions.Issuer = "raycynix-auth";
+    options.JwtOptions.Audience = "raycynix-services";
 });
 ```
 
 ```json
 {
-  "SecurityConfiguration": {
-    "Jwt": {
+  "SecurityOptions": {
+    "JwtOptions": {
       "Authority": "https://auth.raycynix.com",
       "Issuer": "raycynix-auth",
       "Audience": "raycynix-services",
@@ -45,7 +45,16 @@ builder.Services.AddRaycynixSecurity(builder.Configuration, options =>
 }
 ```
 
-The package binds settings from the `SecurityConfiguration` section and allows optional overrides in code.
+The package binds settings from the `SecurityOptions` section and allows optional overrides in code.
+
+Both the root and nested options are available through dependency injection and use the same bound snapshot:
+
+```csharp
+public sealed class TokenService(SecurityOptions security, JwtOptions jwt)
+{
+    public bool UsesSharedSnapshot => ReferenceEquals(security.JwtOptions, jwt);
+}
+```
 
 For ASP.NET Core request binding and web-specific integration, use `Raycynix.Extensions.Security.AspNetCore`.
 
@@ -56,3 +65,11 @@ For secret resolution, use `Raycynix.Extensions.Secrets`.
 This package contains host-agnostic registration, configuration, and the default security context model. Runtime
 authentication and authorization diagnostics belong to host integration packages, so this package does not add a logging
 dependency.
+
+## Migrating From 2.x
+
+- Replace `SecurityConfiguration` with `SecurityOptions`.
+- Replace `JwtConfiguration` with `JwtOptions`.
+- Replace the `Raycynix.Extensions.Security.Configurations` namespace with `Raycynix.Extensions.Security.Options`.
+- Rename the root configuration section from `SecurityConfiguration` to `SecurityOptions` and the nested key from `Jwt` to `JwtOptions`.
+- Remove separate `JwtOptions` binding or construction. `AddRaycynixSecurity(...)` now registers the bound nested options directly.

@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.MsSql.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.MsSql.Options;
 
 namespace Raycynix.Extensions.Database.MsSql.Internal;
 
@@ -19,7 +19,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration(
     public string ProviderName => "sqlserver";
 
     /// <inheritdoc />
-    public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
+    public string ResolveConnectionString(DatabaseOptions configuration, IServiceProvider serviceProvider)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -27,12 +27,12 @@ internal sealed class MsSqlServerDatabaseProviderRegistration(
             return configuration.ConnectionString;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new ArgumentException("Connection configuration is missing.");
 
         var providerConfig = serviceProvider
-                .GetService(typeof(IConfigurationAccessor<MsSqlServerConfiguration>)) as
-            IConfigurationAccessor<MsSqlServerConfiguration>;
+                .GetService(typeof(IConfigurationAccessor<MsSqlServerOptions>)) as
+            IConfigurationAccessor<MsSqlServerOptions>;
 
         var settings = providerConfig?.Current;
         var builder = new SqlConnectionStringBuilder
@@ -58,13 +58,13 @@ internal sealed class MsSqlServerDatabaseProviderRegistration(
     public void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
         var providerConfig = serviceProvider
-                .GetService(typeof(IConfigurationAccessor<MsSqlServerConfiguration>)) as
-            IConfigurationAccessor<MsSqlServerConfiguration>;
+                .GetService(typeof(IConfigurationAccessor<MsSqlServerOptions>)) as
+            IConfigurationAccessor<MsSqlServerOptions>;
 
         options.UseSqlServer(connectionString, sqlOptions =>
         {
@@ -90,7 +90,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration(
     }
 
     /// <inheritdoc />
-    public void Validate(DatabaseConfiguration configuration)
+    public void Validate(DatabaseOptions configuration)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -98,7 +98,7 @@ internal sealed class MsSqlServerDatabaseProviderRegistration(
             return;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new InvalidOperationException("SQL Server connection configuration is missing.");
 
         if (string.IsNullOrWhiteSpace(connection.Host))

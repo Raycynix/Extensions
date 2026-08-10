@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Retry delays and retry/dead-letter publication now observe host shutdown cancellation.
+- `X-Processing-Error` now contains the exception type name instead of the potentially sensitive exception message.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

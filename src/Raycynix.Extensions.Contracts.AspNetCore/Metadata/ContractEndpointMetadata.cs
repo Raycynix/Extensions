@@ -15,6 +15,13 @@ public sealed class ContractEndpointMetadata
     {
         ArgumentNullException.ThrowIfNull(metadata);
 
+        if (!metadata.HasIdentity)
+        {
+            throw new ArgumentException(
+                "Contract metadata must contain a non-empty name and a valid semantic version.",
+                nameof(metadata));
+        }
+
         Metadata = metadata;
     }
 

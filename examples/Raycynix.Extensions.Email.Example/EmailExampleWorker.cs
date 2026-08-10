@@ -14,8 +14,8 @@ internal sealed class EmailExampleWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var options = configuration.GetSection("EmailExample").Get<EmailExampleConfigurations>()
-                      ?? new EmailExampleConfigurations();
+        var options = configuration.GetSection("EmailExample").Get<EmailExampleOptions>()
+                      ?? new EmailExampleOptions();
         var message = CreateMessage(options);
 
         logger.LogInformation("Email example prepared message. ToCount={ToCount}, HasHtml={HasHtml}, AttachmentCount={AttachmentCount}.",
@@ -50,7 +50,7 @@ internal sealed class EmailExampleWorker(
         applicationLifetime.StopApplication();
     }
 
-    private static EmailMessage CreateMessage(EmailExampleConfigurations options)
+    private static EmailMessage CreateMessage(EmailExampleOptions options)
     {
         var attachment = EmailAttachment.FromBytes(
             "welcome.txt",
@@ -76,7 +76,7 @@ internal sealed class EmailExampleWorker(
         };
     }
 
-    private sealed class EmailExampleConfigurations
+    private sealed class EmailExampleOptions
     {
         public bool Send { get; set; }
 

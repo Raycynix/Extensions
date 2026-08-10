@@ -10,7 +10,10 @@ public sealed class TeamCitySecretProvider : ISecretProvider
     /// <inheritdoc />
     public ValueTask<string?> GetSecretAsync(string key, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        cancellationToken.ThrowIfCancellationRequested();
+
         var normalizedKey = key.Replace(':', '.');
-        return ValueTask.FromResult(Environment.GetEnvironmentVariable($"env.{normalizedKey}"));
+        return ValueTask.FromResult(Environment.GetEnvironmentVariable(normalizedKey));
     }
 }

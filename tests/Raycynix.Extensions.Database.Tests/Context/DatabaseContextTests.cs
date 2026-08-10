@@ -22,7 +22,7 @@ public sealed class DatabaseContextTests
     public void Constructor_ShouldApplyChangeTrackerSettingsFromConfiguration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite();
 
@@ -43,7 +43,7 @@ public sealed class DatabaseContextTests
     public void GenericConfigurator_ShouldUseConfiguredTableNameAttribute()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
             .AddAssembly<AttributedEntity>();
@@ -64,7 +64,7 @@ public sealed class DatabaseContextTests
     public void GenericConfigurator_ShouldUseRuntimeTableNameOverride()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new RuntimeAttributedEntityConfiguration("runtime_attributed_entities"));
         services.AddRaycynixDatabase(BuildConfiguration(), registerCallerAssembly: false)
             .AddSqlite()
@@ -122,17 +122,17 @@ public sealed class DatabaseContextTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:EnableLazyLoading"] = "true",
-                ["DatabaseConfiguration:EnableAutoDetectChanges"] = "false",
-                ["DatabaseConfiguration:UseQueryTrackingByDefault"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=test.db",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:EnableLazyLoading"] = "true",
+                ["DatabaseOptions:EnableAutoDetectChanges"] = "false",
+                ["DatabaseOptions:UseQueryTrackingByDefault"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {

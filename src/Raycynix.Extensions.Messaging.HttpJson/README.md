@@ -70,3 +70,7 @@ Notes:
 The HTTP JSON transport uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
 
 Diagnostics cover request send/receive status, inbound processing, mapped failure statuses, and handler lookup failures. Request and response payloads, header values, and authorization data are not logged.
+
+## Migrating From 2.x
+
+Version 3.0 targets .NET 10 and depends on `Raycynix.Extensions.Messaging` 3.0. Existing registration and request APIs remain compatible.

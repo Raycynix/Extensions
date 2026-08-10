@@ -6,12 +6,12 @@ using Raycynix.Extensions.Email.Abstractions.Exceptions;
 using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
 using Raycynix.Extensions.Email.Implementations;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Smtp.Options;
 
 namespace Raycynix.Extensions.Email.Smtp.Internal;
 
 internal sealed class SmtpEmailSender(
-    SmtpConfiguration smtpConfiguration,
+    SmtpOptions smtpOptions,
     EmailProviderDescriptor providerDescriptor,
     IServiceProvider serviceProvider,
     SmtpMimeMessageFactory mimeMessageFactory,
@@ -37,33 +37,33 @@ internal sealed class SmtpEmailSender(
             message.Attachments.Count,
             message.Headers.Count);
 
-        var mimeMessage = await mimeMessageFactory.CreateAsync(message, cancellationToken);
+        using var mimeMessage = await mimeMessageFactory.CreateAsync(message, cancellationToken);
         using var client = new SmtpClient();
-        client.Timeout = smtpConfiguration.TimeoutMilliseconds;
+        client.Timeout = smtpOptions.TimeoutMilliseconds;
 
         try
         {
-            var secureSocketOptions = SmtpSecureSocketOptionsMapper.Map(smtpConfiguration);
+            var secureSocketOptions = SmtpSecureSocketOptionsMapper.Map(smtpOptions);
 
             logger?.LogDebug(
                 "Connecting to SMTP server. Host={Host}, Port={Port}, SecureSocketOptions={SecureSocketOptions}, TimeoutMilliseconds={TimeoutMilliseconds}.",
-                smtpConfiguration.Host,
-                smtpConfiguration.Port,
+                smtpOptions.Host,
+                smtpOptions.Port,
                 secureSocketOptions,
-                smtpConfiguration.TimeoutMilliseconds);
+                smtpOptions.TimeoutMilliseconds);
 
             await client.ConnectAsync(
-                smtpConfiguration.Host ?? throw new EmailProviderConfigurationException("SMTP host is required."),
-                smtpConfiguration.Port,
+                smtpOptions.Host ?? throw new EmailProviderConfigurationException("SMTP host is required."),
+                smtpOptions.Port,
                 secureSocketOptions,
                 cancellationToken);
 
-            var credentials = SmtpCredentialFactory.Create(smtpConfiguration);
+            var credentials = SmtpCredentialFactory.Create(smtpOptions);
             if (credentials is not null)
             {
                 logger?.LogDebug(
                     "Authenticating SMTP client. UsesDefaultCredentials={UsesDefaultCredentials}.",
-                    smtpConfiguration.UseDefaultCredentials);
+                    smtpOptions.UseDefaultCredentials);
 
                 await client.AuthenticateAsync(credentials, cancellationToken);
             }

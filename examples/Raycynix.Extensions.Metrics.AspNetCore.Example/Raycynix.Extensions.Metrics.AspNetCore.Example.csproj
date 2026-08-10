@@ -10,18 +10,15 @@
         <Version>1.0.0-example</Version>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj" />
-      <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj" />
-    </ItemGroup>
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
 
     <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="appsettings.Development.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.17.0-beta.1" />
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics\Raycynix.Extensions.Metrics.csproj" />
+      <ProjectReference Include="..\..\src\Raycynix.Extensions.Metrics.AspNetCore\Raycynix.Extensions.Metrics.AspNetCore.csproj" />
     </ItemGroup>
 
 </Project>

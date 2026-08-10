@@ -50,3 +50,18 @@ For ASP.NET Core request pipeline integration, add `Raycynix.Extensions.Exceptio
 The package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
 
 Diagnostics cover retry attempts, retry exhaustion, background operation cancellation, and background operation failures. The package avoids logging secure detail payloads directly.
+
+## Contract Guarantees
+
+- custom mappings must provide a non-empty error code and public message
+- mapped HTTP status codes must be between 400 and 599
+- configured mappings and validation errors are snapshotted during construction
+- retry execution restores the previous error execution context after completion
+- user-provided mapper, masker, classifier, retry executor, and background runner registrations are preserved
+
+## Migrating From 2.x
+
+- `ExceptionMapperOptions.Mappings` is now read-only.
+- Invalid mapping delegates, status codes, error codes, and messages fail during setup.
+- `ValidationException.ValidationErrors` now exposes `IReadOnlyDictionary<string, string[]>`.
+- Null operation delegates and blank background operation names are rejected.

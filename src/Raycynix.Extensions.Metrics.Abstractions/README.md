@@ -1,31 +1,34 @@
 # Raycynix.Extensions.Metrics.Abstractions
 
-`Raycynix.Extensions.Metrics.Abstractions` contains the contracts used by the Raycynix metrics packages.
+Version `3.0.0` contains shared conventions and helpers for provider-neutral Raycynix metrics.
 
-## What it contains
+## API
 
-- `IMetricsService`
-- `IMetricCounter`
-- `IMetricGauge`
-- `IMetricHistogram`
-
-## Purpose
-
-This package allows other packages to depend on Raycynix metrics contracts without depending on the metrics implementation package.
-
-## Usage
+- `RaycynixMetrics.MeterName` — the shared meter name `Raycynix.Extensions`
+- `RaycynixMetrics.MeterVersion` — the instrumentation release version
+- `RaycynixMetrics.CreateMeter(IMeterFactory)` — creates a factory-managed meter
+- `HistogramExtensions.MeasureDuration(...)` — records an elapsed duration in seconds when disposed
 
 ```csharp
-public sealed class CheckoutMetrics(IMetricsService metrics)
-{
-    private readonly IMetricCounter _orders = metrics.CreateCounter(
-        "raycynix_orders_total",
-        "Total number of processed orders",
-        "status");
+using System.Diagnostics.Metrics;
+using Raycynix.Extensions.Metrics.Abstractions;
 
-    public void RecordSuccess()
+public sealed class OrderMetrics
+{
+    private readonly Counter<long> _processed;
+
+    public OrderMetrics(IMeterFactory meterFactory)
     {
-        _orders.Increment(labelValues: ["success"]);
+        var meter = RaycynixMetrics.CreateMeter(meterFactory);
+        _processed = meter.CreateCounter<long>(
+            "raycynix.orders.processed",
+            unit: "{order}");
     }
+
+    public void Record(string status) => _processed.Add(
+        1,
+        new KeyValuePair<string, object?>("raycynix.order.status", status));
 }
 ```
+
+The 2.x custom metrics interfaces were removed. Consumers now depend directly on `System.Diagnostics.Metrics`, allowing any compatible listener or OpenTelemetry exporter to collect the same instruments.

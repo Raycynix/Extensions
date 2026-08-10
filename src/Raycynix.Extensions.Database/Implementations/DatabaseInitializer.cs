@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 
 namespace Raycynix.Extensions.Database.Implementations;
 
@@ -12,7 +12,7 @@ namespace Raycynix.Extensions.Database.Implementations;
 public class DatabaseInitializer<TContext>(
     IServiceScopeFactory serviceScopeFactory,
     IDatabaseObservability observability,
-    DatabaseConfiguration config,
+    DatabaseOptions config,
     DatabaseProviderDescriptor descriptor,
     ILogger<DatabaseInitializer<TContext>>? logger = null) : IDatabaseInitializer
     where TContext : DbContext, IRaycynixDatabaseContext

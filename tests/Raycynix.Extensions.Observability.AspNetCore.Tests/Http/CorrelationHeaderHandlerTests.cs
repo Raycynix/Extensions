@@ -67,6 +67,25 @@ public class CorrelationHeaderHandlerTests
         }
     }
 
+    [Fact]
+    public async Task SendAsync_ShouldNotPropagateInvalidIncomingHeader()
+    {
+        var httpContextAccessor = new HttpContextAccessor
+        {
+            HttpContext = new DefaultHttpContext { TraceIdentifier = "trusted-trace" }
+        };
+        httpContextAccessor.HttpContext.Request.Headers[CorrelationHeader] = "invalid correlation value";
+
+        using var handler = new TestCorrelationHeaderHandler(httpContextAccessor, new CaptureHandler());
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.test");
+
+        await handler.SendAsyncPublic(request, TestContext.Current.CancellationToken);
+
+        var propagated = request.Headers.GetValues(CorrelationHeader).Single();
+        propagated.Should().NotBe("invalid correlation value");
+        propagated.Should().HaveLength(32);
+    }
+
     /// <summary>
     /// Exposes the protected handler method for direct testing.
     /// </summary>

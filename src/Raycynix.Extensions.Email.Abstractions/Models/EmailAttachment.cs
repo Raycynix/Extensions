@@ -44,18 +44,11 @@ public sealed class EmailAttachment
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         ArgumentNullException.ThrowIfNull(content);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        ThrowIfContainsLineBreak(fileName, nameof(fileName));
+        ThrowIfContainsLineBreak(contentId, nameof(contentId));
         ValidateContentType(contentType);
 
-        var contentCopy = content.ToArray();
-
-        return new EmailAttachment
-        {
-            FileName = fileName,
-            ContentType = contentType,
-            ContentId = contentId,
-            OpenReadAsync = _ =>
-                ValueTask.FromResult<Stream>(new MemoryStream(contentCopy, writable: false))
-        };
+        return CreateMemoryAttachment(fileName, content.ToArray(), contentType, contentId);
     }
 
     /// <summary>
@@ -72,7 +65,13 @@ public sealed class EmailAttachment
         string contentType = "application/octet-stream",
         string? contentId = null)
     {
-        return FromBytes(fileName, content.ToArray(), contentType, contentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        ThrowIfContainsLineBreak(fileName, nameof(fileName));
+        ThrowIfContainsLineBreak(contentId, nameof(contentId));
+        ValidateContentType(contentType);
+
+        return CreateMemoryAttachment(fileName, content.ToArray(), contentType, contentId);
     }
 
     /// <summary>
@@ -95,13 +94,20 @@ public sealed class EmailAttachment
 
         var resolvedFileName = fileName ?? Path.GetFileName(path);
         ArgumentException.ThrowIfNullOrWhiteSpace(resolvedFileName);
+        ThrowIfContainsLineBreak(resolvedFileName, nameof(fileName));
+        ThrowIfContainsLineBreak(contentId, nameof(contentId));
 
         return new EmailAttachment
         {
             FileName = resolvedFileName,
             ContentType = contentType,
             ContentId = contentId,
-            OpenReadAsync = _ => ValueTask.FromResult<Stream>(File.OpenRead(path))
+            OpenReadAsync = cancellationToken =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return ValueTask.FromResult<Stream>(File.OpenRead(path));
+            }
         };
     }
 
@@ -113,7 +119,38 @@ public sealed class EmailAttachment
         ArgumentException.ThrowIfNullOrWhiteSpace(FileName);
         ArgumentException.ThrowIfNullOrWhiteSpace(ContentType);
         ArgumentNullException.ThrowIfNull(OpenReadAsync);
+        ThrowIfContainsLineBreak(FileName, nameof(FileName));
+        ThrowIfContainsLineBreak(ContentId, nameof(ContentId));
         ValidateContentType(ContentType);
+    }
+
+    private static EmailAttachment CreateMemoryAttachment(
+        string fileName,
+        byte[] content,
+        string contentType,
+        string? contentId)
+    {
+        return new EmailAttachment
+        {
+            FileName = fileName,
+            ContentType = contentType,
+            ContentId = contentId,
+            OpenReadAsync = cancellationToken =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return ValueTask.FromResult<Stream>(
+                    new MemoryStream(content, writable: false));
+            }
+        };
+    }
+
+    private static void ThrowIfContainsLineBreak(string? value, string parameterName)
+    {
+        if (value?.ContainsAny('\r', '\n') == true)
+        {
+            throw new ArgumentException($"{parameterName} cannot contain line breaks.", parameterName);
+        }
     }
 
     private static void ValidateContentType(string contentType)

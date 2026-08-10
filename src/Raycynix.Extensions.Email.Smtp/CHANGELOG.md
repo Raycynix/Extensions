@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- SMTP MIME creation now streams attachment content and disposes owned streams with the MIME message.
+- Renamed `SmtpConfiguration` to `SmtpOptions` and moved it to the `Raycynix.Extensions.Email.Smtp.Options` namespace.
+- Changed the provider configuration section from `EmailConfiguration:SmtpConfiguration` to `EmailOptions:SmtpOptions`, following the shared options type-name convention.
+- SMTP timeout must now be greater than zero.
+- Explicit SMTP username and password values must be configured together.
+- Updated SMTP registration callbacks to use `Action<SmtpOptions>`.
+
 ## 2.2.0
 ### Added
 - Starts unified versioning for Raycynix packages from this release.

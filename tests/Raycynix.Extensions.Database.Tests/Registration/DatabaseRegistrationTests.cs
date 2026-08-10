@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
 using Raycynix.Extensions.Database.Abstractions.Attributes;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Implementations;
 using Raycynix.Extensions.Database.Infrastructure;
 using Raycynix.Extensions.Database.PostgreSql;
@@ -29,14 +29,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldRegisterCoreServices()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=test.db",
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -46,8 +46,8 @@ public sealed class DatabaseRegistrationTests
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
         using var scope = serviceProvider.CreateScope();
 
-        var databaseConfiguration = serviceProvider.GetRequiredService<DatabaseConfiguration>();
-        var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseConfiguration>>();
+        var databaseConfiguration = serviceProvider.GetRequiredService<DatabaseOptions>();
+        var accessor = serviceProvider.GetRequiredService<IConfigurationAccessor<DatabaseOptions>>();
         var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
         var context = scope.ServiceProvider.GetRequiredService<RaycynixDatabaseContext>();
 
@@ -59,31 +59,28 @@ public sealed class DatabaseRegistrationTests
     }
 
     /// <summary>
-    /// Verifies that the setup callback executes during options creation.
+    /// Verifies that the setup callback executes during option creation.
     /// </summary>
     [Fact]
     public void AddRaycynixDatabase_ShouldInvokeSetupCallback()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         var setupInvoked = false;
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=original.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "true"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=original.db",
+                ["DatabaseOptions:EnsureCreated"] = "true"
             })
             .Build();
 
-        services.AddRaycynixDatabase(configuration, _ =>
-        {
-            setupInvoked = true;
-        }, registerCallerAssembly: false);
+        services.AddRaycynixDatabase(configuration, _ => { setupInvoked = true; }, registerCallerAssembly: false);
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
-        _ = serviceProvider.GetRequiredService<DatabaseConfiguration>();
+        _ = serviceProvider.GetRequiredService<DatabaseOptions>();
 
         setupInvoked.Should().BeTrue();
     }
@@ -95,13 +92,13 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenSetupIsProvidedAfterInitialRegistration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=repeat-setup.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=repeat-setup.db",
+                ["DatabaseOptions:EnsureCreated"] = "false"
             })
             .Build();
 
@@ -114,7 +111,7 @@ public sealed class DatabaseRegistrationTests
 
         act.Should()
             .Throw<InvalidOperationException>()
-            .WithMessage("*Configure DatabaseConfiguration only on the first AddRaycynixDatabase call*");
+            .WithMessage("*Configure DatabaseOptions only on the first AddRaycynixDatabase call*");
     }
 
     /// <summary>
@@ -124,13 +121,13 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenConfigurationIsInvalid()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:EnsureCreated"] = "true",
-                ["DatabaseConfiguration:UseMigrations"] = "true"
+                ["DatabaseOptions:EnsureCreated"] = "true",
+                ["DatabaseOptions:UseMigrations"] = "true"
             })
             .Build();
 
@@ -138,7 +135,7 @@ public sealed class DatabaseRegistrationTests
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
 
-        var act = () => serviceProvider.GetRequiredService<IOptions<DatabaseConfiguration>>().Value;
+        var act = () => serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
         act.Should().Throw<OptionsValidationException>();
     }
@@ -150,14 +147,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenNoProviderPackageIsRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-provider.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=no-provider.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -180,14 +177,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenMultipleProviderPackagesAreRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=multiple-providers.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=multiple-providers.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -212,14 +209,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldFail_WhenOnlyLegacyProviderKeyIsConfigured()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = "Sqlite",
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false"
+                ["DatabaseOptions:Provider"] = "Sqlite",
+                ["DatabaseOptions:ConnectionString"] = "Data Source=legacy-provider.db",
+                ["DatabaseOptions:EnsureCreated"] = "false"
             })
             .Build();
 
@@ -242,15 +239,15 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldIgnoreLegacyProviderKey_WhenProviderPackageIsExplicitlyRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:Provider"] = "PostgreSql",
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=legacy-provider-ignored.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:Provider"] = "PostgreSql",
+                ["DatabaseOptions:ConnectionString"] = "Data Source=legacy-provider-ignored.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -272,15 +269,15 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabaseAssembly_ShouldIncludeConfiguratorsFromExternalAssembly()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         services.AddSingleton(new MessagingDatabasePersistenceConfiguration());
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=model-test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=model-test.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -303,14 +300,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldReturnBuilderThatSupportsAssemblyRegistration()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=builder-test.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=builder-test.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -334,14 +331,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_ShouldNotScanCallerAssembly_WhenCallerAssemblyRegistrationIsDisabled()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=no-caller-scan.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=no-caller-scan.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -362,14 +359,14 @@ public sealed class DatabaseRegistrationTests
     public void AddRaycynixDatabase_WithMarker_ShouldExposeMarkerAssemblyAsPrimaryAssembly()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=marker-assembly.db",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=marker-assembly.db",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
 
@@ -386,31 +383,27 @@ public sealed class DatabaseRegistrationTests
 
     private sealed class ExternalConfiguredEntity
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
     }
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
         public void Log<TState>(
-            Microsoft.Extensions.Logging.LogLevel logLevel,
-            Microsoft.Extensions.Logging.EventId eventId,
+            LogLevel logLevel,
+            EventId eventId,
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)
-        {
-        }
-        
-        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
         }
     }

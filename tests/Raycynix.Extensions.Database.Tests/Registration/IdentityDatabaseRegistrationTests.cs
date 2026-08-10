@@ -111,7 +111,7 @@ public sealed class IdentityDatabaseRegistrationTests
         var entityType = context.Model.FindEntityType(typeof(IdentityProfileEntity));
 
         entityType.Should().NotBeNull();
-        entityType!.GetTableName().Should().Be("identity_profiles");
+        entityType.GetTableName().Should().Be("identity_profiles");
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public sealed class IdentityDatabaseRegistrationTests
     private static ServiceCollection CreateServices()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(typeof(Logging.Abstractions.ILogger<>), typeof(FakeLogger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(FakeLogger<>));
         return services;
     }
 
@@ -146,9 +146,9 @@ public sealed class IdentityDatabaseRegistrationTests
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = $"Data Source={databaseName}",
-                ["DatabaseConfiguration:EnsureCreated"] = "false",
-                ["DatabaseConfiguration:EnableSeed"] = "false"
+                ["DatabaseOptions:ConnectionString"] = $"Data Source={databaseName}",
+                ["DatabaseOptions:EnsureCreated"] = "false",
+                ["DatabaseOptions:EnableSeed"] = "false"
             })
             .Build();
     }
@@ -161,7 +161,7 @@ public sealed class IdentityDatabaseRegistrationTests
 
     private sealed class IdentityProfileEntity
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
     }
 
     private sealed class TestIdentityUser : IdentityUser;
@@ -170,7 +170,7 @@ public sealed class IdentityDatabaseRegistrationTests
 
     private sealed class GuidIdentityRole : IdentityRole<Guid>;
 
-    private sealed class FakeLogger<T> : Logging.Abstractions.ILogger<T>
+    private sealed class FakeLogger<T> : ILogger<T>
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
@@ -188,10 +188,6 @@ public sealed class IdentityDatabaseRegistrationTests
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)
-        {
-        }
-
-        public void Log(LogLevel logLevel, Exception? exception, string message, params object?[]? args)
         {
         }
     }

@@ -1,8 +1,9 @@
+using System.Diagnostics.Metrics;
+using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 namespace Raycynix.Extensions.Observability.Tests.Registration;
 
@@ -25,15 +26,15 @@ public class ObservabilityRegistrationTests
         var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        var metrics = scope.ServiceProvider.GetRequiredService<IMetricsService>();
-        var tracer = scope.ServiceProvider.GetRequiredService<ITracer>();
+        var meterFactory = scope.ServiceProvider.GetRequiredService<IMeterFactory>();
+        var activitySource = scope.ServiceProvider.GetRequiredService<ActivitySource>();
         var operationContext = scope.ServiceProvider.GetRequiredService<IOperationContext>();
 
-        metrics.Should().NotBeNull();
-        tracer.Should().NotBeNull();
+        meterFactory.Should().NotBeNull();
+        activitySource.Should().BeSameAs(RaycynixTracing.ActivitySource);
         operationContext.Should().BeOfType<OperationContext>();
         services.Should().NotContain(service =>
-            service.ServiceType.FullName == "Raycynix.Extensions.Logging.Abstractions.ILogger`1");
+            service.ServiceType.FullName == "Raycynix.Extensions.Serilog.Abstractions.ILogger`1");
     }
 
     /// <summary>

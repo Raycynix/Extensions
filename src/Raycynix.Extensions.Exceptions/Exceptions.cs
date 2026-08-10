@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
 using Raycynix.Extensions.Exceptions.Defaults;
 using Raycynix.Extensions.Exceptions.Options;
@@ -19,14 +20,16 @@ public static class Exceptions
     public static IServiceCollection AddRaycynixExceptions(this IServiceCollection services,
         Action<ExceptionMapperOptions>? configure = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         var options = new ExceptionMapperOptions();
         configure?.Invoke(options);
 
-        services.AddSingleton<IExceptionMapper>(new ExceptionMapper(options.Mappings));
-        services.AddSingleton<IExceptionDataMasker, ExceptionDataMasker>();
-        services.AddSingleton<ITransientExceptionClassifier, TransientExceptionClassifier>();
-        services.AddSingleton<IRetryExecutor, RetryExecutor>();
-        services.AddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
+        services.TryAddSingleton<IExceptionMapper>(new ExceptionMapper(options.Mappings));
+        services.TryAddSingleton<IExceptionDataMasker, ExceptionDataMasker>();
+        services.TryAddSingleton<ITransientExceptionClassifier, TransientExceptionClassifier>();
+        services.TryAddSingleton<IRetryExecutor, RetryExecutor>();
+        services.TryAddSingleton<IBackgroundTaskRunner, BackgroundTaskRunner>();
 
         return services;
     }

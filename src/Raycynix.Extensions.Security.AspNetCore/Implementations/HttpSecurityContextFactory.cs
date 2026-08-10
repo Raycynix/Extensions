@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Security.Abstractions.Constants;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -9,7 +10,7 @@ namespace Raycynix.Extensions.Security.AspNetCore.Implementations;
 
 internal static class HttpSecurityContextFactory
 {
-    public static ISecurityContext Create(ClaimsPrincipal? principal)
+    public static ISecurityContext Create(ClaimsPrincipal? principal, ILogger? logger = null)
     {
         if (principal?.Identity?.IsAuthenticated != true)
         {
@@ -19,15 +20,19 @@ internal static class HttpSecurityContextFactory
         var subjectId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrWhiteSpace(subjectId))
         {
-            throw new InvalidOperationException("The authenticated principal does not contain the required 'sub' claim.");
+            logger?.LogWarning(
+                "Authenticated principal cannot be mapped to a Raycynix security context because the required sub claim is missing.");
+            return new SecurityContext();
         }
 
         var subjectTypeValue = principal.FindFirst(SecurityClaimTypes.SubjectType)?.Value;
         if (string.IsNullOrWhiteSpace(subjectTypeValue) ||
             !Enum.TryParse<SecuritySubjectType>(subjectTypeValue, ignoreCase: true, out var subjectType))
         {
-            throw new InvalidOperationException(
-                $"The authenticated principal does not contain a valid '{SecurityClaimTypes.SubjectType}' claim.");
+            logger?.LogWarning(
+                "Authenticated principal cannot be mapped to a Raycynix security context because claim {ClaimType} is missing or invalid.",
+                SecurityClaimTypes.SubjectType);
+            return new SecurityContext();
         }
 
         return new SecurityContext

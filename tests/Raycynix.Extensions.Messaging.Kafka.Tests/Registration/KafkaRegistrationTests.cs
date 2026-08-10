@@ -207,6 +207,56 @@ public sealed class KafkaRegistrationTests
         fakeTransportPublisher.PublishedMessages.Should().ContainSingle();
         fakeTransportPublisher.PublishedMessages[0].Destination.Should().Be("orders.created");
         fakeTransportPublisher.PublishedMessages[0].Headers.Should().ContainKey("X-Delivery-Attempt");
+        fakeTransportPublisher.PublishedMessages[0].Headers["X-Processing-Error"]
+            .Should().Be(nameof(InvalidOperationException));
+        fakeTransportPublisher.PublishedMessages[0].Headers["X-Processing-Error"]
+            .Should().NotContain("handler failed");
+    }
+
+    /// <summary>
+    /// Verifies that stopping the host cancels an in-progress Kafka retry delay.
+    /// </summary>
+    [Fact]
+    public async Task InboundConsumer_DuringRetryDelay_ShouldStopPromptly()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+        var fakeConsumer = new FakeKafkaConsumer();
+        var fakeTransportPublisher = new FakeTransportMessagePublisher();
+
+        services.AddRaycynixMessaging(configuration, options => options.DispatchRetry.Enabled = false)
+            .AddMessageHandler<InboundKafkaMessage, AlwaysFailingInboundHandler>()
+            .AddKafka(options =>
+            {
+                options.BootstrapServers = ["localhost:9092"];
+                options.Consumer.Enabled = true;
+                options.Consumer.Topics = ["orders.created"];
+                options.Retry.Enabled = true;
+                options.Retry.MaxAttempts = 2;
+                options.Retry.DelayMilliseconds = 30_000;
+            });
+
+        fakeConsumer.Messages.Enqueue(CreateIncomingMessage("orders.created", """{"value":"retry-me"}"""));
+        services.Replace(ServiceDescriptor.Singleton<IKafkaConsumer>(fakeConsumer));
+        services.Replace(ServiceDescriptor.Singleton<ITransportMessagePublisher>(fakeTransportPublisher));
+
+        await using var provider = services.BuildServiceProvider();
+        var hostedService = new KafkaInboundConsumer(
+            provider.GetRequiredService<IKafkaConsumer>(),
+            provider.GetRequiredService<ITransportMessagePublisher>(),
+            provider.GetRequiredService<KafkaMessagingConfiguration>(),
+            provider.GetRequiredService<IServiceScopeFactory>());
+
+        await hostedService.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForAsync(() => fakeConsumer.Messages.Count == 0, TimeSpan.FromSeconds(2),
+            TestContext.Current.CancellationToken);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        await hostedService.StopAsync(stopTimeout.Token);
+
+        fakeTransportPublisher.PublishedMessages.Should().BeEmpty();
+        fakeConsumer.CommittedMessages.Should().BeEmpty();
     }
 
     /// <summary>

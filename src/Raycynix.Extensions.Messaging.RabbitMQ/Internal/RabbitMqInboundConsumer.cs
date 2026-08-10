@@ -69,7 +69,7 @@ internal sealed class RabbitMqInboundConsumer(
                 logger?.LogWarning(exception,
                     "RabbitMQ delivery processing failed. Queue={Queue}, RoutingKey={RoutingKey}.",
                     configuration.Queue.Name, delivery.RoutingKey);
-                await HandleFailureAsync(channel, delivery, exception, CancellationToken.None).ConfigureAwait(false);
+                await HandleFailureAsync(channel, delivery, exception, stoppingToken).ConfigureAwait(false);
             }
         }
     }
@@ -178,7 +178,7 @@ internal sealed class RabbitMqInboundConsumer(
         }
 
         headers[DeliveryAttemptHeader] = System.Text.Encoding.UTF8.GetBytes(nextAttempt.ToString());
-        headers[ErrorHeader] = System.Text.Encoding.UTF8.GetBytes(exception.Message);
+        headers[ErrorHeader] = System.Text.Encoding.UTF8.GetBytes(exception.GetType().Name);
         headers[OriginalRoutingKeyHeader] = System.Text.Encoding.UTF8.GetBytes(delivery.RoutingKey);
 
         var properties = new BasicProperties

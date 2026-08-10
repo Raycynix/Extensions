@@ -49,6 +49,29 @@ public sealed class ExceptionDataMaskerTests
         result["Next"].Should().Be("[CircularReference]");
     }
 
+    /// <summary>
+    /// Verifies that sensitive fragments inside application-specific names are masked.
+    /// </summary>
+    [Fact]
+    public void Mask_ShouldHideSensitiveCompositeNames()
+    {
+        var masker = new ExceptionDataMasker();
+        var payload = new
+        {
+            DatabasePassword = "secret",
+            CustomerApiToken = "token",
+            AuthorizationHeader = "Bearer value",
+            Opinion = "visible"
+        };
+
+        var result = masker.Mask(payload).Should().BeAssignableTo<Dictionary<string, object?>>().Subject;
+
+        result["DatabasePassword"].Should().Be("***MASKED***");
+        result["CustomerApiToken"].Should().Be("***MASKED***");
+        result["AuthorizationHeader"].Should().Be("***MASKED***");
+        result["Opinion"].Should().Be("visible");
+    }
+
     private sealed class Node
     {
         public Node? Next { get; set; }

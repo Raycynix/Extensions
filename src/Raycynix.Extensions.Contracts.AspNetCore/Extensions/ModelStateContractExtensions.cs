@@ -23,6 +23,8 @@ public static class ModelStateContractExtensions
         string? traceId = null)
     {
         ArgumentNullException.ThrowIfNull(modelState);
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
 
         var validationErrors = modelState
             .SelectMany(

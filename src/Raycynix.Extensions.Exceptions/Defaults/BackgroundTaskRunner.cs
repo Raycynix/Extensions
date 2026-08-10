@@ -29,6 +29,8 @@ public class BackgroundTaskRunner(
         string operationName,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(operation);
+
         await RunAsync<object?>(
             async ct =>
             {
@@ -45,6 +47,9 @@ public class BackgroundTaskRunner(
         string operationName,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
+
         var previousContext = ErrorExecutionContextAccessor.Current;
         ErrorExecutionContextAccessor.Current = BuildExecutionContext(operationName, isTransient: false);
 

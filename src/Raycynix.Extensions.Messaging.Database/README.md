@@ -2,6 +2,10 @@
 
 `Raycynix.Extensions.Messaging.Database` adds persistent inbox and outbox storage for Raycynix messaging on top of `Raycynix.Extensions.Database`.
 
+## Upgrading from 2.x
+
+Version 3 stores `CreatedAt`, `UpdatedAt`, and `NextAttemptAt` persistence columns as signed 64-bit UTC tick values. Existing deployments must migrate those timestamp columns before starting version 3. The change enables indexed filtering, ordering, and bounded cleanup directly in SQL on every supported provider.
+
 ## What it contains
 
 - `AddDatabasePersistence(...)`

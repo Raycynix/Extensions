@@ -1,6 +1,6 @@
 using System.Net;
 using FluentAssertions;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Smtp.Options;
 using Raycynix.Extensions.Email.Smtp.Internal;
 
 namespace Raycynix.Extensions.Email.Tests.Smtp;
@@ -16,7 +16,7 @@ public sealed class SmtpCredentialFactoryTests
     [Fact]
     public void Create_ShouldReturnDefaultNetworkCredentials_WhenDefaultCredentialsAreRequested()
     {
-        var configuration = new SmtpConfiguration
+        var configuration = new SmtpOptions
         {
             UseDefaultCredentials = true
         };
@@ -32,7 +32,7 @@ public sealed class SmtpCredentialFactoryTests
     [Fact]
     public void Create_ShouldReturnNetworkCredential_WhenUsernameIsConfigured()
     {
-        var configuration = new SmtpConfiguration
+        var configuration = new SmtpOptions
         {
             Username = "smtp-user",
             Password = "smtp-password"
@@ -52,7 +52,7 @@ public sealed class SmtpCredentialFactoryTests
     [Fact]
     public void Create_ShouldReturnNull_WhenAuthenticationIsNotConfigured()
     {
-        var configuration = new SmtpConfiguration();
+        var configuration = new SmtpOptions();
 
         var credentials = SmtpCredentialFactory.Create(configuration);
 

@@ -5,7 +5,7 @@ SQLite provider integration for `Raycynix.Extensions.Database`.
 ## What It Provides
 
 - `AddSqlite(...)`
-- `SqliteConfiguration`
+- `SqliteOptions`
 - SQLite structured connection-string composition
 - SQLite provider-specific validation
 - EF Core `UseSqlite(...)` configuration with command timeout and migrations assembly support
@@ -31,13 +31,13 @@ builder.Services
 
 ```json
 {
-  "DatabaseConfiguration": {
-    "ConnectionConfiguration": {
+  "DatabaseOptions": {
+    "ConnectionOptions": {
       "Name": "app.db"
     },
     "EnsureCreated": true,
     "UseMigrations": false,
-    "SqliteConfiguration": {
+    "SqliteOptions": {
       "Mode": "ReadWriteCreate",
       "Cache": "Shared",
       "CommandTimeoutSeconds": 30
@@ -51,3 +51,10 @@ When a raw `ConnectionString` is not supplied, structured SQLite configuration r
 ## Logging
 
 The provider emits optional `Microsoft.Extensions.Logging` diagnostics for validation, connection-string source selection, and EF Core provider configuration. Connection strings and data source values are never logged.
+
+## Migrating From 2.x
+
+- Replace `SqliteConfiguration` with `SqliteOptions`.
+- Import it from `Raycynix.Extensions.Database.Sqlite.Options`.
+- Rename the section from `DatabaseConfiguration:SqliteConfiguration` to `DatabaseOptions:SqliteOptions`.
+- Invalid mode, cache, and negative command timeout values now fail during options validation.

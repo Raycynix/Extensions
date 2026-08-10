@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2.2.0</Version>
+        <Version>3.0.0</Version>
 
         <IsPackable>true</IsPackable>
 
-        <PackageReleaseNotes>v2.2.0 starts unified versioning for Raycynix packages and adds optional Microsoft.Extensions.Logging diagnostics for PostgreSQL provider configuration.</PackageReleaseNotes>
+        <PackageReleaseNotes>v3.0.0 replaces PostgreSqlConfiguration with PostgreSqlOptions, binds from DatabaseOptions:PostgreSqlOptions, and validates pool ranges and command timeout during options resolution.</PackageReleaseNotes>
 
-        <Description>PostgreSQL provider integration for Raycynix.Extensions.Database with AddPostgreSql registration, provider-specific validation, Npgsql connection-string composition, and EF Core UseNpgsql configuration.</Description>
-        <PackageTags>raycynix;database;postgresql;npgsql;provider;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet</PackageTags>
+        <Description>PostgreSQL EF Core integration with typed PostgreSqlOptions, validated pooling, Npgsql connection-string composition, retries, and migrations.</Description>
+        <PackageTags>raycynix;database;postgresql;npgsql;provider;options;configuration;provider-validation;efcore;entityframework;migrations;connection-string;pooling;dotnet;net10</PackageTags>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10"/>
     </ItemGroup>
 
     <ItemGroup>

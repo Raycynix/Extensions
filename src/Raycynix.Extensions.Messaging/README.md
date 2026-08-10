@@ -26,7 +26,7 @@
 - transport-neutral message envelope creation and serialization
 - transport-neutral direct request/response abstractions
 - incoming dispatch pipeline with retry, deduplication, and idempotency foundations
-- optional metrics/observability integration
+- optional `System.Diagnostics.Metrics` instrumentation when `IMeterFactory` is registered
 - optional Microsoft `ILogger<T>` diagnostics for publish, dispatch, incoming processing, and outbox recovery
 - scoped envelope/request factories that can project ambient security context safely
 - in-memory inbox/outbox and outbox recovery foundation with dispatch leases

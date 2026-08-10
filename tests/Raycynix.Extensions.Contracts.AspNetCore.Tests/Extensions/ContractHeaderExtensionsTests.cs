@@ -37,7 +37,7 @@ public sealed class ContractHeaderExtensionsTests
     public void TryGetContractMetadata_ShouldParseExpectedHeaders()
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers[ContractHeaders.ContractName] = "catalog.prices";
+        context.Request.Headers[ContractHeaders.ContractName] = " catalog.prices ";
         context.Request.Headers[ContractHeaders.ContractVersion] = "1.2.0";
 
         var parsed = context.Request.TryGetContractMetadata(out var metadata);

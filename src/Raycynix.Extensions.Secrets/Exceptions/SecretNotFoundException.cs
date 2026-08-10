@@ -10,7 +10,7 @@ public sealed class SecretNotFoundException : InvalidOperationException
     /// </summary>
     /// <param name="key">The missing secret key.</param>
     /// <param name="providerNames">The providers that were checked.</param>
-    public SecretNotFoundException(string key, List<string>? providerNames = null)
+    public SecretNotFoundException(string key, IEnumerable<string>? providerNames = null)
         : base(CreateMessage(key, providerNames))
     {
         Key = key;
@@ -27,7 +27,7 @@ public sealed class SecretNotFoundException : InvalidOperationException
     /// </summary>
     public IReadOnlyList<string> ProviderNames { get; }
 
-    private static string CreateMessage(string key, List<string>? providerNames)
+    private static string CreateMessage(string key, IEnumerable<string>? providerNames)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 

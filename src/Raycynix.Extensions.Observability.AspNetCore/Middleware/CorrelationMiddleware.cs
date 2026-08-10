@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Common.Context;
 using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
+using Raycynix.Extensions.Observability.AspNetCore.Internal;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
 
@@ -31,12 +32,25 @@ public class CorrelationMiddleware(
         IServiceProvider serviceProvider)
     {
         var securityContext = serviceProvider.GetService<ISecurityContext>();
-        var correlationId =
-            context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue)
-                ? headerValue.ToString()
-                : context.TraceIdentifier;
+        var maximumCorrelationIdLength = options?.Value.MaxCorrelationIdLength
+                                         ?? CorrelationIdNormalizer.DefaultMaximumLength;
+        var incomingCorrelationId = string.Empty;
+        var hasValidIncomingCorrelationId =
+            context.Request.Headers.TryGetValue(CorrelationHeaderHandler.CorrelationHeader, out var headerValue) &&
+            CorrelationIdNormalizer.TryNormalize(
+                headerValue,
+                maximumCorrelationIdLength,
+                out incomingCorrelationId);
+        var correlationId = hasValidIncomingCorrelationId
+            ? incomingCorrelationId
+            : CorrelationIdNormalizer.NormalizeOrCreate(
+                context.TraceIdentifier,
+                maximumCorrelationIdLength);
 
         operationContext.SetCorrelationIdIfMissing(correlationId);
+        operationContext.CorrelationId = CorrelationIdNormalizer.NormalizeOrCreate(
+            operationContext.CorrelationId,
+            maximumCorrelationIdLength);
         context.Response.Headers[CorrelationHeaderHandler.CorrelationHeader] = operationContext.CorrelationId;
 
         var userId = context.User.Identity?.Name;

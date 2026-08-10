@@ -204,7 +204,54 @@ public sealed class RabbitMqRegistrationTests
         fakeConnectionFactory.Connection!.PublishedExchange.Should().Be("integration.events");
         fakeConnectionFactory.Connection.PublishedRoutingKey.Should().Be("orders.created");
         fakeConnectionFactory.Connection.PublishedHeaders.Should().ContainKey("X-Delivery-Attempt");
+        System.Text.Encoding.UTF8.GetString(
+                (byte[])fakeConnectionFactory.Connection.PublishedHeaders["X-Processing-Error"]!)
+            .Should().Be(nameof(InvalidOperationException));
         fakeConnectionFactory.Connection.AckedDeliveryTags.Should().Contain(1);
+    }
+
+    /// <summary>
+    /// Verifies that stopping the host cancels an in-progress RabbitMQ retry delay.
+    /// </summary>
+    [Fact]
+    public async Task InboundConsumer_DuringRetryDelay_ShouldStopPromptly()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().Build();
+        var fakeConnectionFactory = new FakeRabbitMqConnectionFactory();
+
+        services.AddSingleton<AlwaysFailingState>();
+        services.AddRaycynixMessaging(configuration, options => options.DispatchRetry.Enabled = false)
+            .AddMessageHandler<InboundMessage, AlwaysFailingInboundHandler>()
+            .AddRabbitMq(options =>
+            {
+                options.Exchange.Name = "integration.events";
+                options.Queue.Name = "orders.created";
+                options.Consumer.Enabled = true;
+                options.Retry.Enabled = true;
+                options.Retry.MaxAttempts = 2;
+                options.Retry.DelayMilliseconds = 30_000;
+            });
+
+        fakeConnectionFactory.Enqueue(CreateDelivery("orders.created", """{"value":"retry-me"}"""));
+        services.Replace(ServiceDescriptor.Singleton<IRabbitMqConnectionFactory>(fakeConnectionFactory));
+
+        await using var provider = services.BuildServiceProvider();
+        var hostedService = new RabbitMqInboundConsumer(
+            provider.GetRequiredService<RabbitMqConnectionAccessor>(),
+            provider.GetRequiredService<RabbitMqMessagingConfiguration>(),
+            provider.GetRequiredService<IServiceScopeFactory>());
+
+        await hostedService.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForAsync(() => fakeConnectionFactory.Connection?.Deliveries.Count == 0, TimeSpan.FromSeconds(2),
+            TestContext.Current.CancellationToken);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        await hostedService.StopAsync(stopTimeout.Token);
+
+        fakeConnectionFactory.Connection!.PublishedExchange.Should().BeNull();
+        fakeConnectionFactory.Connection.AckedDeliveryTags.Should().BeEmpty();
     }
 
     /// <summary>

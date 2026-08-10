@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.Sqlite.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.Sqlite.Options;
 
 namespace Raycynix.Extensions.Database.Sqlite.Internal;
 
@@ -19,7 +19,7 @@ internal sealed class SqliteDatabaseProviderRegistration(
     public string ProviderName => "sqlite";
 
     /// <inheritdoc />
-    public string ResolveConnectionString(DatabaseConfiguration configuration, IServiceProvider serviceProvider)
+    public string ResolveConnectionString(DatabaseOptions configuration, IServiceProvider serviceProvider)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -27,12 +27,12 @@ internal sealed class SqliteDatabaseProviderRegistration(
             return configuration.ConnectionString;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new ArgumentException("Connection configuration is missing.");
 
         var providerConfig =
-            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as
-                IConfigurationAccessor<SqliteConfiguration>;
+            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteOptions>)) as
+                IConfigurationAccessor<SqliteOptions>;
 
         var settings = providerConfig?.Current;
         var builder = new SqliteConnectionStringBuilder
@@ -63,13 +63,13 @@ internal sealed class SqliteDatabaseProviderRegistration(
     public void Configure(
         DbContextOptionsBuilder options,
         string connectionString,
-        DatabaseConfiguration configuration,
+        DatabaseOptions configuration,
         Assembly migrationsAssembly,
         IServiceProvider serviceProvider)
     {
         var providerConfig =
-            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteConfiguration>)) as
-                IConfigurationAccessor<SqliteConfiguration>;
+            serviceProvider.GetService(typeof(IConfigurationAccessor<SqliteOptions>)) as
+                IConfigurationAccessor<SqliteOptions>;
 
         options.UseSqlite(connectionString, sqliteOptions =>
         {
@@ -88,7 +88,7 @@ internal sealed class SqliteDatabaseProviderRegistration(
     }
 
     /// <inheritdoc />
-    public void Validate(DatabaseConfiguration configuration)
+    public void Validate(DatabaseOptions configuration)
     {
         if (!string.IsNullOrWhiteSpace(configuration.ConnectionString))
         {
@@ -96,7 +96,7 @@ internal sealed class SqliteDatabaseProviderRegistration(
             return;
         }
 
-        var connection = configuration.ConnectionConfiguration
+        var connection = configuration.ConnectionOptions
                          ?? throw new InvalidOperationException("SQLite connection configuration is missing.");
 
         if (string.IsNullOrWhiteSpace(connection.Name))

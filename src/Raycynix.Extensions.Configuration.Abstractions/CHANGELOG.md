@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Aligned the package version with the net10.0 / Microsoft.Extensions 10 package line.
+- Updated package description, tags, release notes, and README content for the current typed options, diagnostics, redaction, feature flag, validation, reload, and change-handler contracts.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

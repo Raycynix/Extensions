@@ -2,6 +2,12 @@
 
 `Raycynix.Extensions.Contracts.AspNetCore` adds ASP.NET Core integration for the shared contract types defined in `Raycynix.Extensions.Contracts`.
 
+## Package
+
+- Version: `3.0.0`
+- Target framework: `net10.0`
+- Built on ASP.NET Core 10.x
+
 ## What it contains
 
 - endpoint metadata for declared contract identities
@@ -63,6 +69,10 @@ app.MapGet("/catalog/prices", () =>
 
 `WithContract(...)` declares the endpoint contract metadata.  
 `httpContext.VersionedContract(...)` reads that metadata from the current endpoint, wraps the response body into `VersionedContract<T>`, and writes the same contract headers.
+
+Contract names must be non-empty and versions must use the `major.minor.patch` format. Version 3.0
+validates this metadata while endpoints, attributes, and contract results are configured, rather than
+silently producing a response without contract headers.
 
 If you only need headers and a plain response body, return a regular ASP.NET Core result:
 
@@ -140,7 +150,7 @@ This package intentionally provides transport integration only. It does not enfo
 
 ## Logging
 
-The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Logging`; any Microsoft-compatible logging provider can receive the events.
+The package uses the standard `Microsoft.Extensions.Logging.ILogger<T>` abstraction when a logger is available. Logger dependencies are optional, so the package can run without registering a logging provider. It does not require `Raycynix.Extensions.Serilog`; any Microsoft-compatible logging provider can receive the events.
 
 Contract metadata middleware and contract HTTP results write detailed execution diagnostics at `Debug`. They log contract names, versions, endpoint names, status codes, and envelope usage, but never log response payloads.
 

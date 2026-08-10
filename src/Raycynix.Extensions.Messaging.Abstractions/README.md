@@ -112,3 +112,7 @@ public sealed class OrdersClient(IRequestClient requestClient)
     }
 }
 ```
+
+## Migrating From 2.x
+
+Version 3.0 targets .NET 10 and depends on the 3.0 Contracts and Security abstractions. Update the messaging package family together; the transport-neutral APIs remain compatible.

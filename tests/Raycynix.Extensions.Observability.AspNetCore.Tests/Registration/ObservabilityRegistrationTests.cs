@@ -63,11 +63,25 @@ public class ObservabilityRegistrationTests
         services.AddRaycynixAspNetCoreObservability(options =>
         {
             options.IncludeIdentityInLoggingScope = false;
+            options.MaxCorrelationIdLength = 64;
         });
 
         using var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<ObservabilityAspNetCoreConfiguration>>().Value;
 
         options.IncludeIdentityInLoggingScope.Should().BeFalse();
+        options.MaxCorrelationIdLength.Should().Be(64);
+    }
+
+    [Fact]
+    public void AddRaycynixAspNetCoreObservability_ShouldRejectInvalidCorrelationLength()
+    {
+        var services = new ServiceCollection();
+        services.AddRaycynixAspNetCoreObservability(options => options.MaxCorrelationIdLength = 0);
+        using var provider = services.BuildServiceProvider();
+
+        var act = () => provider.GetRequiredService<IOptions<ObservabilityAspNetCoreConfiguration>>().Value;
+
+        act.Should().Throw<OptionsValidationException>();
     }
 }

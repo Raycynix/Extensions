@@ -7,7 +7,7 @@ using Raycynix.Extensions.Email.Abstractions.Interfaces;
 using Raycynix.Extensions.Email.Abstractions.Models;
 using Raycynix.Extensions.Email.Implementations;
 using Raycynix.Extensions.Email.Smtp;
-using Raycynix.Extensions.Email.Smtp.Configurations;
+using Raycynix.Extensions.Email.Smtp.Options;
 using Raycynix.Extensions.Email.Smtp.Enums;
 
 namespace Raycynix.Extensions.Email.Tests.Registration;
@@ -18,20 +18,20 @@ namespace Raycynix.Extensions.Email.Tests.Registration;
 public sealed class EmailRegistrationTests
 {
     /// <summary>
-    /// Verifies that SMTP configuration is bound from the nested EmailConfiguration section.
+    /// Verifies that SMTP configuration is bound from the nested options sections.
     /// </summary>
     [Fact]
-    public void AddSmtp_ShouldBindSmtpConfiguration_FromNestedEmailConfigurationSection()
+    public void AddSmtp_ShouldBindSmtpOptions_FromNestedOptionsSections()
     {
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
-            ["EmailConfiguration:SmtpConfiguration:Port"] = "587",
-            ["EmailConfiguration:SmtpConfiguration:SecureSocketOptions"] = "StartTls",
-            ["EmailConfiguration:SmtpConfiguration:Username"] = "smtp-user",
-            ["EmailConfiguration:SmtpConfiguration:Password"] = "smtp-password"
+            ["EmailOptions:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com",
+            ["EmailOptions:SmtpOptions:Port"] = "587",
+            ["EmailOptions:SmtpOptions:SecureSocketOptions"] = "StartTls",
+            ["EmailOptions:SmtpOptions:Username"] = "smtp-user",
+            ["EmailOptions:SmtpOptions:Password"] = "smtp-password"
         });
 
         services
@@ -39,7 +39,7 @@ public sealed class EmailRegistrationTests
             .AddSmtp();
 
         using var provider = services.BuildServiceProvider();
-        var smtp = provider.GetRequiredService<SmtpConfiguration>();
+        var smtp = provider.GetRequiredService<SmtpOptions>();
 
         smtp.Host.Should().Be("smtp.example.com");
         smtp.Port.Should().Be(587);
@@ -57,8 +57,8 @@ public sealed class EmailRegistrationTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com"
+            ["EmailOptions:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com"
         });
 
         services
@@ -96,7 +96,7 @@ public sealed class EmailRegistrationTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com"
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com"
         });
         services
             .AddRaycynixEmail(configuration)
@@ -118,7 +118,7 @@ public sealed class EmailRegistrationTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com"
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com"
         });
         services
             .AddRaycynixEmail(configuration)
@@ -148,9 +148,9 @@ public sealed class EmailRegistrationTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
-            ["EmailConfiguration:SmtpConfiguration:TimeoutMilliseconds"] = "-1"
+            ["EmailOptions:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com",
+            ["EmailOptions:SmtpOptions:TimeoutMilliseconds"] = "0"
         });
         services
             .AddRaycynixEmail(configuration)
@@ -160,7 +160,7 @@ public sealed class EmailRegistrationTests
         var act = () => provider.GetRequiredService<IEmailSender>();
 
         act.Should().Throw<OptionsValidationException>()
-            .WithMessage("SMTP timeout cannot be negative.");
+            .WithMessage("SMTP timeout must be greater than zero.");
     }
 
     /// <summary>
@@ -172,10 +172,10 @@ public sealed class EmailRegistrationTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration(new Dictionary<string, string?>
         {
-            ["EmailConfiguration:DefaultFromAddress"] = "no-reply@example.com",
-            ["EmailConfiguration:SmtpConfiguration:Host"] = "smtp.example.com",
-            ["EmailConfiguration:SmtpConfiguration:UseDefaultCredentials"] = "true",
-            ["EmailConfiguration:SmtpConfiguration:Username"] = "smtp-user"
+            ["EmailOptions:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com",
+            ["EmailOptions:SmtpOptions:UseDefaultCredentials"] = "true",
+            ["EmailOptions:SmtpOptions:Username"] = "smtp-user"
         });
         services
             .AddRaycynixEmail(configuration)
@@ -186,6 +186,30 @@ public sealed class EmailRegistrationTests
 
         act.Should().Throw<OptionsValidationException>()
             .WithMessage("SMTP default credentials cannot be combined with explicit username or password.");
+    }
+
+    /// <summary>
+    /// Verifies that explicit SMTP credentials are configured as a complete pair.
+    /// </summary>
+    [Fact]
+    public void SmtpSender_ShouldThrow_WhenOnlyUsernameIsConfigured()
+    {
+        var services = new ServiceCollection();
+        var configuration = CreateConfiguration(new Dictionary<string, string?>
+        {
+            ["EmailOptions:DefaultFromAddress"] = "no-reply@example.com",
+            ["EmailOptions:SmtpOptions:Host"] = "smtp.example.com",
+            ["EmailOptions:SmtpOptions:Username"] = "smtp-user"
+        });
+        services
+            .AddRaycynixEmail(configuration)
+            .AddSmtp();
+
+        using var provider = services.BuildServiceProvider();
+        var act = () => provider.GetRequiredService<IEmailSender>();
+
+        act.Should().Throw<OptionsValidationException>()
+            .WithMessage("SMTP username and password must be configured together.");
     }
 
     private static IConfiguration CreateConfiguration(

@@ -4,8 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
-using Raycynix.Extensions.Security.Configurations;
 using Raycynix.Extensions.Security.Implementations;
+using Raycynix.Extensions.Security.Options;
 
 namespace Raycynix.Extensions.Security.Tests.Registration;
 
@@ -36,16 +36,16 @@ public class SecurityRegistrationTests
     /// Verifies that configured security registration binds the security settings and exposes them through the configuration accessor.
     /// </summary>
     [Fact]
-    public void AddRaycynixSecurity_ShouldBindSecurityConfiguration()
+    public void AddRaycynixSecurity_ShouldBindSecurityOptionsAndJwtOptions()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Issuer"] = "raycynix-auth",
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services",
-                ["SecurityConfiguration:Jwt:AccessTokenLifetime"] = "00:15:00",
-                ["SecurityConfiguration:Jwt:RefreshTokenLifetime"] = "14.00:00:00",
-                ["SecurityConfiguration:Jwt:ClockSkew"] = "00:01:00"
+                ["SecurityOptions:JwtOptions:Issuer"] = "raycynix-auth",
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services",
+                ["SecurityOptions:JwtOptions:AccessTokenLifetime"] = "00:15:00",
+                ["SecurityOptions:JwtOptions:RefreshTokenLifetime"] = "14.00:00:00",
+                ["SecurityOptions:JwtOptions:ClockSkew"] = "00:01:00"
             })
             .Build();
 
@@ -54,13 +54,17 @@ public class SecurityRegistrationTests
         services.AddRaycynixSecurity(configuration);
 
         using var provider = services.BuildServiceProvider();
-        var accessor = provider.GetRequiredService<IConfigurationAccessor<SecurityConfiguration>>();
-        var snapshot = provider.GetRequiredService<SecurityConfiguration>();
+        var accessor = provider.GetRequiredService<IConfigurationAccessor<SecurityOptions>>();
+        var snapshot = provider.GetRequiredService<SecurityOptions>();
+        var jwt = provider.GetRequiredService<JwtOptions>();
 
-        accessor.Current.Jwt.Issuer.Should().Be("raycynix-auth");
-        accessor.Current.Jwt.Audience.Should().Be("raycynix-services");
-        snapshot.Jwt.Issuer.Should().Be("raycynix-auth");
-        snapshot.Jwt.Audience.Should().Be("raycynix-services");
+        accessor.Current.JwtOptions.Issuer.Should().Be("raycynix-auth");
+        accessor.Current.JwtOptions.Audience.Should().Be("raycynix-services");
+        snapshot.JwtOptions.Issuer.Should().Be("raycynix-auth");
+        snapshot.JwtOptions.Audience.Should().Be("raycynix-services");
+        jwt.Should().BeSameAs(snapshot.JwtOptions);
+        jwt.Issuer.Should().Be("raycynix-auth");
+        jwt.Audience.Should().Be("raycynix-services");
     }
 
     /// <summary>
@@ -72,11 +76,11 @@ public class SecurityRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Issuer"] = "raycynix-auth",
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services",
-                ["SecurityConfiguration:Jwt:AccessTokenLifetime"] = "00:15:00",
-                ["SecurityConfiguration:Jwt:RefreshTokenLifetime"] = "14.00:00:00",
-                ["SecurityConfiguration:Jwt:ClockSkew"] = "00:01:00"
+                ["SecurityOptions:JwtOptions:Issuer"] = "raycynix-auth",
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services",
+                ["SecurityOptions:JwtOptions:AccessTokenLifetime"] = "00:15:00",
+                ["SecurityOptions:JwtOptions:RefreshTokenLifetime"] = "14.00:00:00",
+                ["SecurityOptions:JwtOptions:ClockSkew"] = "00:01:00"
             })
             .Build();
 
@@ -84,15 +88,15 @@ public class SecurityRegistrationTests
         services.AddLogging();
         services.AddRaycynixSecurity(configuration, setup =>
         {
-            setup.Jwt.Audience = "overridden-audience";
-            setup.Jwt.RequireHttpsMetadata = false;
+            setup.JwtOptions.Audience = "overridden-audience";
+            setup.JwtOptions.RequireHttpsMetadata = false;
         });
 
         using var provider = services.BuildServiceProvider();
-        var snapshot = provider.GetRequiredService<SecurityConfiguration>();
+        var snapshot = provider.GetRequiredService<SecurityOptions>();
 
-        snapshot.Jwt.Audience.Should().Be("overridden-audience");
-        snapshot.Jwt.RequireHttpsMetadata.Should().BeFalse();
+        snapshot.JwtOptions.Audience.Should().Be("overridden-audience");
+        snapshot.JwtOptions.RequireHttpsMetadata.Should().BeFalse();
     }
 
     /// <summary>
@@ -104,8 +108,8 @@ public class SecurityRegistrationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Issuer"] = "raycynix-auth",
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services"
+                ["SecurityOptions:JwtOptions:Issuer"] = "raycynix-auth",
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services"
             })
             .Build();
 
@@ -114,25 +118,25 @@ public class SecurityRegistrationTests
         services.AddRaycynixSecurity(configuration);
 
         using var provider = services.BuildServiceProvider();
-        var snapshot = provider.GetRequiredService<SecurityConfiguration>();
+        var snapshot = provider.GetRequiredService<SecurityOptions>();
 
-        snapshot.Jwt.AccessTokenLifetime.Should().Be(TimeSpan.FromMinutes(15));
-        snapshot.Jwt.RefreshTokenLifetime.Should().Be(TimeSpan.FromDays(14));
-        snapshot.Jwt.ClockSkew.Should().Be(TimeSpan.FromMinutes(1));
-        snapshot.Jwt.RequireHttpsMetadata.Should().BeTrue();
+        snapshot.JwtOptions.AccessTokenLifetime.Should().Be(TimeSpan.FromMinutes(15));
+        snapshot.JwtOptions.RefreshTokenLifetime.Should().Be(TimeSpan.FromDays(14));
+        snapshot.JwtOptions.ClockSkew.Should().Be(TimeSpan.FromMinutes(1));
+        snapshot.JwtOptions.RequireHttpsMetadata.Should().BeTrue();
     }
 
     /// <summary>
     /// Verifies that configured security registration fails when the bound security settings are invalid.
     /// </summary>
     [Fact]
-    public void AddRaycynixSecurity_ShouldRejectInvalidSecurityConfiguration()
+    public void AddRaycynixSecurity_ShouldRejectInvalidSecurityOptions()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["SecurityConfiguration:Jwt:Issuer"] = string.Empty,
-                ["SecurityConfiguration:Jwt:Audience"] = "raycynix-services"
+                ["SecurityOptions:JwtOptions:Issuer"] = string.Empty,
+                ["SecurityOptions:JwtOptions:Audience"] = "raycynix-services"
             })
             .Build();
 
@@ -142,7 +146,7 @@ public class SecurityRegistrationTests
 
         using var provider = services.BuildServiceProvider();
 
-        var action = () => provider.GetRequiredService<IOptions<SecurityConfiguration>>().Value;
+        var action = () => provider.GetRequiredService<IOptions<SecurityOptions>>().Value;
 
         action.Should().Throw<OptionsValidationException>()
             .WithMessage("*JWT issuer must be provided.*");

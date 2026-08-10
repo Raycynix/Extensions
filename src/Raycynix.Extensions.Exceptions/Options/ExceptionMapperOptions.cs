@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
@@ -9,10 +10,13 @@ namespace Raycynix.Extensions.Exceptions.Options;
 /// </summary>
 public class ExceptionMapperOptions
 {
+    private readonly Dictionary<Type, Func<Exception, RaycynixException>> _mappings = new();
+
     /// <summary>
     /// Gets the registered exception mappings.
     /// </summary>
-    public Dictionary<Type, Func<Exception, RaycynixException>> Mappings { get; } = new();
+    public IReadOnlyDictionary<Type, Func<Exception, RaycynixException>> Mappings =>
+        new ReadOnlyDictionary<Type, Func<Exception, RaycynixException>>(_mappings);
 
     /// <summary>
     /// Registers a custom mapping for an exception type.
@@ -20,7 +24,13 @@ public class ExceptionMapperOptions
     /// <typeparam name="TException">The exception type to map.</typeparam>
     /// <param name="mapper">The mapping function.</param>
     public void Map<TException>(Func<TException, RaycynixException> mapper) where TException : Exception
-        => Mappings[typeof(TException)] = ex => mapper((TException)ex);
+    {
+        ArgumentNullException.ThrowIfNull(mapper);
+        _mappings[typeof(TException)] = ex =>
+            mapper((TException)ex) ??
+            throw new InvalidOperationException(
+                $"Exception mapper for '{typeof(TException).FullName}' returned null.");
+    }
 
     /// <summary>
     /// Registers a simple mapping for an exception type.
@@ -36,7 +46,23 @@ public class ExceptionMapperOptions
         int statusCode,
         ErrorCategory category) where TException : Exception
     {
-        Mappings[typeof(TException)] = ex => new MappedException(
+        ArgumentException.ThrowIfNullOrWhiteSpace(errorCode);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+
+        if (statusCode is < 400 or > 599)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(statusCode),
+                statusCode,
+                "Mapped exception status code must be between 400 and 599.");
+        }
+
+        if (!Enum.IsDefined(category))
+        {
+            throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown error category.");
+        }
+
+        _mappings[typeof(TException)] = ex => new MappedException(
             message,
             errorCode,
             statusCode,

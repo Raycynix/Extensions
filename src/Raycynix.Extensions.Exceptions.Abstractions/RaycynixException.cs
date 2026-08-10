@@ -50,12 +50,28 @@ public abstract class RaycynixException : Exception, IRaycynixException
         object? secureDetails = null,
         Exception? innerException = null,
         IErrorExecutionContext? executionContext = null)
-        : base(message, innerException)
+        : base(ValidateRequired(message, nameof(message)), innerException)
     {
-        ErrorCode = errorCode;
+        ErrorCode = ValidateRequired(errorCode, nameof(errorCode));
+
+        if (statusCode is < 400 or > 599)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(statusCode),
+                statusCode,
+                "Exception status code must be between 400 and 599.");
+        }
+
+        if (!Enum.IsDefined(category))
+        {
+            throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown error category.");
+        }
+
         StatusCode = statusCode;
         Category = category;
-        Details = details ?? [];
+        Details = details is null
+            ? []
+            : Array.AsReadOnly(details.ToArray());
         SecureDetails = secureDetails;
         ExecutionContext = executionContext;
     }
@@ -65,4 +81,10 @@ public abstract class RaycynixException : Exception, IRaycynixException
     /// </summary>
     /// <returns>The secure details object, if available.</returns>
     public virtual object? GetLoggingDetails() => SecureDetails;
+
+    private static string ValidateRequired(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        return value;
+    }
 }

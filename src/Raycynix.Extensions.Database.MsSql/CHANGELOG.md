@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Renamed `MsSqlServerConfiguration` to `MsSqlServerOptions` and moved it to the `Options` namespace.
+- Changed the provider section to `DatabaseOptions:MsSqlServerOptions`.
+- Added fail-fast validation for command timeout.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

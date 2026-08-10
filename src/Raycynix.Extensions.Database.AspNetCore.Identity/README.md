@@ -133,8 +133,12 @@ builder.Services.AddRaycynixDatabaseAssembly<MyModelMarker>();
 
 ## Database Initialization
 
-Database creation and migration behavior is controlled by `DatabaseConfiguration`, the same as in the core database package. In ASP.NET Core applications, use the startup helper from `Raycynix.Extensions.Database.AspNetCore` when you want initialization during application startup:
+Database creation and migration behavior is controlled by `DatabaseOptions`, the same as in the core database package. In ASP.NET Core applications, use the startup helper from `Raycynix.Extensions.Database.AspNetCore` when you want initialization during application startup:
 
 ```csharp
 await app.InitializeRaycynixDatabaseAsync();
 ```
+
+## Migrating From 2.x
+
+Identity database registration now uses `DatabaseOptions` from `Raycynix.Extensions.Database.Abstractions.Options`. Rename the root and provider configuration sections to their 3.0 options type names.

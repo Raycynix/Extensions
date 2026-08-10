@@ -1,13 +1,18 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Raycynix.Extensions.Common.Context;
+using Microsoft.Extensions.Options;
+using Raycynix.Extensions.Observability.AspNetCore.Configurations;
+using Raycynix.Extensions.Observability.AspNetCore.Internal;
 
 namespace Raycynix.Extensions.Observability.AspNetCore.Http;
 
 /// <summary>
 /// Adds the current correlation identifier to outgoing HTTP requests.
 /// </summary>
-public class CorrelationHeaderHandler(IHttpContextAccessor httpContextAccessor) : DelegatingHandler
+public class CorrelationHeaderHandler(
+    IHttpContextAccessor httpContextAccessor,
+    IOptions<ObservabilityAspNetCoreConfiguration>? options = null) : DelegatingHandler
 {
     internal const string CorrelationHeader = "X-Correlation-ID";
 
@@ -31,16 +36,18 @@ public class CorrelationHeaderHandler(IHttpContextAccessor httpContextAccessor) 
 
     private string ResolveCorrelationId()
     {
-        var context = httpContextAccessor.HttpContext;
-        if (context?.Request.Headers.TryGetValue(CorrelationHeader, out var headerValue) == true &&
-            !string.IsNullOrWhiteSpace(headerValue))
-        {
-            return headerValue.ToString();
-        }
-
+        var maximumLength = options?.Value.MaxCorrelationIdLength
+                            ?? CorrelationIdNormalizer.DefaultMaximumLength;
         if (OperationContext.Current is { } operationContext)
         {
-            return operationContext.CorrelationId;
+            return CorrelationIdNormalizer.NormalizeOrCreate(operationContext.CorrelationId, maximumLength);
+        }
+
+        var context = httpContextAccessor.HttpContext;
+        if (context?.Request.Headers.TryGetValue(CorrelationHeader, out var headerValue) == true &&
+            CorrelationIdNormalizer.TryNormalize(headerValue, maximumLength, out var incomingCorrelationId))
+        {
+            return incomingCorrelationId;
         }
 
         return Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");

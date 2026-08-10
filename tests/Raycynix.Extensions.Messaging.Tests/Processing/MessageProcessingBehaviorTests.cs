@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +7,7 @@ using Raycynix.Extensions.Messaging.Abstractions.Enums;
 using Raycynix.Extensions.Messaging.Abstractions.Exceptions;
 using Raycynix.Extensions.Messaging.Abstractions.Interfaces;
 using Raycynix.Extensions.Messaging.Abstractions.Models;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using Raycynix.Extensions.Metrics.Abstractions;
 using Raycynix.Extensions.Security.Abstractions.Attributes;
 using Raycynix.Extensions.Security.Abstractions.Enums;
 using Raycynix.Extensions.Security.Abstractions.Interfaces;
@@ -102,8 +103,8 @@ public sealed class MessageProcessingBehaviorTests
             .AddInMemoryCollection(new Dictionary<string, string?>())
             .Build();
 
-        var metrics = new FakeMetricsService();
-        services.AddSingleton<IMetricsService>(metrics);
+        using var metrics = new MetricRecorder();
+        services.AddSingleton<IMeterFactory>(metrics);
         services.AddRaycynixMessaging(configuration)
             .AddMessageHandler<ObservedDispatchMessage, ObservedDispatchHandler>();
 
@@ -116,15 +117,15 @@ public sealed class MessageProcessingBehaviorTests
             MessageFormat.Json);
 
         var result = await dispatcher.DispatchAsync(envelope, TestContext.Current.CancellationToken);
-        var expectedLabels = new[] { typeof(ObservedDispatchMessage).FullName!, "orders.observed", "success" };
-
         result.AttemptCount.Should().Be(1);
-        metrics.Counters.Should().ContainKey("raycynix_messaging_dispatch_total");
-        metrics.Histograms.Should().ContainKey("raycynix_messaging_dispatch_duration_seconds");
-        metrics.Counters["raycynix_messaging_dispatch_total"].Records.Should().ContainSingle();
-        metrics.Counters["raycynix_messaging_dispatch_total"].Records[0].Value.Should().Be(1);
-        metrics.Counters["raycynix_messaging_dispatch_total"].Records[0].LabelValues.Should().Equal(expectedLabels);
-        metrics.Histograms["raycynix_messaging_dispatch_duration_seconds"].MeasureCount.Should().Be(1);
+        metrics.LongMeasurements.Should().ContainSingle(measurement =>
+            measurement.InstrumentName == "raycynix.messaging.dispatches" &&
+            measurement.Value == 1 &&
+            HasTag(measurement.Tags, "raycynix.messaging.message.type", typeof(ObservedDispatchMessage).FullName!) &&
+            HasTag(measurement.Tags, "raycynix.messaging.destination", "orders.observed") &&
+            HasTag(measurement.Tags, "raycynix.messaging.status", "success"));
+        metrics.DoubleMeasurements.Should().ContainSingle(measurement =>
+            measurement.InstrumentName == "raycynix.messaging.dispatch.duration");
     }
 
     /// <summary>
@@ -138,8 +139,8 @@ public sealed class MessageProcessingBehaviorTests
             .AddInMemoryCollection(new Dictionary<string, string?>())
             .Build();
 
-        var metrics = new FakeMetricsService();
-        services.AddSingleton<IMetricsService>(metrics);
+        using var metrics = new MetricRecorder();
+        services.AddSingleton<IMeterFactory>(metrics);
         services.AddRaycynixMessaging(configuration)
             .AddRequestHandler<ObservedRequest, ObservedResponse, ObservedRequestHandler>("orders.v1/get");
 
@@ -154,14 +155,15 @@ public sealed class MessageProcessingBehaviorTests
         var response = await dispatcher.DispatchAsync<ObservedRequest, ObservedResponse>(
             request,
             TestContext.Current.CancellationToken);
-        var expectedLabels = new[] { typeof(ObservedRequest).FullName!, "orders.v1/get", "success" };
-
         response.Response.OrderId.Should().Be("order-4");
-        metrics.Counters.Should().ContainKey("raycynix_messaging_request_total");
-        metrics.Histograms.Should().ContainKey("raycynix_messaging_request_duration_seconds");
-        metrics.Counters["raycynix_messaging_request_total"].Records.Should().ContainSingle();
-        metrics.Counters["raycynix_messaging_request_total"].Records[0].LabelValues.Should().Equal(expectedLabels);
-        metrics.Histograms["raycynix_messaging_request_duration_seconds"].MeasureCount.Should().Be(1);
+        metrics.LongMeasurements.Should().ContainSingle(measurement =>
+            measurement.InstrumentName == "raycynix.messaging.requests" &&
+            measurement.Value == 1 &&
+            HasTag(measurement.Tags, "raycynix.messaging.request.type", typeof(ObservedRequest).FullName!) &&
+            HasTag(measurement.Tags, "raycynix.messaging.destination", "orders.v1/get") &&
+            HasTag(measurement.Tags, "raycynix.messaging.status", "success"));
+        metrics.DoubleMeasurements.Should().ContainSingle(measurement =>
+            measurement.InstrumentName == "raycynix.messaging.request.duration");
     }
 
     /// <summary>
@@ -487,80 +489,62 @@ public sealed class MessageProcessingBehaviorTests
         }
     }
 
-    private sealed class FakeMetricsService : IMetricsService
+    private static bool HasTag(
+        IReadOnlyCollection<KeyValuePair<string, object?>> tags,
+        string key,
+        object value)
     {
-        public Dictionary<string, FakeCounter> Counters { get; } = [];
-
-        public Dictionary<string, FakeHistogram> Histograms { get; } = [];
-
-        public IMetricCounter CreateCounter(string name, string help, params string[] labelNames)
-        {
-            var counter = new FakeCounter();
-            Counters[name] = counter;
-            return counter;
-        }
-
-        public IMetricGauge CreateGauge(string name, string help, params string[] labelNames)
-        {
-            return new FakeGauge();
-        }
-
-        public IMetricHistogram CreateHistogram(string name, string help, params string[] labelNames)
-        {
-            var histogram = new FakeHistogram();
-            Histograms[name] = histogram;
-            return histogram;
-        }
+        return tags.Any(tag => tag.Key == key && Equals(tag.Value, value));
     }
 
-    private sealed class FakeCounter : IMetricCounter
+    private sealed class MetricRecorder : IMeterFactory, IDisposable
     {
-        public List<(double Value, string[] LabelValues)> Records { get; } = [];
+        private readonly MeterListener _listener;
+        private readonly List<Meter> _meters = [];
 
-        public void Increment(double value = 1, params string[] labelValues)
+        public MetricRecorder()
         {
-            Records.Add((value, labelValues));
-        }
-    }
-
-    private sealed class FakeGauge : IMetricGauge
-    {
-        public void Set(double value, params string[] labelValues)
-        {
-        }
-
-        public void Increment(double value = 1, params string[] labelValues)
-        {
-        }
-
-        public void Decrement(double value = 1, params string[] labelValues)
-        {
-        }
-    }
-
-    private sealed class FakeHistogram : IMetricHistogram
-    {
-        public int MeasureCount { get; private set; }
-
-        public void Observe(double value, params string[] labelValues)
-        {
+            _listener = new MeterListener
+            {
+                InstrumentPublished = (instrument, listener) =>
+                {
+                    if (instrument.Meter.Name == RaycynixMetrics.MeterName)
+                    {
+                        listener.EnableMeasurementEvents(instrument);
+                    }
+                }
+            };
+            _listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
+                LongMeasurements.Add(new(instrument.Name, value, tags.ToArray())));
+            _listener.SetMeasurementEventCallback<double>((instrument, value, tags, _) =>
+                DoubleMeasurements.Add(new(instrument.Name, value, tags.ToArray())));
+            _listener.Start();
         }
 
-        public IDisposable MeasureDuration(params string[] labelValues)
-        {
-            MeasureCount++;
-            return NoopDisposable.Instance;
-        }
-    }
+        public List<Measurement<long>> LongMeasurements { get; } = [];
+        public List<Measurement<double>> DoubleMeasurements { get; } = [];
 
-    private sealed class NoopDisposable : IDisposable
-    {
-        public static NoopDisposable Instance { get; } = new();
+        public Meter Create(MeterOptions options)
+        {
+            var meter = new Meter(options);
+            _meters.Add(meter);
+            return meter;
+        }
 
         public void Dispose()
         {
+            _listener.Dispose();
+            foreach (var meter in _meters)
+            {
+                meter.Dispose();
+            }
         }
     }
+
+    private sealed record Measurement<T>(
+        string InstrumentName,
+        T Value,
+        KeyValuePair<string, object?>[] Tags);
 
     private static IncomingTransportMessage CreateIncomingMessage(
         string messageId,

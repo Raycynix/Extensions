@@ -100,6 +100,7 @@ public class RaycynixAuthorizationPolicyProviderTests
 
     private static RaycynixAuthorizationPolicyProvider CreateProvider()
     {
-        return new RaycynixAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+        return new RaycynixAuthorizationPolicyProvider(
+            Microsoft.Extensions.Options.Options.Create(new AuthorizationOptions()));
     }
 }

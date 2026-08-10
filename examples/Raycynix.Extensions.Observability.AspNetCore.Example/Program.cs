@@ -1,10 +1,14 @@
 using System.Diagnostics;
 using System.Net;
 using Raycynix.Extensions.Common.Context;
-using Raycynix.Extensions.Metrics.Abstractions.Interfaces;
+using System.Diagnostics.Metrics;
+using Raycynix.Extensions.Metrics.Abstractions;
+using Raycynix.Extensions.Metrics.AspNetCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 using Raycynix.Extensions.Observability.AspNetCore;
 using Raycynix.Extensions.Observability.AspNetCore.Middleware;
-using Raycynix.Extensions.Tracing.Abstractions.Interfaces;
+using Raycynix.Extensions.Tracing.Abstractions;
 
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
@@ -18,26 +22,19 @@ ActivitySource.AddActivityListener(activityListener);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRaycynixAspNetCoreObservability();
+builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddPrometheusExporter());
 builder.Services.AddHttpClient("downstream")
     .ConfigurePrimaryHttpMessageHandler(() => new EchoCorrelationHandler());
 
 var app = builder.Build();
 
 app.UseRaycynixObservability();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
-var metrics = app.Services.GetRequiredService<IMetricsService>();
-var requestCounter = metrics.CreateCounter(
-    "raycynix_observability_http_requests_total",
-    "Requests handled by observability example.",
-    "endpoint");
-var activeRequestsGauge = metrics.CreateGauge(
-    "raycynix_observability_active_requests",
-    "Current active requests by endpoint.",
-    "endpoint");
-var requestDurationHistogram = metrics.CreateHistogram(
-    "raycynix_observability_request_duration_seconds",
-    "Request duration for observability example.",
-    "endpoint");
+var meter = RaycynixMetrics.CreateMeter(app.Services.GetRequiredService<IMeterFactory>());
+var requestCounter = meter.CreateCounter<long>("raycynix.observability.http.requests", "{request}");
+var activeRequests = meter.CreateUpDownCounter<long>("raycynix.observability.http.active_requests", "{request}");
+var requestDurationHistogram = meter.CreateHistogram<double>("raycynix.observability.http.request.duration", "s");
 
 app.MapGet("/", () => Results.Ok(new
 {
@@ -55,17 +52,17 @@ app.MapGet("/", () => Results.Ok(new
 app.MapGet("/context", (
     HttpContext httpContext,
     IOperationContext operationContext,
-    ITracer tracer,
     ILoggerFactory loggerFactory) =>
 {
-    activeRequestsGauge.Increment(labelValues: ["context"]);
+    activeRequests.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "context"));
 
     try
     {
-        using (requestDurationHistogram.MeasureDuration("context"))
-        using (tracer.StartTrace("observability.context"))
+        using (requestDurationHistogram.MeasureDuration(
+                   new KeyValuePair<string, object?>("raycynix.endpoint", "context")))
+        using (RaycynixTracing.ActivitySource.StartActivity("observability.context"))
         {
-            requestCounter.Increment(labelValues: ["context"]);
+            requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "context"));
             var logger = loggerFactory.CreateLogger("ContextEndpoint");
             logger.LogInformation("Returning current observability context.");
 
@@ -81,28 +78,26 @@ app.MapGet("/context", (
     }
     finally
     {
-        activeRequestsGauge.Decrement(labelValues: ["context"]);
+        activeRequests.Add(-1, new KeyValuePair<string, object?>("raycynix.endpoint", "context"));
     }
 });
 
 app.MapGet("/checkout", async (
     IOperationContext operationContext,
     ILogger<CheckoutEndpoint> logger,
-    ITracer tracer,
     CancellationToken cancellationToken) =>
 {
-    activeRequestsGauge.Increment(labelValues: ["checkout"]);
+    activeRequests.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "checkout"));
 
     try
     {
-        using (requestDurationHistogram.MeasureDuration("checkout"))
-        using (tracer.StartTrace("checkout.handle", new Dictionary<string, string>
-               {
-                   ["feature"] = "observability"
-               }))
+        using (requestDurationHistogram.MeasureDuration(
+                   new KeyValuePair<string, object?>("raycynix.endpoint", "checkout")))
+        using (var activity = RaycynixTracing.ActivitySource.StartActivity("checkout.handle", ActivityKind.Internal))
         {
-            requestCounter.Increment(labelValues: ["checkout"]);
-            tracer.AddTag("correlation.id", operationContext.CorrelationId);
+            activity?.SetTag("feature", "observability");
+            requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "checkout"));
+            activity?.SetTag("correlation.id", operationContext.CorrelationId);
 
             logger.LogInformation(
                 "Handling checkout request. CorrelationId:{CorrelationId} TraceId:{TraceId}",
@@ -122,7 +117,7 @@ app.MapGet("/checkout", async (
     }
     finally
     {
-        activeRequestsGauge.Decrement(labelValues: ["checkout"]);
+        activeRequests.Add(-1, new KeyValuePair<string, object?>("raycynix.endpoint", "checkout"));
     }
 });
 
@@ -130,13 +125,14 @@ app.MapGet("/outbound", async (
     IHttpClientFactory httpClientFactory,
     CancellationToken cancellationToken) =>
 {
-    activeRequestsGauge.Increment(labelValues: ["outbound"]);
+    activeRequests.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "outbound"));
 
     try
     {
-        using (requestDurationHistogram.MeasureDuration("outbound"))
+        using (requestDurationHistogram.MeasureDuration(
+                   new KeyValuePair<string, object?>("raycynix.endpoint", "outbound")))
         {
-            requestCounter.Increment(labelValues: ["outbound"]);
+            requestCounter.Add(1, new KeyValuePair<string, object?>("raycynix.endpoint", "outbound"));
 
             var client = httpClientFactory.CreateClient("downstream");
             var response = await client.GetAsync("https://example.test/downstream", cancellationToken);
@@ -150,11 +146,11 @@ app.MapGet("/outbound", async (
     }
     finally
     {
-        activeRequestsGauge.Decrement(labelValues: ["outbound"]);
+        activeRequests.Add(-1, new KeyValuePair<string, object?>("raycynix.endpoint", "outbound"));
     }
 });
 
-app.MapRaycynixObservabilityEndpoints("/health", "/metrics");
+app.MapRaycynixObservabilityEndpoints();
 
 app.Run();
 

@@ -5,12 +5,14 @@ SMTP provider integration for `Raycynix.Extensions.Email`.
 ## What It Provides
 
 - `AddSmtp(...)`
-- `SmtpConfiguration`
+- `SmtpOptions`
 - SMTP provider-specific validation
 - `IEmailSender` implementation backed by MailKit
 - optional Microsoft `ILogger<T>` diagnostics for SMTP delivery phases
 
 The provider is selected by calling `.AddSmtp(...)`.
+
+`SmtpOptions` is bound from `EmailOptions:SmtpOptions` and validated during application startup.
 
 ## Usage
 
@@ -35,10 +37,10 @@ builder.Services
 
 ```json
 {
-  "EmailConfiguration": {
+  "EmailOptions": {
     "DefaultFromAddress": "no-reply@example.com",
     "DefaultFromDisplayName": "Example App",
-    "SmtpConfiguration": {
+    "SmtpOptions": {
       "Host": "smtp.example.com",
       "Port": 465,
       "SecureSocketOptions": "SslOnConnect",
@@ -49,6 +51,12 @@ builder.Services
   }
 }
 ```
+
+## Migrating From 2.x
+
+- Replace `SmtpConfiguration` with `SmtpOptions`.
+- Replace the `Raycynix.Extensions.Email.Smtp.Configurations` namespace with `Raycynix.Extensions.Email.Smtp.Options`.
+- Rename the configuration path from `EmailConfiguration:SmtpConfiguration` to `EmailOptions:SmtpOptions`.
 
 ## Logging
 

@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Database.Sqlite.Configurations;
+using Raycynix.Extensions.Database.Sqlite.Options;
 
 namespace Raycynix.Extensions.Database.Tests.Registration;
 
@@ -15,17 +15,17 @@ public sealed class SqliteRegistrationTests
     /// Verifies that SQLite options bind from the nested database configuration section.
     /// </summary>
     [Fact]
-    public void AddSqlite_ShouldBindOptionsFromDatabaseConfigurationSection()
+    public void AddSqlite_ShouldBindOptionsFromDatabaseOptionsSection()
     {
         var services = new ServiceCollection();
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["DatabaseConfiguration:ConnectionString"] = "Data Source=test.db",
-                ["DatabaseConfiguration:SqliteConfiguration:Mode"] = "ReadWriteCreate",
-                ["DatabaseConfiguration:SqliteConfiguration:Cache"] = "Shared",
-                ["DatabaseConfiguration:SqliteConfiguration:CommandTimeoutSeconds"] = "45"
+                ["DatabaseOptions:ConnectionString"] = "Data Source=test.db",
+                ["DatabaseOptions:SqliteOptions:Mode"] = "ReadWriteCreate",
+                ["DatabaseOptions:SqliteOptions:Cache"] = "Shared",
+                ["DatabaseOptions:SqliteOptions:CommandTimeoutSeconds"] = "45"
             })
             .Build();
 
@@ -33,7 +33,7 @@ public sealed class SqliteRegistrationTests
             .AddSqlite();
 
         using var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-        var options = serviceProvider.GetRequiredService<SqliteConfiguration>();
+        var options = serviceProvider.GetRequiredService<SqliteOptions>();
 
         options.Mode.Should().Be("ReadWriteCreate");
         options.Cache.Should().Be("Shared");

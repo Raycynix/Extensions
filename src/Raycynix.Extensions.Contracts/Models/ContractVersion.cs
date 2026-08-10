@@ -10,7 +10,7 @@ public class ContractVersion : IComparable<ContractVersion>, IEquatable<Contract
     /// <summary>
     /// Represents the default initial contract version.
     /// </summary>
-    public static ContractVersion Initial { get; } = new();
+    public static ContractVersion Initial => new();
 
     /// <summary>
     /// Gets or sets the major version.

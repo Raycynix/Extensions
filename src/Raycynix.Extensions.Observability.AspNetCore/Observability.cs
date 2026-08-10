@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Raycynix.Extensions.Observability.AspNetCore.Configurations;
 using Raycynix.Extensions.Observability.AspNetCore.Http;
+using Raycynix.Extensions.Observability.AspNetCore.Internal;
+using Raycynix.Extensions.Metrics.AspNetCore;
+using Raycynix.Extensions.Tracing.AspNetCore;
 
 namespace Raycynix.Extensions.Observability.AspNetCore;
 
@@ -24,7 +27,14 @@ public static class Observability
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddRaycynixObservability();
-        services.Configure<ObservabilityAspNetCoreConfiguration>(options => setup?.Invoke(options));
+        services.AddRaycynixAspNetCoreMetrics();
+        services.AddRaycynixAspNetCoreTracing();
+        services.AddHealthChecks();
+        services.AddOptions<ObservabilityAspNetCoreConfiguration>()
+            .Configure(options => setup?.Invoke(options))
+            .Validate(
+                options => options.MaxCorrelationIdLength is > 0 and <= CorrelationIdNormalizer.MaximumAllowedLength,
+                $"MaxCorrelationIdLength must be between 1 and {CorrelationIdNormalizer.MaximumAllowedLength}.");
         
         services.AddHttpContextAccessor();
 

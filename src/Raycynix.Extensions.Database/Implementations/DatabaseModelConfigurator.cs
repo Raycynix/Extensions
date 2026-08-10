@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
 using Raycynix.Extensions.Database.Abstractions.Configurators;
 
 namespace Raycynix.Extensions.Database.Implementations;
@@ -15,7 +15,7 @@ namespace Raycynix.Extensions.Database.Implementations;
 /// <param name="serviceProvider">The service provider used to activate configurators.</param>
 /// <param name="logger">The optional logger used to record model configuration diagnostics.</param>
 public sealed class DatabaseModelConfigurator(
-    DatabaseConfiguration config,
+    DatabaseOptions config,
     IDatabaseModelAssemblyRegistry modelAssemblyRegistry,
     IDatabaseObservability observability,
     IServiceProvider serviceProvider,

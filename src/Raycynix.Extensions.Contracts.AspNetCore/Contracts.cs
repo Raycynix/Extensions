@@ -52,11 +52,12 @@ public static class Contracts
         public TBuilder WithContract(string contractName, string contractVersion)
         {
             ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(contractName);
 
             return builder.WithContract(
                 new ContractMetadata
                 {
-                    Name = contractName,
+                    Name = contractName.Trim(),
                     Version = ContractVersion.Parse(contractVersion)
                 });
         }
@@ -71,12 +72,13 @@ public static class Contracts
             ContractVersion contractVersion)
         {
             ArgumentNullException.ThrowIfNull(builder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(contractName);
             ArgumentNullException.ThrowIfNull(contractVersion);
 
             return builder.WithContract(
                 new ContractMetadata
                 {
-                    Name = contractName,
+                    Name = contractName.Trim(),
                     Version = contractVersion
                 });
         }
@@ -90,6 +92,13 @@ public static class Contracts
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(metadata);
+
+            if (!metadata.HasIdentity)
+            {
+                throw new ArgumentException(
+                    "Contract metadata must contain a non-empty name and a valid semantic version.",
+                    nameof(metadata));
+            }
 
             builder.Add(endpointBuilder => endpointBuilder.Metadata.Add(new ContractEndpointMetadata(metadata)));
 

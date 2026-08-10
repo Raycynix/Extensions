@@ -6,6 +6,8 @@
 
 - `AddRaycynixAspNetCoreSecurity(...)`
 - `UseRaycynixSecurity(this IApplicationBuilder app)`
+- `AddRaycynixRateLimiting(...)`
+- `UseRaycynixRateLimiting(this IApplicationBuilder app)`
 - per-request `ClaimsPrincipal` to `ISecurityContext` mapping
 - dynamic API policies for `authenticated`, `permission:*`, `role:*`, and `subject:*`
 - MVC convention support for shared security attributes from `Raycynix.Extensions.Security.Abstractions`
@@ -19,22 +21,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRaycynixAspNetCoreSecurity(builder.Configuration, options =>
 {
-    options.Jwt.Authority = "https://auth.raycynix.com";
-    options.Jwt.Issuer = "raycynix-auth";
-    options.Jwt.Audience = "raycynix-services";
+    options.JwtOptions.Authority = "https://auth.raycynix.com";
+    options.JwtOptions.Issuer = "raycynix-auth";
+    options.JwtOptions.Audience = "raycynix-services";
 });
+builder.Services.AddRaycynixRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
-app.UseRaycynixSecurity();
+app.UseAuthentication();
+app.UseRaycynixRateLimiting();
+app.UseAuthorization();
 
 app.Run();
 ```
 
 ```json
 {
-  "SecurityConfiguration": {
-    "Jwt": {
+  "SecurityOptions": {
+    "JwtOptions": {
       "Authority": "https://auth.raycynix.com",
       "Issuer": "raycynix-auth",
       "Audience": "raycynix-services",
@@ -43,6 +48,52 @@ app.Run();
   }
 }
 ```
+
+## Rate Limiting
+
+Rate limiting is opt-in and uses the built-in ASP.NET Core rate limiting middleware. A global policy can protect every request, while named policies can be selected with the standard `RequireRateLimiting(...)` endpoint extension.
+
+When `Subject` partitioning is used, place rate limiting after authentication and before authorization so the validated JWT subject is available and rejected protected requests are still limited.
+
+```json
+{
+  "RateLimitOptions": {
+    "GlobalPolicy": {
+      "Algorithm": "FixedWindow",
+      "PartitionStrategy": "IpAddress",
+      "PermitLimit": 100,
+      "Window": "00:01:00",
+      "QueueLimit": 0
+    },
+    "Policies": {
+      "authentication": {
+        "Algorithm": "TokenBucket",
+        "PartitionStrategy": "Subject",
+        "PermitLimit": 10,
+        "Window": "00:01:00",
+        "TokensPerPeriod": 2
+      }
+    },
+    "RejectionStatusCode": 429,
+    "IncludeRetryAfterHeader": true
+  }
+}
+```
+
+```csharp
+builder.Services.AddRaycynixRateLimiting(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseAuthentication();
+app.UseRaycynixRateLimiting();
+app.UseAuthorization();
+
+app.MapPost("/auth/login", HandleLoginAsync)
+    .RequireRateLimiting("authentication");
+```
+
+Supported algorithms are `FixedWindow`, `SlidingWindow`, `TokenBucket`, and `Concurrency`. Requests can be partitioned by `IpAddress`, authenticated JWT `Subject` with IP fallback, or one shared `Global` bucket. Rejected requests receive a stable JSON response with status `429` by default.
 
 Use authorization policies with standard names:
 
@@ -92,8 +143,17 @@ The package expects JWT access tokens with:
 
 Authentication and authorization failures return safe JSON responses without exposing internal policy details.
 
+JWT bearer authentication, `SecurityOptions`, and directly injected `JwtOptions` share one configuration snapshot. The package no longer performs a separate manual bind.
+
 ## Logging
 
 The ASP.NET Core package uses optional Microsoft `ILogger<T>` diagnostics when logging is registered in the application. No Raycynix logging provider is required.
 
-Diagnostics cover JWT challenges, request security context mapping, dynamic policy resolution, authorization requirement outcomes, and generated 401/403 responses. Access tokens, subject identifiers, claim values, role names, permission names, and raw policy names are not logged.
+Diagnostics cover JWT challenges, request security context mapping, dynamic policy resolution, authorization requirement outcomes, generated 401/403 responses, and rate limit rejections. Access tokens, subject identifiers, claim values, role names, permission names, partition keys, and raw policy names are not logged.
+
+## Migrating From 2.x
+
+- Use `SecurityOptions` and `JwtOptions` from `Raycynix.Extensions.Security.Options`.
+- Rename the configuration root from `SecurityConfiguration` to `SecurityOptions`.
+- Missing or invalid authority is now reported through options validation when the security options are resolved.
+- Authorization attributes can now be applied directly to controller actions.

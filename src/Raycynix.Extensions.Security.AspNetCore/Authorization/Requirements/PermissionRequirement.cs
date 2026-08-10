@@ -13,7 +13,7 @@ public sealed class PermissionRequirement : IAuthorizationRequirement
     /// <param name="permission">The permission required to satisfy the policy.</param>
     public PermissionRequirement(string permission)
     {
-        Permission = permission;
+        Permission = AuthorizationRequirementValues.Required(permission, nameof(permission));
     }
 
     /// <summary>

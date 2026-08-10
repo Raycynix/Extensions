@@ -54,6 +54,42 @@ public class TransientFailureException : RaycynixException
             innerException,
             executionContext)
     {
+        if (operationName is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
+        }
+
+        if (attemptCount is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(attemptCount),
+                attemptCount,
+                "Attempt count must be greater than zero when specified.");
+        }
+
+        if (maxAttempts is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maxAttempts),
+                maxAttempts,
+                "Maximum attempts must be greater than zero when specified.");
+        }
+
+        if (attemptCount > maxAttempts)
+        {
+            throw new ArgumentException(
+                "Attempt count cannot be greater than maximum attempts.",
+                nameof(attemptCount));
+        }
+
+        if (retryAfterSeconds is < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(retryAfterSeconds),
+                retryAfterSeconds,
+                "Retry delay cannot be negative.");
+        }
+
         OperationName = operationName;
         AttemptCount = attemptCount;
         MaxAttempts = maxAttempts;

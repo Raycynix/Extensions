@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Raycynix.Extensions.Configuration;
 using Raycynix.Extensions.Configuration.Abstractions.Interfaces;
 using Raycynix.Extensions.Database.Abstractions;
-using Raycynix.Extensions.Database.Abstractions.Configurations;
-using Raycynix.Extensions.Database.MsSql.Configurations;
+using Raycynix.Extensions.Database.Abstractions.Options;
+using Raycynix.Extensions.Database.MsSql.Options;
 using Raycynix.Extensions.Database.MsSql.Internal;
 
 namespace Raycynix.Extensions.Database.MsSql;
@@ -22,17 +22,18 @@ public static class Database
     /// <returns>The same builder instance for chaining.</returns>
     public static IDatabaseBuilder AddMsSql(
         this IDatabaseBuilder builder,
-        Action<MsSqlServerConfiguration>? configure = null)
+        Action<MsSqlServerOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddRaycynixConfiguration<MsSqlServerConfiguration>(
+        builder.Services.AddRaycynixConfiguration<MsSqlServerOptions>(
             builder.Configuration,
-            $"{nameof(DatabaseConfiguration)}:{nameof(MsSqlServerConfiguration)}",
+            $"{nameof(DatabaseOptions)}:{nameof(MsSqlServerOptions)}",
             configurePostBind: configure);
+        builder.Services.AddRaycynixConfigurationValidator<MsSqlServerOptions, MsSqlServerOptionsValidator>();
 
-        builder.Services.AddSingleton(serviceProvider =>
-            serviceProvider.GetRequiredService<IConfigurationAccessor<MsSqlServerConfiguration>>().Current);
+        builder.Services.TryAddSingleton(serviceProvider =>
+            serviceProvider.GetRequiredService<IConfigurationAccessor<MsSqlServerOptions>>().Current);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<IDatabaseProviderRegistration, MsSqlServerDatabaseProviderRegistration>());

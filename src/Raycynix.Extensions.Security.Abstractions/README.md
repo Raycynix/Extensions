@@ -33,6 +33,8 @@ The authorization model exposes declarative attributes that can be reused by mul
 - `RequireAnyRoleAttribute`
 - `RequireAllRolesAttribute`
 
+Authorization attributes can be applied to classes or methods. Permission and role values are trimmed and validated when an attribute is created; empty requirement sets are rejected.
+
 The secret model assumes:
 
 - applications read secrets through shared abstractions

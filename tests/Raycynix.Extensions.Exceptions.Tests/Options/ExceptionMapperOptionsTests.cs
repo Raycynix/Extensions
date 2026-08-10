@@ -24,4 +24,30 @@ public sealed class ExceptionMapperOptionsTests
         result.Should().BeOfType<ConflictException>();
         result.Message.Should().Be("duplicate");
     }
+
+    [Fact]
+    public void Map_WithDelegate_ShouldRejectNullMapper()
+    {
+        var options = new ExceptionMapperOptions();
+
+        var act = () => options.Map<ArgumentException>(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Theory]
+    [InlineData(399)]
+    [InlineData(600)]
+    public void Map_WithSimpleMapping_ShouldRejectInvalidStatusCode(int statusCode)
+    {
+        var options = new ExceptionMapperOptions();
+
+        var act = () => options.Map<ArgumentException>(
+            "invalid_argument",
+            "Invalid argument.",
+            statusCode,
+            Abstractions.Enums.ErrorCategory.Validation);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0
+### Changed
+- Renamed `DatabaseConfiguration` to `DatabaseOptions`.
+- Renamed `ConnectionConfiguration` to `ConnectionOptions`.
+- Moved database settings to `Raycynix.Extensions.Database.Abstractions.Options`.
+- Made connection properties settable for configuration callbacks.
+
 ## 2.2.0
 ### Added
 - Started unified versioning for Raycynix packages from this release.

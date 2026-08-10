@@ -14,6 +14,11 @@ public sealed class SubjectTypeRequirement : IAuthorizationRequirement
     /// <param name="subjectType">The subject type required to satisfy the policy.</param>
     public SubjectTypeRequirement(SecuritySubjectType subjectType)
     {
+        if (!Enum.IsDefined(subjectType))
+        {
+            throw new ArgumentOutOfRangeException(nameof(subjectType), subjectType, "Unknown security subject type.");
+        }
+
         SubjectType = subjectType;
     }
 

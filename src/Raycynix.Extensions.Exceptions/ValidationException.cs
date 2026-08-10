@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Raycynix.Extensions.Exceptions.Abstractions;
 using Raycynix.Extensions.Exceptions.Abstractions.Enums;
 using Raycynix.Extensions.Exceptions.Abstractions.Interfaces;
@@ -12,7 +13,7 @@ public class ValidationException : RaycynixException
     /// <summary>
     /// Gets the validation errors grouped by field name.
     /// </summary>
-    public IDictionary<string, string[]> ValidationErrors { get; }
+    public IReadOnlyDictionary<string, string[]> ValidationErrors { get; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidationException"/>.
@@ -34,6 +35,28 @@ public class ValidationException : RaycynixException
             details,
             secureDetails)
     {
-        ValidationErrors = validationErrors;
+        ArgumentNullException.ThrowIfNull(validationErrors);
+
+        var copiedErrors = validationErrors.ToDictionary(
+            pair =>
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(pair.Key);
+                return pair.Key;
+            },
+            pair =>
+            {
+                ArgumentNullException.ThrowIfNull(pair.Value);
+
+                var messages = pair.Value.ToArray();
+                foreach (var errorMessage in messages)
+                {
+                    ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+                }
+
+                return messages;
+            },
+            StringComparer.Ordinal);
+
+        ValidationErrors = new ReadOnlyDictionary<string, string[]>(copiedErrors);
     }
 }

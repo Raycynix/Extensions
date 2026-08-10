@@ -4,16 +4,15 @@ using Raycynix.Extensions.Database.AspNetCore;
 using Raycynix.Extensions.Database.AspNetCore.Identity;
 using Raycynix.Extensions.Database.AspNetCore.Identity.Example.Models;
 using Raycynix.Extensions.Database.Sqlite;
-using Raycynix.Extensions.Logging;
+using Raycynix.Extensions.Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseRaycynixLogging(options =>
+builder.AddRaycynixSerilog(options =>
 {
-    options.OutputTemplate =
+    options.Options.DefaultConsoleOutputTemplate =
         "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ServiceName}] [{ServiceVersion}] [Env:{Environment}] {Message:lj}{NewLine}{Exception}";
 });
 
-builder.Services.AddRaycynixLogging(builder.Configuration);
 builder.Services
     .AddRaycynixIdentityDatabase(builder.Configuration, options =>
     {
@@ -81,7 +80,7 @@ app.MapGet("/orders/{number}", async (
 app.MapPost("/orders", async (
     CreateExampleOrderRequest request,
     [FromServices] RaycynixIdentityDatabaseContext databaseContext,
-    Raycynix.Extensions.Logging.Abstractions.ILogger<OrderEndpoints> logger,
+    ILogger<OrderEndpoints> logger,
     CancellationToken cancellationToken) =>
 {
     var order = new ExampleOrder
@@ -97,7 +96,7 @@ app.MapPost("/orders", async (
     databaseContext.Set<ExampleOrder>().Add(order);
     await databaseContext.SaveChangesAsync(cancellationToken);
 
-    logger.Information("Created order through HTTP endpoint\n {Endpoint}", new
+    logger.LogInformation("Created order through HTTP endpoint {@Endpoint}", new
     {
         order.Number,
         order.CustomerId,
