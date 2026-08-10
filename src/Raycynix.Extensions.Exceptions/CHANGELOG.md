@@ -2,6 +2,8 @@
 
 ## 3.0.0
 ### Changed
+- Sensitive exception data now masks application-specific keys containing known secret-name fragments.
+- Retry backoff is capped by `RetryExecutionOptions.MaxDelay` to prevent delay overflow.
 - `ExceptionMapperOptions.Mappings` now exposes a read-only dictionary and rejects invalid mappings.
 - Exception mappers validate null input and snapshot configured mappings.
 - `ValidationException` snapshots validation errors instead of retaining caller-owned collections.

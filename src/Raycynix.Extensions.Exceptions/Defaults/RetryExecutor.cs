@@ -109,7 +109,10 @@ public class RetryExecutor(
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested &&
                                        transientExceptionClassifier.IsTransient(ex))
             {
-                var retryAfterSeconds = Math.Max(1, (int)Math.Ceiling(options.Delay.TotalSeconds));
+                var retryAfterSeconds = (int)Math.Clamp(
+                    Math.Ceiling(Math.Min(options.Delay.TotalSeconds, options.MaxDelay.TotalSeconds)),
+                    1,
+                    int.MaxValue);
                 var executionContext = BuildExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
                 SetCurrentExecutionContext(actualOperationName, attempt, maxAttempts, isTransient: true);
 
@@ -144,15 +147,19 @@ public class RetryExecutor(
             ? Math.Pow(2, Math.Max(0, attempt - 1))
             : 1;
 
-        var delay = TimeSpan.FromMilliseconds(options.Delay.TotalMilliseconds * multiplier);
+        var delayMilliseconds = Math.Min(
+            options.Delay.TotalMilliseconds * multiplier,
+            options.MaxDelay.TotalMilliseconds);
 
         if (!options.UseJitter)
         {
-            return delay;
+            return TimeSpan.FromMilliseconds(delayMilliseconds);
         }
 
         var jitter = Random.Shared.Next(0, 250);
-        return delay + TimeSpan.FromMilliseconds(jitter);
+        return TimeSpan.FromMilliseconds(Math.Min(
+            delayMilliseconds + jitter,
+            options.MaxDelay.TotalMilliseconds));
     }
 
     private static void SetCurrentExecutionContext(

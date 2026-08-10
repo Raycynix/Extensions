@@ -111,4 +111,27 @@ public sealed class RetryExecutorTests
 
         await act.Should().ThrowAsync<ArgumentNullException>();
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCapRetryDelay()
+    {
+        var executor = new RetryExecutor(
+            new TransientExceptionClassifier(),
+            NullLogger<RetryExecutor>.Instance);
+        var attempts = 0;
+
+        await executor.ExecuteAsync(
+            _ => ++attempts == 1 ? throw new TimeoutException("retry me") : Task.CompletedTask,
+            new RetryExecutionOptions
+            {
+                MaxRetries = 1,
+                Delay = TimeSpan.MaxValue,
+                MaxDelay = TimeSpan.FromMilliseconds(10),
+                UseExponentialBackoff = true,
+                UseJitter = true
+            },
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        attempts.Should().Be(2);
+    }
 }
