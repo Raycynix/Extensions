@@ -52,4 +52,24 @@ public sealed class RetryExecutionOptionsTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    [Fact]
+    public void Validate_ShouldFail_WhenMaxDelayIsNotPositive()
+    {
+        var options = new RetryExecutionOptions { MaxDelay = TimeSpan.Zero };
+
+        var act = options.Validate;
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Validate_ShouldFail_WhenMaxRetriesIsUnreasonablyLarge()
+    {
+        var options = new RetryExecutionOptions { MaxRetries = 1001 };
+
+        var act = options.Validate;
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
 }

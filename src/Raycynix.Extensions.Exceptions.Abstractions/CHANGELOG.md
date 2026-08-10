@@ -2,6 +2,7 @@
 
 ## 3.0.0
 ### Changed
+- Added `RetryExecutionOptions.MaxDelay` and bounded retry option validation.
 - Validated exception messages, error codes, error categories, HTTP status codes, and exception detail values.
 - Exception details are copied when a `RaycynixException` is created.
 - Changed validation error response contracts to expose `IReadOnlyDictionary<string, string[]>`.
