@@ -30,11 +30,15 @@
         <Copyright>Copyright © $([System.DateTime]::Now.Year) Raycynix</Copyright>
         <RepositoryUrl>https://github.com/Raycynix/Extensions</RepositoryUrl>
         <PackageProjectUrl>https://github.com/Raycynix/Extensions</PackageProjectUrl>
-        <RepositoryType>GitHub</RepositoryType>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         
